@@ -1,0 +1,645 @@
+package IC.Parser;
+
+import IC.AST.*;
+import java.util.ArrayList;
+import java.util.List;
+import IC.LiteralTypes;
+import IC.DataTypes;
+import IC.BinaryOps;
+import IC.UnaryOps;
+import java_cup.runtime.Symbol;
+
+
+
+
+/* 
+	NOTE:
+	
+			this parser implements both bonuses:
+			
+			
+			* error recovery features:
+
+				classes:
+					recover up untill next class keyword
+	
+
+				statements: recover up until next ;
+
+				methods: recovers up until next } STATIC or } type
+
+				fields: recover up until next type
+				
+			* variable declaration statement cannot appear inside an if action or else action
+			
+*/
+       
+
+parser code {:
+
+	/* this list contains a list of Syntax Errors that were found during parsing */
+	public List<SyntaxError> errors = new ArrayList<SyntaxError>();
+
+	/* handle syntax error */
+	public void syntax_error(Symbol cur_token) {
+
+	    /* notify the compiler that an error has occured, and set the error list */
+	    IC.Compiler.SetSyntaxErrors(errors);
+		
+		/* bugged method */
+		expected_token_ids(); expected_token_ids(); expected_token_ids();
+		List<Integer> lst_tokens = expected_token_ids();
+		
+		/* add the new error */
+		errors.add(new SyntaxError((Token)cur_token, lst_tokens));
+	}
+	
+	public void unrecovered_syntax_error(Symbol cur_token) throws SyntaxError
+	{
+		/* we could not handle error recovery, throw a Syntax Error exception */
+		throw errors.get(0);
+	}
+	
+
+:}
+
+
+
+// Symbol list (terminals and non-terminals)
+
+/* ids, store as Token, we also need the line numbers */
+terminal Token ID;          
+terminal Token CLASSID;
+
+/* keywords , some require line number*/
+terminal EXTENDS, STATIC, IF, ELSE, WHILE;
+terminal LENGTH, CLASS;
+terminal Integer RETURN, BREAK, CONTINUE, THIS, NEW; /* need line number */
+terminal Integer INT, BOOL, STRING, VOID;            /* need line number */
+
+/* literals */
+terminal Token INTEGER;				   /* Token to contain both the value and line number */
+terminal Token STRING_LITERAL;         /* Token to contain both the value and line number */
+terminal Integer FALSE, NULL, TRUE;    /* Integer for line number */
+
+/* punctuation */
+terminal LP, RP, CRP, SQUARERB, SQUARELB, DOT, COMMA;
+terminal Integer SEMCOL;
+terminal Integer CLP;                  /* Integer for line number */
+
+/* operators */
+terminal ADD, MINUS, MULT, DIV, MOD, LESSTHAN, LESSTHANEQ, GREATERTHAN, GREATERTHANEQ, EQ;
+terminal NOTEQ, AND, OR, NOT, ASSIGN;
+
+terminal UMINUS, ARR_ACCESS, METHOD_CALL;
+
+nonterminal Program program;
+nonterminal List<ICClass> class_list;
+nonterminal ICClass       icclass;
+nonterminal Method        method;
+nonterminal String  extends_opt;
+nonterminal List<ASTNode> fields_methods_list;
+nonterminal Type type;
+nonterminal List<Field> field_collection;
+nonterminal List<String>    field_id_list;
+nonterminal Type     return_type;
+nonterminal Formal   formal;
+nonterminal List<Formal> comma_formal_list;
+nonterminal List<Formal> formal_list;
+nonterminal List<Formal> formal_list_opt;
+nonterminal List<Statement> stmt_lst;
+nonterminal Statement stmt;
+nonterminal Statement stmt_no_dec;
+nonterminal LocalVariable dec;
+nonterminal Expression expr;
+nonterminal Literal literal;
+nonterminal Location location;
+nonterminal Call call;
+nonterminal List<Expression> exp_list;
+nonterminal List<Expression> exp_comma_list;
+nonterminal VirtualCall virtual_call;
+nonterminal StaticCall static_call;
+
+nonterminal empty; /* epsilon derivation */
+
+
+// Precedence declarations
+precedence right ELSE;
+precedence right ASSIGN;
+precedence left OR;
+precedence left AND;
+precedence left EQ, NOTEQ;
+precedence left LESSTHAN, LESSTHANEQ, GREATERTHAN, GREATERTHANEQ;
+precedence left ADD, MINUS;
+precedence left MULT, DIV, MOD;
+precedence right UMINUS, NOT;
+precedence left DOT, ARR_ACCESS, METHOD_CALL, SQUARELB, LP;
+
+
+
+
+
+
+// The grammar, program is the start symbol
+
+program ::= class_list:lst
+	{: RESULT = new Program(lst); :}
+	| empty
+	{: RESULT = new Program(new ArrayList<ICClass>()); :}
+;
+
+	
+
+class_list ::= icclass:c
+	{: RESULT = new ArrayList<ICClass>();
+	   RESULT.add(c); 
+	:}
+	| class_list:lst icclass:c
+	{: lst.add(c); RESULT = lst; :}
+;
+
+icclass ::= CLASS CLASSID:class_token extends_opt:superclass CLP fields_methods_list:lst CRP
+	{: /* with a given method\field list */
+		List<Field> fields = new ArrayList<Field>();
+		List<Method> methods = new ArrayList<Method>();
+		for(ASTNode item : lst)
+		{
+			if(item instanceof Field)
+				fields.add((Field)item);
+			else
+				methods.add((Method)item);
+		}
+		if(superclass == null)
+			RESULT = new ICClass( class_token.getLine(), (String)class_token.getValue(), fields, methods);
+		else
+			RESULT = new ICClass( class_token.getLine(), (String)class_token.getValue(), superclass, fields, methods);
+		
+	:}
+	| CLASS CLASSID:class_token extends_opt:superclass CLP CRP
+	{:  /* empty class */
+		List<Field> fields = new ArrayList<Field>();
+		List<Method> methods = new ArrayList<Method>();
+		if(superclass == null)
+			RESULT = new ICClass( class_token.getLine(), (String)class_token.getValue(), fields, methods);
+		else
+			RESULT = new ICClass( class_token.getLine(), (String)class_token.getValue(), superclass, fields, methods);
+	:}
+	| error CLASS
+	{:
+		
+	:}
+;
+
+/* a list for both methods and fields */
+fields_methods_list ::= method:m
+	{:
+		RESULT = new ArrayList<ASTNode>();
+		RESULT.add(m);
+	:}
+	| fields_methods_list:lst method:m
+	{:
+		lst.add(m);
+		RESULT = lst;
+	:}
+	| field_collection:field_col
+	{:
+		RESULT = new ArrayList<ASTNode>();
+		for(Field field : field_col)
+		{
+			RESULT.add(field);
+		}
+	:}
+	| fields_methods_list:lst field_collection:field_col
+	{:
+		RESULT = lst;
+		for(Field field: field_col)
+		{
+			lst.add(field);
+		}
+	:}
+	
+;
+	
+/* field_collection is an inline list of fields: DataType a, b, c... */
+field_collection ::= type:t ID:id_token  field_id_list:lst SEMCOL
+	{:
+		RESULT = new ArrayList<Field>();
+		
+		// add the first field
+		RESULT.add(new Field(t, (String)id_token.getValue()));     
+		
+		// add the rest of the fields (same type)
+		for(String n : lst)
+		{
+			RESULT.add(new Field(t, n));
+		}
+	:}
+	| type:t ID:id_token SEMCOL
+	{:
+		RESULT = new ArrayList<Field>();
+		RESULT.add(new Field(t, (String)id_token.getValue()));
+	:}
+	| error type
+	
+
+	;
+	
+/* represents a comma seperated id list, that appears (optionally) in a field */
+field_id_list ::= COMMA ID:id_token
+	{: RESULT = new ArrayList<String>();
+	   RESULT.add((String)id_token.getValue()); :}
+	| field_id_list:lst COMMA ID:id_token
+	{: RESULT = lst; RESULT.add((String)id_token.getValue()); :}
+	
+	;
+
+/* optional extends that appears in a class definition */
+extends_opt ::= empty
+	{: RESULT = null; :}
+	| EXTENDS CLASSID:class_token
+	{: RESULT = (String)class_token.getValue(); :}
+	;
+
+/* represents types */
+type ::= INT:line
+	{: RESULT = new PrimitiveType( line, DataTypes.INT); :}
+	| BOOL:line
+	{: RESULT = new PrimitiveType( line, DataTypes.BOOLEAN); :}
+	| STRING:line
+	{: RESULT = new PrimitiveType( line, DataTypes.STRING); :}
+	| CLASSID:class_token
+	{: RESULT = new UserType( class_token.getLine(), (String)class_token.getValue()); :}
+	| type:t SQUARELB SQUARERB
+	{: RESULT = t; RESULT.incrementDimension(); :}
+	;
+
+/* method return type, can be void or type */	
+return_type ::= type:t 
+	{: RESULT = t; :}
+	| VOID:line
+	{: RESULT = new PrimitiveType( line , DataTypes.VOID); :}
+	;
+
+
+/* handles deriving both virtual and static methods */	
+method ::= STATIC return_type:t ID:id_token LP formal_list_opt:formals RP CLP stmt_lst:stmts CRP
+	{:
+		/* static method with statement list*/
+		RESULT = new StaticMethod(t, (String)id_token.getValue(), formals, stmts);
+		
+	:}
+	|
+	type:t ID:id_token LP formal_list_opt:formals RP CLP stmt_lst:stmts CRP
+	{:
+		/* virtual method, non void, method with statement list */
+			RESULT = new VirtualMethod(t, (String)id_token.getValue(), formals, stmts);
+	:}
+	|
+	VOID:line ID:id_token LP formal_list_opt:formals RP CLP stmt_lst:stmts CRP
+	{:
+		/* void virtual method with statement list */
+		RESULT = new VirtualMethod(new PrimitiveType(line, DataTypes.VOID), (String)id_token.getValue(), formals, stmts);
+	:}
+	|
+	type:t ID:id_token LP formal_list_opt:formals RP CLP CRP
+	{:
+		/* non void virtual method without statement list */
+		RESULT = new VirtualMethod(t, (String)id_token.getValue(), formals, new ArrayList<Statement>());
+	:}
+	|
+	VOID:line ID:id_token LP formal_list_opt:formals RP CLP CRP
+	{:
+		/* void virtual method without statement list */
+		RESULT = new VirtualMethod(new PrimitiveType( line, DataTypes.VOID),(String)id_token.getValue(), formals, new ArrayList<Statement>());
+	:}
+	|
+	STATIC return_type:t ID:id_token LP formal_list_opt:formals RP CLP CRP
+	{:
+		/* static method without statement list */
+		RESULT = new StaticMethod(t, (String)id_token.getValue(), formals, new ArrayList<Statement>());
+		
+	:}
+	// try to recover at next static or type
+	| error CRP STATIC
+	{: :}
+	| error CRP type
+	{: :}
+;
+
+formal ::= type:t ID:id_token
+	{: RESULT = new Formal(t, (String)id_token.getValue()); :}
+	;
+
+/* formals seperated by commas, used in formal list */
+comma_formal_list ::= COMMA formal:f
+	{: RESULT = new ArrayList<Formal>(); RESULT.add(f); :}
+	| comma_formal_list:lst COMMA formal:f
+	{: lst.add(f); RESULT = lst; :}
+	;
+
+/* represents formal list (non empty) */
+formal_list ::= formal:f comma_formal_list:lst
+	{: RESULT = new ArrayList<Formal>();
+	   RESULT.add(f);
+	   for(Formal formal : lst)
+	   {
+	   		RESULT.add(formal);
+	   }
+	:}
+	| formal:f
+	{: RESULT =  new ArrayList<Formal>(); RESULT.add(f); :}
+	
+	;
+/* optional formal list, used in method definition */
+formal_list_opt ::= formal_list:lst
+	{: RESULT = lst; :}
+	| empty
+	{: RESULT = new ArrayList<Formal>(); :}
+	;
+	
+	
+/* statement list, non empty */
+stmt_lst ::= stmt:s
+	{: RESULT = new ArrayList<Statement>(); RESULT.add(s); :}
+	| stmt_lst:lst stmt:s
+	{: lst.add(s); RESULT = lst; :}
+
+	;
+
+stmt ::= stmt_no_dec:s
+		{:RESULT = s;:}
+		 |dec:d
+		{:RESULT = d;:}
+		/* error, search for end of statement ; */
+		| error SEMCOL
+		{: :}
+		
+	;
+
+stmt_no_dec::= location:loc ASSIGN expr:exp SEMCOL
+	{: RESULT = new Assignment(loc, exp); :}
+	| call:c SEMCOL
+	{: RESULT = new CallStatement(c); :}
+	| RETURN:line  expr:exp  SEMCOL
+	{: RESULT = new Return(line, exp); :}
+	| RETURN:line SEMCOL
+	{: RESULT = new Return(line); :}
+	| IF LP expr:exp RP stmt_no_dec:st1  ELSE stmt_no_dec:st2  /* with else */
+	{: RESULT = new If(exp, st1, st2); :}
+	| IF LP expr:exp RP stmt_no_dec:st   /* without else */
+	{: RESULT = new If(exp,st); :}
+	| WHILE LP expr:exp RP stmt_no_dec:st
+	{: RESULT = new While(exp , st); :}
+	|  BREAK:line SEMCOL
+	{: RESULT = new Break( line ); :}
+	|  CONTINUE:line SEMCOL
+	{: RESULT =  new Continue( line );  :}
+	/* statement block with list */
+	| CLP:line stmt_lst:statements CRP
+	{: RESULT = new StatementsBlock(line ,statements); :}
+	/* statement block without list */
+	| CLP:line CRP 
+	{: RESULT = new StatementsBlock(line, new ArrayList<Statement>()); :}
+	/* local variable assignment*/
+	| type:t ID:id_token ASSIGN expr:exp SEMCOL
+	{: RESULT = new LocalVariable(t, (String)id_token.getValue(), exp); :}
+	
+
+;
+
+dec ::= type:t ID:id_token SEMCOL
+	{: RESULT = new LocalVariable(t, (String)id_token.getValue()); :}
+	;
+
+
+
+ 
+
+ literal ::= INTEGER:integer_token
+ {: RESULT = new Literal(integer_token.getLine(),LiteralTypes.INTEGER, (Integer)integer_token.getValue()); :}
+ | STRING_LITERAL:str_token
+ {: RESULT = new Literal(str_token.getLine(),LiteralTypes.STRING, (String)str_token.getValue()); :}
+ | FALSE:line
+ {: RESULT = new Literal(line,LiteralTypes.FALSE); :}
+ | NULL:line
+ {: RESULT = new Literal(line,LiteralTypes.NULL); :}
+ | TRUE:line
+ {: RESULT = new Literal(line, LiteralTypes.TRUE); :}
+ ;
+
+
+
+expr ::= location:loc
+	{: RESULT = loc; :}
+	| call:call_exp
+	{: RESULT = call_exp; :}
+	| THIS:line
+	{: RESULT = new This(line); :}
+	|  NEW CLASSID:class_token LP RP
+	{: RESULT = new NewClass(class_token.getLine(), (String)class_token.getValue()); :}
+	|  NEW type:t SQUARELB expr:exp  SQUARERB
+	{: RESULT = new NewArray(t, exp); :}
+	|  expr:exp DOT LENGTH
+	{: RESULT = new Length(exp); :} 
+	
+	/* binary and unary operations */
+    |  expr:exp_1  ADD  expr:exp_2
+	{:
+		
+		RESULT = new MathBinaryOp(exp_1, BinaryOps.PLUS, exp_2);
+	
+	:}
+	 |  expr:exp_1  MINUS  expr:exp_2
+	{:
+		
+		RESULT = new MathBinaryOp(exp_1, BinaryOps.MINUS, exp_2);
+	
+	:}
+	 |  expr:exp_1  MULT  expr:exp_2
+	{:
+		
+		RESULT = new MathBinaryOp(exp_1, BinaryOps.MULTIPLY, exp_2);
+	
+	:}
+	 |  expr:exp_1  DIV  expr:exp_2
+	{:
+		
+		RESULT = new MathBinaryOp(exp_1, BinaryOps.DIVIDE, exp_2);
+	
+	:}
+	 |  expr:exp_1  MOD  expr:exp_2
+	{:
+		
+		RESULT = new MathBinaryOp(exp_1, BinaryOps.MOD, exp_2);
+	
+	:}
+	 |  expr:exp_1  LESSTHAN  expr:exp_2
+	{:
+		
+		RESULT = new LogicalBinaryOp(exp_1, BinaryOps.LT, exp_2);
+	
+	:}
+	 |  expr:exp_1  LESSTHANEQ  expr:exp_2
+	{:
+		
+		RESULT = new LogicalBinaryOp(exp_1, BinaryOps.LTE, exp_2);
+	
+	:}
+	 |  expr:exp_1  GREATERTHAN  expr:exp_2
+	{:
+		
+		RESULT = new LogicalBinaryOp(exp_1, BinaryOps.GT, exp_2);
+	
+	:}
+	 |  expr:exp_1  GREATERTHANEQ  expr:exp_2
+	{:
+		
+		RESULT = new LogicalBinaryOp(exp_1, BinaryOps.GTE, exp_2);
+	
+	:}
+	 |  expr:exp_1  EQ  expr:exp_2
+	{:
+		
+		RESULT = new LogicalBinaryOp(exp_1, BinaryOps.EQUAL, exp_2);
+	
+	:}
+	 |  expr:exp_1  NOTEQ  expr:exp_2
+	{:
+		
+		RESULT = new LogicalBinaryOp(exp_1, BinaryOps.NEQUAL, exp_2);
+	
+	:}
+	 |  expr:exp_1  AND  expr:exp_2
+	{:
+		
+		RESULT = new LogicalBinaryOp(exp_1, BinaryOps.LAND, exp_2);
+	
+	:}
+	 |  expr:exp_1  OR  expr:exp_2
+	{:
+		
+		RESULT = new LogicalBinaryOp(exp_1, BinaryOps.LOR, exp_2);
+	
+	:}
+	
+	
+	|  MINUS expr:exp 
+	{: 
+		
+			RESULT = new MathUnaryOp(UnaryOps.UMINUS, exp); 
+
+	:}
+	%prec UMINUS
+	
+	|  NOT expr:exp 
+	{: 
+		
+			RESULT = new LogicalUnaryOp(UnaryOps.LNEG, exp); 
+
+	:}
+	
+	| literal:l 
+	{: 
+		 RESULT = l;
+	:}
+	| LP expr:exp RP 
+	{: RESULT = new ExpressionBlock(exp); :}
+;
+	
+
+
+location ::= ID:id_token
+	{: RESULT = new VariableLocation(id_token.getLine(), (String)id_token.getValue()); :}
+    | expr:exp DOT ID:id_token
+	{: RESULT = new VariableLocation(id_token.getLine(), exp, (String)id_token.getValue()); :}
+	| expr:array SQUARELB expr:index SQUARERB
+	{: RESULT = new ArrayLocation(array, index); :}
+	%prec ARR_ACCESS
+;
+			
+	
+empty ::= 
+	{: :}
+;
+
+static_call ::= CLASSID:class_token DOT ID:id_token LP RP 
+			/* static call without expression list */
+			{: 
+				String class_name = (String)class_token.getValue();
+				String method_name = (String)id_token.getValue();
+				RESULT = new StaticCall(class_token.getLine(), class_name, method_name, new ArrayList<Expression>()); 
+			:}
+			%prec METHOD_CALL
+			| CLASSID:class_token DOT ID:id_token LP exp_list:lst RP
+			/* static call WITH expression list */
+			{: 
+				String class_name = (String)class_token.getValue();
+				String method_name = (String)id_token.getValue();
+				RESULT = new StaticCall(class_token.getLine(), class_name, method_name, lst); 
+			:}
+			%prec METHOD_CALL
+;
+			
+virtual_call ::= expr:e DOT ID:id_token LP exp_list:lst RP 
+			/* with location, with expression list */
+			{: 
+				String method_name = (String)id_token.getValue();
+				RESULT = new VirtualCall(id_token.getLine(), e, method_name, lst); 
+			:}
+			%prec METHOD_CALL
+			| ID:id_token LP exp_list:lst RP 
+			/* without location, with expression list */
+			{: 
+				String method_name = (String)id_token.getValue();
+			    RESULT = new VirtualCall(id_token.getLine(), null, method_name, lst); 
+			:}
+			 %prec METHOD_CALL
+			/* with location, without expression list */
+			| expr:e DOT ID:id_token LP RP
+			{: 
+				String method_name = (String)id_token.getValue();
+				RESULT = new VirtualCall(id_token.getLine(), e, method_name, new ArrayList<Expression>()); 
+			:}
+			%prec METHOD_CALL
+			/* without location, without expression list */
+			| ID:id_token LP RP
+			{: 
+				String method_name = (String)id_token.getValue();
+				RESULT = new VirtualCall(id_token.getLine(), null, method_name, new ArrayList<Expression>()); 
+			:}
+			%prec METHOD_CALL
+;
+
+
+
+call ::= virtual_call:val
+		{: RESULT = val; :}
+		| static_call:val 
+		{: RESULT = val; :}
+;
+
+
+
+/* represents expression list: expr (',' expr)* */
+exp_list ::= expr:exp
+		  {: RESULT = new ArrayList<Expression>(); RESULT.add(exp); :}
+		  | expr:exp exp_comma_list:lst
+		  {: 
+			List<Expression> res = new ArrayList<Expression>();
+			res.add(exp);
+			for(Expression e:lst)
+			{
+				res.add(e);
+			}
+			RESULT = res;
+		  :}
+;
+/* represents expression list seperated with commas (',' expr)+ [non empty] */
+exp_comma_list ::= COMMA expr:exp
+			{: RESULT = new ArrayList<Expression>(); RESULT.add(exp); :}
+			| exp_comma_list:lst COMMA expr:exp
+			{: lst.add(exp); RESULT = lst; :}
+;
+
+
+	
