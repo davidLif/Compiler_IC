@@ -14,6 +14,11 @@ public class StatementsBlock extends Statement {
 	public Object accept(Visitor visitor) {
 		return visitor.visit(this);
 	}
+	
+	public <D,U> U accept(PropagatingVisitor<D,U> v, D context){
+		
+		return v.visit(this, context);
+	}
 
 	/**
 	 * Constructs a new statements block node.
