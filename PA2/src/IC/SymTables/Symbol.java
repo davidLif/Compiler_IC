@@ -1,23 +1,47 @@
 package IC.SymTables;
 
-import IC.Types.Type;;
+import IC.Types.Type;
 
 public abstract class Symbol {
 	
 	/** 
 	 * name/id of the symbol (for example, name of method)
 	 */
-	private String id; 
+	protected String id; 
 	
 	/**
 	 * type of symbol
 	 * 
 	 */
-	private Type type;
+	protected Type type;
+	
+	public Symbol(String id, Type type)
+	{
+		this.id = id;
+		this.type = type;
+	}
+	
+	public Symbol(String id )
+	{
+		this.id = id;
+		this.type = null;
+	}
+	
 	
 	
 	/**
-	 * symbol kind
+	 * 
+	 * @param type - type of symbol
 	 */
-	private Kind kind;
+	public void setType(Type type)
+	{
+		this.type = type;
+	}
+	
+	
+	public String getId()
+	{
+		return this.id;
+	}
+	
 }
