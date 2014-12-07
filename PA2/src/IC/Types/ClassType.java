@@ -1,12 +1,15 @@
 package IC.Types;
 
+import java.util.List;
+
 public class ClassType extends Type{
 	
 	
 	/**
 	 * super class type, optional
 	 */
-	private ClassType superClass;
+	private ClassType superClass=null;
+	private List<ClassType> superClassName_list=null;//for easy type evaluation
 	
 	/**
 	 * name of the class
@@ -22,17 +25,19 @@ public class ClassType extends Type{
 	{
 		this.className = className;
 		this.superClass = null;
+		this.superClassName_list = null;
 	}
 	/**
 	 * 
 	 * @param className - name of class
 	 * @param superClass - ClassType of superclass 
 	 */
-	public ClassType(String className, ClassType superClass)
+	public ClassType(String className, ClassType superClass,List<ClassType> superClassName_list)
 	{
 		
 		this(className);
 		this.superClass = superClass;
+		this.superClassName_list.addAll(superClassName_list);
 	}
 	
 	public boolean hasSuper()
@@ -66,4 +71,10 @@ public class ClassType extends Type{
 		}
 		return rep;
 	}
+	
+	public List<ClassType> getSuperClassName_list() {
+		return superClassName_list;
+	}
+	
+
 }

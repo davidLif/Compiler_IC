@@ -3,6 +3,7 @@
  */
 package IC.SymTables;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -28,7 +29,7 @@ public abstract class SymbolTable {
 	public SymbolTable(String id)
 	{
 		this.id = id;
-		entries = new HashMap<String, Symbol>();
+		entires = new HashMap<String, Symbol>();
 	}
 	
 }
