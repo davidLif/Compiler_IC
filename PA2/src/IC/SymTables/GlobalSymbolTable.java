@@ -13,6 +13,12 @@ public class GlobalSymbolTable extends SymbolTable{
 		return String.format("Global Symbol Table: %s", this.id);
 	}
 
+	@Override
+	public boolean resolveSymbol(Symbol sym) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 	
 	
 	

@@ -160,4 +160,14 @@ public abstract class SymbolTable {
 	{
 		this.parentSymbolTable = parent;
 	}
+	
+	
+	/**
+	 * 
+	 * @param sym - symbol to be resolved
+	 * @return true iff sym already exists in scope hierarchy, lookup by both kind and id
+	 */
+	
+	public abstract boolean resolveSymbol(Symbol sym);
+	
 }
