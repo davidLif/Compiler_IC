@@ -3,22 +3,41 @@ package IC.SymTables;
 import java.util.HashMap;
 import java.util.Map;
 
+import IC.SymTables.Symbols.FieldSymbol;
+import IC.SymTables.Symbols.MethodSymbol;
+import IC.SymTables.Symbols.StaticMethodSymbol;
+import IC.SymTables.Symbols.Symbol;
+import IC.SymTables.Symbols.VariableSymbol;
+import IC.SymTables.Symbols.VirtualMethodSymbol;
+
 public class ClassSymbolTable extends SymbolTable{
 
-	
+	/* more specific maps, allows us to handle static and instance scopes differently */
 	private Map<String, FieldSymbol> fieldSymbols;
 	private Map<String, StaticMethodSymbol> staticMethodSymbols;
 	private Map<String, VirtualMethodSymbol> virtualMethodSymbols;
 	
 	public ClassSymbolTable(String id) {
 		super(id);
-		fieldSymbols = new HashMap<String, FieldSymbol>();
-		staticMethodSymbols = new HashMap<String, StaticMethodSymbol>();
-		virtualMethodSymbols = new HashMap<String, VirtualMethodSymbol>();
+		/* init maps */
+		this.initMaps();
 	}
 
 	public ClassSymbolTable(String id, SymbolTable parentSymTable) {
 		super(id, parentSymTable);
+		/* init maps */
+		this.initMaps();
+		
+	}
+	
+	/**
+	 * initialize data structures
+	 */
+	private void initMaps()
+	{
+		fieldSymbols = new HashMap<String, FieldSymbol>();
+		staticMethodSymbols = new HashMap<String, StaticMethodSymbol>();
+		virtualMethodSymbols = new HashMap<String, VirtualMethodSymbol>();
 	}
 
 	@Override
@@ -30,6 +49,7 @@ public class ClassSymbolTable extends SymbolTable{
 	@Override
 	public void addSymbol(Symbol sym)
 	{
+		/* add the symbol to the generic collection of ids */
 		super.addSymbol(sym); 
 		
 		/* add it to a more specific list, for fast lookup and static/instance scoping */
@@ -47,39 +67,71 @@ public class ClassSymbolTable extends SymbolTable{
 		}
 	}
 
-	//@Override
-	public boolean resolveSymbol(Symbol sym) {
+
+
+	@Override
+	public boolean resolveVariable(String id) {
 		
-		/* we need to decide if sym is a variable or method symbol (virtual or static) */
+		/* it may only be a field */
+		if(this.fieldSymbols.containsKey(id))
+			return true;
 		
-		if(sym instanceof VariableSymbol)
-		{
-			// in our case, check if sym is a field
-			if(fieldSymbols.containsKey(sym.getId()))
-				return true;
-				
-		}
+		/* try parent symbol table */
+		return this.parentSymbolTable.resolveVariable(id);
+
+	}
+
+	@Override
+	public boolean resolveMethod(String id, boolean virtualMethod) {
 		
-		// else, sym is of instance method
-		if(sym instanceof VirtualMethodSymbol)
+		if(virtualMethod)
 		{
-			if(virtualMethodSymbols.containsKey(sym.getId()))
-				return true;
-			
-		}
-		else
-		{
-			// static method
-			if(staticMethodSymbols.containsKey(sym.getId()))
+			if(this.virtualMethodSymbols.containsKey(id))
 				return true;
 		}
 		
-		// try parent
-		/*if(this.parentSymbolTable.resolveSymbol(sym))
-			return true;*/
+		if( this.staticMethodSymbols.containsKey(id))
+			return true;
 		
-		return false;
+		/* otherwise, try parent symbol table */
+		return this.parentSymbolTable.resolveMethod(id, virtualMethod);
 		
+	}
+
+	@Override
+	public VariableSymbol getVariable(String id) {
+		/* may be only a field */
+		
+		return this.getField(id);
+		
+		
+	}
+
+	@Override
+	public MethodSymbol getMethod(String id) {
+		
+		if(this.staticMethodSymbols.containsKey(id))
+			return staticMethodSymbols.get(id);
+		if(this.virtualMethodSymbols.containsKey(id))
+			return virtualMethodSymbols.get(id);
+		
+		return this.parentSymbolTable.getMethod(id);
+	}
+
+	@Override
+	public boolean resolveField(String id) {
+		/* variable in a class may be only a field */
+		return this.resolveVariable(id);
+	}
+
+	@Override
+	public FieldSymbol getField(String id) {
+		
+		if(this.fieldSymbols.containsKey(id))
+			return fieldSymbols.get(id);
+		
+		/* fetch from parent table */
+		return this.parentSymbolTable.getField(id);
 	}
 
 	

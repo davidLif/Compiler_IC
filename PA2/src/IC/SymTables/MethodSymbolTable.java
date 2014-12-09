@@ -1,6 +1,8 @@
 package IC.SymTables;
 
-public class MethodSymbolTable extends SymbolTable{
+
+
+public class MethodSymbolTable extends VariableSymbolTable{
 
 	public MethodSymbolTable(String id) {
 		super(id);
@@ -13,11 +15,9 @@ public class MethodSymbolTable extends SymbolTable{
 		return String.format("Method Symbol Table: %s", this.id);
 	}
 
-	@Override
-	public boolean resolveSymbol(Symbol sym) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+	
+
+
 
 	
 	

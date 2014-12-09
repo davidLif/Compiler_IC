@@ -1,6 +1,7 @@
 package IC.AST;
 
 import IC.DataTypes;
+import IC.SemanticChecks.SemanticError;
 
 /**
  * Primitive data type AST node.
@@ -15,7 +16,7 @@ public class PrimitiveType extends Type {
 		return visitor.visit(this);
 	}
 	
-	public <D,U> U accept(PropagatingVisitor<D,U> v, D context){
+	public <D,U> U accept(PropagatingVisitor<D,U> v, D context) throws SemanticError{
 		
 		return v.visit(this, context);
 	}
@@ -35,9 +36,5 @@ public class PrimitiveType extends Type {
 
 	public String getName() {
 		return type.getDescription();
-	}
-	
-	public DataTypes getDataTypes(){
-		return type;
 	}
 }

@@ -1,5 +1,7 @@
 package IC.AST;
 
+import IC.SemanticChecks.SemanticError;
+
 /**
  * Variable reference AST node.
  * 
@@ -55,7 +57,7 @@ public class VariableLocation extends Location {
 		return name;
 	}
 	
-	public <D,U> U accept(PropagatingVisitor<D,U> v, D context){
+	public <D,U> U accept(PropagatingVisitor<D,U> v, D context) throws SemanticError{
 		
 		return v.visit(this, context);
 	}

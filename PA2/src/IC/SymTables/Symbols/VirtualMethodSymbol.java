@@ -1,4 +1,4 @@
-package IC.SymTables;
+package IC.SymTables.Symbols;
 
 public class VirtualMethodSymbol extends MethodSymbol{
 

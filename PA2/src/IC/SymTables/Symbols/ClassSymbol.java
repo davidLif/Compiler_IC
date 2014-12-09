@@ -1,4 +1,7 @@
-package IC.SymTables;
+package IC.SymTables.Symbols;
+
+import IC.SymTables.ClassSymbolTable;
+import IC.SymTables.SymbolTable;
 
 public class ClassSymbol extends Symbol {
 

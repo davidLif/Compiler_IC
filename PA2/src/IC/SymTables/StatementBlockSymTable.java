@@ -1,26 +1,26 @@
 package IC.SymTables;
 
-public class StatementBlockSymTable extends SymbolTable{
+
+public class StatementBlockSymTable extends VariableSymbolTable{
 
 	
+	
 	/**
-	 * id - the identifier of the wrapping method
+	 * 
+	 * constructor that infers the name of the statement block from the parent symbol table
+	 * @param parentSymbolTable
 	 */
-	public StatementBlockSymTable(String id) {
-		super("statement block in " + id);
+	public StatementBlockSymTable( SymbolTable parentSymbolTable) {
+		super("statement block in " + parentSymbolTable.getId(), parentSymbolTable);
 		
 	}
+	
 
 	@Override
 	protected String getSymbolTableHeader() {
 		return String.format("Statement Block Symbol Table ( located in %s )", this.parentSymbolTable.getId());
 	}
-	
-	@Override
-	public boolean resolveSymbol(Symbol sym) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-	
+
+
 
 }

@@ -2,6 +2,8 @@ package IC.AST;
 
 import java.util.List;
 
+import IC.SemanticChecks.SemanticError;
+
 /**
  * Root AST node for an IC program.
  * 
@@ -15,7 +17,7 @@ public class Program extends ASTNode {
 		return visitor.visit(this);
 	}
 	
-	public <D,U> U accept(PropagatingVisitor<D,U> v, D context){
+	public <D,U> U accept(PropagatingVisitor<D,U> v, D context) throws SemanticError{
 		
 		return v.visit(this, context);
 	}

@@ -1,4 +1,5 @@
-package IC.SymTables;
+package IC.SymTables.Symbols;
+
 
 public class FieldSymbol extends VariableSymbol{
 

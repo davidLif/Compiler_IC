@@ -1,4 +1,4 @@
-package IC.SymTables;
+package IC.SymTables.Symbols;
 
 public abstract class MethodSymbol extends Symbol{
 	

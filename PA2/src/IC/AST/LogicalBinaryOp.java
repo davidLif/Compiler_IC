@@ -1,6 +1,7 @@
 package IC.AST;
 
 import IC.BinaryOps;
+import IC.SemanticChecks.SemanticError;
 
 /**
  * Logical binary operation AST node.
@@ -14,7 +15,7 @@ public class LogicalBinaryOp extends BinaryOp {
 	}
 	
 	
-	public <D,U> U accept(PropagatingVisitor<D,U> v, D context){
+	public <D,U> U accept(PropagatingVisitor<D,U> v, D context) throws SemanticError{
 		
 		return v.visit(this, context);
 	}

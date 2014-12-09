@@ -2,6 +2,8 @@ package IC.AST;
 
 import java.util.List;
 
+import IC.SemanticChecks.SemanticError;
+
 /**
  * Static method AST node.
  * 
@@ -14,7 +16,7 @@ public class StaticMethod extends Method {
 	}
 	
 	
-	public <D,U> U accept(PropagatingVisitor<D,U> v, D context){
+	public <D,U> U accept(PropagatingVisitor<D,U> v, D context) throws SemanticError{
 		
 		return v.visit(this, context);
 	}

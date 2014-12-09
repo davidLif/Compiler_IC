@@ -1,4 +1,4 @@
-package IC.SymTables;
+package IC.SymTables.Symbols;
 
 import IC.Types.Type;
 

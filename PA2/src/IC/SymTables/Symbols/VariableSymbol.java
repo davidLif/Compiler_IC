@@ -1,4 +1,5 @@
-package IC.SymTables;
+package IC.SymTables.Symbols;
+
 
 public abstract class VariableSymbol extends Symbol{
 

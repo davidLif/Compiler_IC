@@ -9,16 +9,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import IC.SymTables.Symbols.FieldSymbol;
+import IC.SymTables.Symbols.MethodSymbol;
+import IC.SymTables.Symbols.Symbol;
+import IC.SymTables.Symbols.VariableSymbol;
+
 /**
  * @author Denis
  *
  */
 public abstract class SymbolTable {
 
+	
 	/**
-	 * maps from identifiers to corresponding table entries
+	 * maps from identifiers to corresponding table entries.
+	 * a string key is sufficient, since all symbols must have different ids in this symbol table
 	 */
 	protected Map<String, Symbol> entries;  
+	
 	/**
 	 * name of the scope (name of class, method, .. )
 	 */
@@ -37,25 +45,19 @@ public abstract class SymbolTable {
 	public SymbolTable(String id)
 	{
 		this.id = id;
-		entries = new HashMap<String, Symbol>();
 		childrenTables = new ArrayList<SymbolTable>();
 		this.parentSymbolTable = null;
+		entries = new HashMap<String, Symbol>();
 	}
 	
 	public SymbolTable(String id, SymbolTable parentSymbolTable)
 	{
 		this(id);
 		this.parentSymbolTable = parentSymbolTable;
+		entries = new HashMap<String, Symbol>();
 	}
 	
-	/**
-	 * method adds given symbol to the table
-	 * @param sym
-	 */
-	public void addSymbol(Symbol sym)
-	{
-		entries.put(sym.id, sym);
-	}
+
 	
 	/**
 	 * this method searches the CURRENT scope for the given identifier
@@ -69,9 +71,9 @@ public abstract class SymbolTable {
 	}
 	
 	/**
-	 * this method returns a symbol from the SymbolTable, or its parents, whatever is found first
+	 * this method returns a symbol from the SymbolTable (local scope only). Lookup is done only by string id
 	 * @param id - id of the symbol
-	 * @return symbol
+	 * @return symbol if such a symbol exists, else returns null
 	 */
 	
 	public Symbol getSymbol(String id)
@@ -80,8 +82,18 @@ public abstract class SymbolTable {
 		{
 			return this.entries.get(id);
 		}
-		// not found locally, fetch from parent scopes
-		return this.parentSymbolTable.getSymbol(id);
+		return null;
+		
+	}
+	
+	
+	/**
+	 * add new symbol to local scope, key is string id
+	 * @param sym
+	 */
+	public void addSymbol(Symbol sym)
+	{
+		this.entries.put(sym.getId(), sym);
 	}
 	
 	/**
@@ -98,14 +110,14 @@ public abstract class SymbolTable {
 	{
 		StringBuilder sb = new StringBuilder();
 		/* add title */
-		sb.append(this.getSymbolTableHeader());
+		sb.append(this.getSymbolTableHeader() + "\n");
 		/* add body */
 		for(Symbol sym : this.entries.values())
 		{
-			sb.append("\t" + sym.toString());
+			sb.append("\t" + sym.toString() + "\n");
 		}
 		/* add footer */
-		sb.append("Children tables: ");
+		sb.append("Children tables: \n");
 		
 		for(int i = 0; i < this.childrenTables.size(); ++i)
 		{
@@ -114,6 +126,17 @@ public abstract class SymbolTable {
 			if( i  < childrenTables.size() - 1)
 			{
 				sb.append(",");
+			}
+		}
+		
+		for(int i = 0; i < this.childrenTables.size(); ++i)
+		{
+			sb.append("\n");
+			//sb.append(childrenTables.get(i).toString());
+			// not last child
+			if( i  < childrenTables.size() - 1)
+			{
+				sb.append("\n");
 			}
 		}
 		
@@ -163,11 +186,55 @@ public abstract class SymbolTable {
 	
 	
 	/**
+	 * method returns true iff the symbol table or its parents contain a VariableSymbol named id (may be a field, parameter or local variable)
 	 * 
-	 * @param sym - symbol to be resolved
-	 * @return true iff sym already exists in scope hierarchy, lookup by both kind and id
+	 * @param id - id of variable to resolve
+	 * @return
+	 */
+	public abstract boolean resolveVariable(String id);
+	
+	/**
+	 * Return variable with given id, according to the specific logic of the current symbol table
+	 * @param id - variable name
+	 * @return the desired variable, or null if not found
 	 */
 	
-	public abstract boolean resolveSymbol(Symbol sym);
+	
+	
+	public abstract VariableSymbol getVariable(String id);
+	
+	
+	/**
+	 * method returns true iff the symbol table or its parents contain a MethodSymbol with given id, and its scope matched virtualMethod
+	 * @param id - id of the method you're looking for
+	 * @param virtualMethod - set true if you're looking for a virtual method, otherwise, set false
+	 * @return
+	 */
+	
+	public abstract boolean resolveMethod(String id, boolean virtualMethod);
+	
+	/**
+	 * Return method with given id, according to the specific logic of the current symbol table
+	 * @param id - method name
+	 * @return the desired method, or null if not found
+	 */
+	
+	public abstract MethodSymbol getMethod(String id);
+	
+	/**
+	 * 
+	 * @param id - name of field
+	 * @return true iff the table symbol or its parents contain a field named id
+	 */
+	public abstract boolean resolveField(String id);
+	
+	/**
+	 * Return field with given id, according to the specific logic of the current symbol table
+	 * @param id - field name
+	 * @return the desired field, or null if not found
+	 */
+	
+	public abstract FieldSymbol getField(String id);
+
 	
 }

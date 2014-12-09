@@ -1,5 +1,7 @@
 package IC.AST;
 
+import IC.SemanticChecks.SemanticError;
+
 /**
  * Continue statement AST node.
  * 
@@ -10,7 +12,7 @@ public class Continue extends Statement {
 	public Object accept(Visitor visitor) {
 		return visitor.visit(this);
 	}
-	public <D,U> U accept(PropagatingVisitor<D,U> v, D context){
+	public <D,U> U accept(PropagatingVisitor<D,U> v, D context) throws SemanticError{
 		
 		return v.visit(this, context);
 	}

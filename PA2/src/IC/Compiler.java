@@ -8,7 +8,7 @@ import java.util.List;
 
 
 import java_cup.runtime.Symbol;
-
+import IC.SymTables.*;
 
 /**
  * @team pooyae <pooyae@mail.tau.ac.il>
@@ -102,7 +102,15 @@ public class Compiler {
 				
 				/* otherwise, everything went smooth, print the program's AST */
 				System.out.println(String.format("Parsed %s successfully!", args[0]));
-				System.out.println(str_prog);
+				//System.out.println(str_prog);
+				
+				SymbolTableBuilder symTableBuilder = new SymbolTableBuilder();
+				
+				SymbolTable tbl = symTableBuilder.createGlobalSymbolTable(prog, args[0]);
+				
+				System.out.println(tbl);
+				
+				
 				
 				
 				
@@ -132,8 +140,10 @@ public class Compiler {
 					/* syntax errors found */
 					PrintSyntaxErrors();
 				}
-				else
+				else{
 					System.err.println( e.getMessage());
+					System.err.println( e.getStackTrace());
+				}
 				
 			}
 			

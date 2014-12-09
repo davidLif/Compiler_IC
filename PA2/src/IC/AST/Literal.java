@@ -1,6 +1,7 @@
 package IC.AST;
 
 import IC.LiteralTypes;
+import IC.SemanticChecks.SemanticError;
 
 /**
  * Literal value AST node.
@@ -17,7 +18,7 @@ public class Literal extends Expression {
 		return visitor.visit(this);
 	}
 	
-	public <D,U> U accept(PropagatingVisitor<D,U> v, D context){
+	public <D,U> U accept(PropagatingVisitor<D,U> v, D context) throws SemanticError{
 		
 		return v.visit(this, context);
 	}
