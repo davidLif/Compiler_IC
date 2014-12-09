@@ -89,7 +89,7 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 		globalSymbolTable.addSymbol(classSym);
 		
 		// link AST node to globalSymbolTable
-		icClass.setEnclosingScope(globalSymbolTable);
+		//icClass.setEnclosingScope(globalSymbolTable);
 		
 		
 		/* we need to fill current class's symbol table that was given to us */
@@ -99,7 +99,7 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 		for(Field field : fields)
 		{
 			// link scope to AST node
-			field.setEnclosingScope(classSymTable);
+			//field.setEnclosingScope(classSymTable);
 			
 			// check that the field was not defined in current scope
 			if(classSymTable.containsLocally(field.getName()))
@@ -117,7 +117,7 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 		for(Method method : methods)
 		{
 			// link scope to AST node
-			method.setEnclosingScope(classSymTable);
+			//method.setEnclosingScope(classSymTable);
 			
 			// check that method was not defined before (in current scope)
 			if(classSymTable.containsLocally(method.getName()))
@@ -164,7 +164,7 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 				}
 					
 				// link AST
-				formal.setEnclosingScope(methodSymTable);
+				//formal.setEnclosingScope(methodSymTable);
 				// add proper symbol to scope
 				formal.accept(this, methodSymTable);
 		}
@@ -177,7 +177,7 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 		for(Statement statement : statements)
 		{
 			/* link AST to method scope */
-			statement.setEnclosingScope(methodSymTable);
+			//statement.setEnclosingScope(methodSymTable);
 			
 			/* maybe get another sub scope */
 			SymbolTable statementSymTable = statement.accept(this, methodSymTable);

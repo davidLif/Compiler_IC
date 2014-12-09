@@ -48,4 +48,14 @@ public class MethodType extends Type{
 		return sb.toString();
 	}
 
+	public boolean formals_compare(List<Type> to_compare){
+		if (to_compare.size() != arguments.size()){
+			return false;
+		}
+		for (int i=0;i< arguments.size();i++){
+			if (!type_compare(to_compare.get(i),arguments.get(i))) return false;
+		}
+		return true;
+	}
+
 }

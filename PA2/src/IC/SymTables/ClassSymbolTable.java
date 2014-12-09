@@ -47,7 +47,7 @@ public class ClassSymbolTable extends SymbolTable{
 		}
 	}
 
-	@Override
+	//@Override
 	public boolean resolveSymbol(Symbol sym) {
 		
 		/* we need to decide if sym is a variable or method symbol (virtual or static) */
@@ -75,8 +75,8 @@ public class ClassSymbolTable extends SymbolTable{
 		}
 		
 		// try parent
-		if(this.parentSymbolTable.resolveSymbol(sym))
-			return true;
+		/*if(this.parentSymbolTable.resolveSymbol(sym))
+			return true;*/
 		
 		return false;
 		

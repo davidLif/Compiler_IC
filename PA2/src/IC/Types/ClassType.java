@@ -1,5 +1,6 @@
 package IC.Types;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ClassType extends Type{
@@ -25,7 +26,7 @@ public class ClassType extends Type{
 	{
 		this.className = className;
 		this.superClass = null;
-		this.superClassName_list = null;
+		this.superClassName_list = new ArrayList<ClassType>();
 	}
 	/**
 	 * 

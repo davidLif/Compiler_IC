@@ -16,5 +16,11 @@ public class StatementBlockSymTable extends SymbolTable{
 		return String.format("Statement Block Symbol Table ( located in %s )", this.parentSymbolTable.getId());
 	}
 	
+	@Override
+	public boolean resolveSymbol(Symbol sym) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
 
 }
