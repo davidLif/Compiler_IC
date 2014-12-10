@@ -1,4 +1,4 @@
-package IC.SymTables;
+package IC.SemanticChecks;
 import java.util.List;
 
 import IC.AST.*;
@@ -13,19 +13,19 @@ import IC.SemanticChecks.SemanticError;
 
 
 
-public class loopSemanticChecks implements  PropagatingVisitor<boolean, Object>  throws SemanticError {
+public class loopSemanticChecks implements  PropagatingVisitor<Object, Boolean>  {
 
-
-//	boolean inside_for_or_while_loop = false;
 	
-	public boolean check(Program program) throws SemanticError
+	
+	
+	public Boolean check(Program program) throws SemanticError
 	{
-		return program.accept(this);	
+		return program.accept(this, null);	
 	}
 	
+	
 	@Override
-	public boolean visit(Program program, Object object) throws SemanticError 
-	{	
+	public Boolean visit(Program program, Object context) throws SemanticError {
 		/* iterate over the classes in the program */
 		List<ICClass> classList = program.getClasses();
 		boolean rc;
@@ -39,16 +39,13 @@ public class loopSemanticChecks implements  PropagatingVisitor<boolean, Object> 
 		return true;
 	}
 
-
 	@Override
-	public boolean visit(ICClass icClass, Object object) throws SemanticError 
-	{
-		
+	public Boolean visit(ICClass icClass, Object context) throws SemanticError {
 		List<Method> methods = icClass.getMethods();
 		boolean rc;
 		for(Method method : methods)
 		{
-			rc = SymbolTable methodSymTable =  method.accept(this, null);
+			rc = method.accept(this, null);
 			if ( rc == false)
 				return false;
 		}
@@ -57,123 +54,105 @@ public class loopSemanticChecks implements  PropagatingVisitor<boolean, Object> 
 	}
 
 	@Override
-	public boolean visit(Field field,Object object) throws SemanticError  {
-		
-		
-		return true;
-	}
-	
-	@Override
-	public boolean visit(VirtualMethod method, Object object) throws SemanticError {
-		
-		return true;
+	public Boolean visit(Field field, Object context) throws SemanticError {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public boolean visit(StaticMethod method, Object object) throws SemanticError {
-		
-		return true;
+	public Boolean visit(VirtualMethod method, Object context)
+			throws SemanticError {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public boolean visit(LibraryMethod method, Object object) throws SemanticError {
-		
-		return true;
+	public Boolean visit(StaticMethod method, Object context)
+			throws SemanticError {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public boolean visit(Formal formal, Object object){
-		
-		return true;
+	public Boolean visit(LibraryMethod method, Object context)
+			throws SemanticError {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public boolean visit(PrimitiveType type,Object object) {
-		
-		// nothing to do
-		return true;
+	public Boolean visit(Formal formal, Object context) throws SemanticError {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public boolean visit(UserType type, Object object) {
-		// nothing to do
-		return true;
+	public Boolean visit(PrimitiveType type, Object context)
+			throws SemanticError {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public boolean visit(Assignment assignment, Object object) {
-		// nothing to do
-		return true;
+	public Boolean visit(UserType type, Object context) throws SemanticError {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public boolean visit(CallStatement callStatement, Object object) {
-		// nothing to do
-		// call statements will be handled in later phases
-		return true;
+	public Boolean visit(Assignment assignment, Object context)
+			throws SemanticError {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public boolean visit(Return returnStatement,Object object){
-		// nothing to do
-		return true;
+	public Boolean visit(CallStatement callStatement, Object context)
+			throws SemanticError {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public boolean visit(If ifStatement, Object object) {
-		// nothing to do
-		return true;
+	public Boolean visit(Return returnStatement, Object context)
+			throws SemanticError {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public boolean visit(While whileStatement, Object object) {
+	public Boolean visit(If ifStatement, Object context) throws SemanticError {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Boolean visit(While whileStatement, Object context)
+			throws SemanticError {
 		/* we are in a while loop - thus the visit of a brek statement is valid */
 		return true;
 	}
 
 	@Override
-	public boolean visit(Break breakStatement, Object object){
-		/*
-		if( inside_for_or_while_loop == false)
-		{
-			String err_msg = "Found a break not inside a loop statement";
-			throw new SemanticError(breakStatement.getLine(), err_msg);
-			return false;
-		}
-		else
-		{
-			return true;
-		}
-		*/
+	public Boolean visit(Break breakStatement, Object context)
+			throws SemanticError {
 		/* we couldn't arrive here from a while loop becuase we cut the recursion there */
 		String err_msg = "Found a break not inside a loop statement";
 		throw new SemanticError(breakStatement.getLine(), err_msg);
-		return false;
+		
 	}
 
 	@Override
-	public boolean visit(Continue continueStatement, Object object) {
-		
-		
-		/*if( inside_for_or_while_loop == false)
-		{
-			String err_msg = "Found a break not inside a loop statement";
-			throw new SemanticError(continueStatement.getLine(), err_msg);
-			return false;
-		}
-		else
-		{
-			return true;
-		}
-		*/
+	public Boolean visit(Continue continueStatement, Object context)
+			throws SemanticError {
+	
 		String err_msg = "Found a break not inside a loop statement";
 		throw new SemanticError(continueStatement.getLine(), err_msg);
-		return false;
 	}
 
 	@Override
-	public boolean visit(StatementsBlock statementsBlock, Object object) throws SemanticError {
-		
+	public Boolean visit(StatementsBlock statementsBlock, Object context)
+			throws SemanticError {
 		 List<Statement> stList = statementsBlock.getStatements();
 		 for ( Statement st: stList)
 		 {
@@ -184,97 +163,104 @@ public class loopSemanticChecks implements  PropagatingVisitor<boolean, Object> 
 	}
 
 	@Override
-	public boolean visit(LocalVariable localVariable, Object object) throws SemanticError {
-		
-		
-		return true;
+	public Boolean visit(LocalVariable localVariable, Object context)
+			throws SemanticError {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public boolean visit(VariableLocation location, Object object) throws SemanticError {
-	
-		return true;;
+	public Boolean visit(VariableLocation location, Object context)
+			throws SemanticError {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public boolean visit(ArrayLocation location,Object object) {
-		
-		// nothing to do
-		return true;
+	public Boolean visit(ArrayLocation location, Object context)
+			throws SemanticError {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public boolean visit(StaticCall call, Object object) {
-		// calls are handled in later phases
-		return true;
+	public Boolean visit(StaticCall call, Object context) throws SemanticError {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public boolean visit(VirtualCall call, Object object) {
-		// calls are handled in later phases
-		return true;
+	public Boolean visit(VirtualCall call, Object context) throws SemanticError {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public boolean visit(This thisExpression,Object object){
-		// nothing to do
-		return true;
+	public Boolean visit(This thisExpression, Object context)
+			throws SemanticError {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public boolean visit(NewClass newClass, Object object) {
-		// nothing to do
-		return true;
+	public Boolean visit(NewClass newClass, Object context)
+			throws SemanticError {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public boolean visit(NewArray newArray, Object object) {
-		// nothing to do
-		return true;
+	public Boolean visit(NewArray newArray, Object context)
+			throws SemanticError {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public boolean visit(Length length, Object object) {
-		// nothing to do
-		return true;
+	public Boolean visit(Length length, Object context) throws SemanticError {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public boolean visit(MathBinaryOp binaryOp, Object object){
-		// nothing to do
-		return true;
+	public Boolean visit(MathBinaryOp binaryOp, Object context)
+			throws SemanticError {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public boolean visit(LogicalBinaryOp binaryOp,Object object) {
-		// nothing to do
-		return true;
+	public Boolean visit(LogicalBinaryOp binaryOp, Object context)
+			throws SemanticError {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public boolean visit(MathUnaryOp unaryOp, Object object) {
-		// nothing to doub
-		return true;
+	public Boolean visit(MathUnaryOp unaryOp, Object context)
+			throws SemanticError {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public boolean visit(LogicalUnaryOp unaryOp, Object object) {
-		// nothing to do
-		return true;
+	public Boolean visit(LogicalUnaryOp unaryOp, Object context)
+			throws SemanticError {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public boolean visit(Literal literal, Object object) {
-		return true;
+	public Boolean visit(Literal literal, Object context) throws SemanticError {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public boolean visit(ExpressionBlock expressionBlock,
-			Object object)) {
-		// nothing to do
-		return true;
+	public Boolean visit(ExpressionBlock expressionBlock, Object context)
+			throws SemanticError {
+		// TODO Auto-generated method stub
+		return null;
 	}
-	
-	
 
 }
