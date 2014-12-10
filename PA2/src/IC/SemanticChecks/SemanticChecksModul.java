@@ -13,10 +13,12 @@ import IC.SemanticChecks.SemanticError;
 
 
 
-public class loopSemanticChecks implements  PropagatingVisitor<Object, Boolean>  {
+public class SemanticChecksModul implements  PropagatingVisitor<Object, Boolean>  {
 
 	
-	
+	boolean inside_for_or_while_loop = false;
+	boolean inside_virtual_function = false;
+	int how_many_main_functions_found = 0;
 	
 	public Boolean check(Program program) throws SemanticError
 	{
@@ -62,22 +64,66 @@ public class loopSemanticChecks implements  PropagatingVisitor<Object, Boolean> 
 	@Override
 	public Boolean visit(VirtualMethod method, Object context)
 			throws SemanticError {
-		// TODO Auto-generated method stub
+		
+		/* checking that it's not a main function */
+		if ( method.getName().equals("main"))
+		{
+			String err_msg = "Found a non static main method";
+			throw new SemanticError(method.getLine(), err_msg);
+		}
+		
+		inside_virtual_function = true;
+		method.accept(this,null);
+		inside_virtual_function = false;
 		return null;
 	}
 
 	@Override
 	public Boolean visit(StaticMethod method, Object context)
 			throws SemanticError {
-		// TODO Auto-generated method stub
-		return null;
+
+		String methodName = method.getName();
+		List<Formal> params;
+		params = method.getFormals();
+		if ( methodName.equals("Main"))
+		{
+			/* checking that it's a real main function */
+			boolean fail = false;
+			how_many_main_functions_found++;
+			if( how_many_main_functions_found > 1)
+			{
+				fail = true;
+			}
+			/*if ( method.getType() != "VOID" )  denis how should I check it! 
+			{
+				fail = true;
+			}
+		
+			if( params.length != 1 && params.get(0).getType() = "string array")
+			{
+				fail = true;
+			}
+			*/
+			
+			if (fail == true)
+			{
+				String err_msg = "Main function is not in the corect signature";
+				throw new SemanticError(method.getLine(), err_msg);
+			}
+			 
+		}
+		
+		
+		method.accept(this,null);
+		return true;
 	}
 
 	@Override
 	public Boolean visit(LibraryMethod method, Object context)
 			throws SemanticError {
 		// TODO Auto-generated method stub
-		return null;
+		method.accept(this,null);
+		return true;
 	}
 
 	@Override
@@ -129,25 +175,41 @@ public class loopSemanticChecks implements  PropagatingVisitor<Object, Boolean> 
 	@Override
 	public Boolean visit(While whileStatement, Object context)
 			throws SemanticError {
-		/* we are in a while loop - thus the visit of a brek statement is valid */
+		/* we are in a while loop - thus the visit of a break statement is valid */
+		Statement st = whileStatement.getOperation();
+		inside_for_or_while_loop = true;
+		st.accept(this, null);
+		inside_for_or_while_loop = false;
 		return true;
 	}
 
 	@Override
 	public Boolean visit(Break breakStatement, Object context)
 			throws SemanticError {
-		/* we couldn't arrive here from a while loop becuase we cut the recursion there */
-		String err_msg = "Found a break not inside a loop statement";
-		throw new SemanticError(breakStatement.getLine(), err_msg);
+		if( inside_for_or_while_loop == false)
+		{
+			String err_msg = "Found a break not inside a loop statement";
+			throw new SemanticError(breakStatement.getLine(), err_msg);
+		}
+		else
+		{
+			return true;
+		}
 		
 	}
 
 	@Override
 	public Boolean visit(Continue continueStatement, Object context)
 			throws SemanticError {
-	
-		String err_msg = "Found a break not inside a loop statement";
-		throw new SemanticError(continueStatement.getLine(), err_msg);
+		if( inside_for_or_while_loop == false)
+		{
+			String err_msg = "Found a break not inside a loop statement";
+			throw new SemanticError(continueStatement.getLine(), err_msg);
+		}
+		else
+		{
+			return true;
+		}
 	}
 
 	@Override
@@ -158,7 +220,6 @@ public class loopSemanticChecks implements  PropagatingVisitor<Object, Boolean> 
 		 {
 			 st.accept(this, null);
 		 }
-		
 		return true;
 	}
 
@@ -198,8 +259,16 @@ public class loopSemanticChecks implements  PropagatingVisitor<Object, Boolean> 
 	@Override
 	public Boolean visit(This thisExpression, Object context)
 			throws SemanticError {
-		// TODO Auto-generated method stub
-		return null;
+		if( inside_virtual_function == false)
+		{
+			String err_msg = "Found a this not inside a virtual method";
+			throw new SemanticError(thisExpression .getLine(), err_msg);
+		}
+		else
+		{
+			return true;
+		}
+	
 	}
 
 	@Override
