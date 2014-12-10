@@ -57,6 +57,32 @@ public abstract class SymbolTable {
 		entries = new HashMap<String, Symbol>();
 	}
 	
+	
+	/**
+	 * method returns the list of childern symbol tables of current symbol table
+	 * @return
+	 */
+	public List<SymbolTable> getChildrenTables()
+	{
+		return this.getChildrenTables();
+	}
+	
+	
+	/**
+	 *  this method returns a child symbol table with given id
+	 *  if no such child is found, null is returned.
+	 */
+	public SymbolTable getChildSymbolTableById(String id)
+	{
+		for(int i = 0; i < this.childrenTables.size(); i ++)
+		{
+			if ( childrenTables.get(i).getId().equals(id) )
+				return childrenTables.get(i);
+		}
+		
+		return null;
+	}
+	
 
 	
 	/**
