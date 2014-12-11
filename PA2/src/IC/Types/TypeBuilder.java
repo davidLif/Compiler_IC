@@ -36,136 +36,85 @@ import IC.AST.VariableLocation;
 import IC.AST.VirtualCall;
 import IC.AST.VirtualMethod;
 import IC.AST.While;
-import IC.SymTables.ClassSymbol;
+import IC.SemanticChecks.SemanticError;
 import IC.SymTables.ClassSymbolTable;
-import IC.SymTables.FieldSymbol;
 import IC.SymTables.SymbolTable;
-import IC.SymTables.VirtualMethodSymbol;
+import IC.SymTables.Symbols.ClassSymbol;
+import IC.SymTables.Symbols.FieldSymbol;
+import IC.SymTables.Symbols.Symbol;
 
 
 public class TypeBuilder implements PropagatingVisitor<SymbolTable, Type> {
 	
 	//This TypeTable will be used to fetch the Type that should be given to the symbols
-	public TypeTable pastSeenTypes;
 
-	public TypeBuilder(TypeTable typeTable) {
-		pastSeenTypes = typeTable;
-	}
 
 	//ASSUMPTION - context should be a GlobalSymbolTable instance
 	@Override
-	public Type visit(Program program, SymbolTable context) {
-		//move over all classes and give there corresponding tables.
+	public Type visit(Program program, SymbolTable context) throws SemanticError {
+		//move over all classes
 		for (ICClass program_class : program.getClasses()){
-			//Let's Hope this will work- may cause troble
-			
-			//get class symbol out of GlobalSymbolTable
-			ClassSymbol class_symbol = (ClassSymbol)context.getSymbol(program_class.getName());
-			//get SymbolTable from class symbol
-			ClassSymbolTable class_context = (ClassSymbolTable) class_symbol.getClassSymbolTable();
-			//calc class type
-			Type class_type = program_class.accept(this, class_context);
-			//set class type
-			class_symbol.setType(class_type);
-			
+			//travel into the class
+			program_class.accept(this, context.getChildSymbolTableById(program_class.getName()));
 		}
 		return null;//there is no type for Program
 	}
 
 	@Override
-	public Type visit(ICClass icClass, SymbolTable context) {
-		//Symbol Table for class should be ClassSymbolTable
-		ClassSymbolTable class_context = (ClassSymbolTable) context;
-		
-		//move over all fields and calculate.
-		for (Field class_field : icClass.getFields()) {
-			//calc type for field
-			Type field_type  = class_field.accept(this, null);
-			//get field symbol
-			FieldSymbol field_symbol = (FieldSymbol) class_context.getSymbol(class_field.getName());
-			//set type
-			field_symbol.setType(field_type);
-		}
-		
-		//move over all methods and give there corresponding tables.
-		//add method types to symbol table now- in order to do lookup in case of future reference(like a() before we saw def)
-		for (Method class_method : icClass.getMethods()) {
-			//calc type for field
-			Type method_type  = pastSeenTypes.getMethodTypeFromMap(class_method);
-			//get field symbol
-			FieldSymbol field_symbol = (FieldSymbol) class_context.getSymbol(class_method.getName());
-			//set type
-			field_symbol.setType(method_type);
-		}
+	public Type visit(ICClass icClass, SymbolTable context) throws SemanticError {
 		
 		//now travel into each method
 		for (Method class_method : icClass.getMethods()) {
-			//TODO- get proper SymbolTable for each method 
-			class_method.accept(this, null);//THIS WILL NOT WORK ON PORPES 
+			class_method.accept(this, context.getChildSymbolTableById(class_method.getName())); 
 		}
 		
-		return pastSeenTypes.type_map_class.get(icClass.getName());
+		return null;
 	}
 
 	@Override
-	public Type visit(Field field, SymbolTable context) {
+	public Type visit(Field field, SymbolTable context) throws SemanticError {
 		return field.getType().accept(this, null);
 	}
 
 	//ASSUMPTION - context should be according to table. Might do junk if it is not so.
 	@Override
-	public Type visit(VirtualMethod method, SymbolTable context) {
+	public Type visit(VirtualMethod method, SymbolTable context) throws SemanticError {
 		return static_or_virtual_visit(method, context);
 	}
 
 	//ASSUMPTION - context should be according to table. Might do junk if it is not so.
 	@Override
-	public Type visit(StaticMethod method, SymbolTable context) {
+	public Type visit(StaticMethod method, SymbolTable context) throws SemanticError {
 		return static_or_virtual_visit(method, context);
 	}
 
 	@Override
-	public Type visit(LibraryMethod method, SymbolTable context) {
+	public Type visit(LibraryMethod method, SymbolTable context) throws SemanticError {
 		//library method should not contain anything
-		return pastSeenTypes.getMethodTypeFromMap(method);
+		//return pastSeenTypes.getMethodTypeFromMap(method);
+		return null;
 	}
 
 	@Override
-	public Type visit(Formal formal, SymbolTable context) {
+	public Type visit(Formal formal, SymbolTable context) throws SemanticError {
 		return formal.getType().accept(this,context);//formals type is according to it's definition
 	}
 
 	@Override
 	public Type visit(PrimitiveType type, SymbolTable context) {
-		IC.Types.Type nodeType= null;
-		if (type.getDimension() == 0){
-			//we already entered into the table all primitive types
-			nodeType= pastSeenTypes.type_map_primitive.get(type.getDataTypes());
-		}
-		else{
-			//add new type of array if needed. Get anyway the Type
-			nodeType = pastSeenTypes.addArrayType_primitive(type.getDataTypes(),type.getDimension());
-		}
-		return nodeType;
+		//no type errors in PrimitiveType node
+		return null;
 	}
 
 	//ASSAMPTION-User type can only be class or array of class
 	@Override
 	public Type visit(UserType type, SymbolTable context) {
-		IC.Types.Type nodeType= null;
-		if (type.getDimension() == 0){
-			//we already entered into the table all primitive types
-			nodeType= pastSeenTypes.type_map_class.get(type.getName());
-		}
-		else{
-			//add new type of array if needed. Get anyway the Type
-			nodeType = pastSeenTypes.addArrayType_class(type.getName(),type.getDimension());
-		}
-		return nodeType;
+		//no type errors in UserType node
+		return null;
 	}
 
 	@Override
-	public Type visit(Assignment assignment, SymbolTable context) {
+	public Type visit(Assignment assignment, SymbolTable context) throws SemanticError {
 		//get right side type
 		Type exp_type = assignment.getAssignment().accept(this, context);
 		//get left side type
@@ -185,30 +134,30 @@ public class TypeBuilder implements PropagatingVisitor<SymbolTable, Type> {
 	}
 
 	@Override
-	public Type visit(Return returnStatement, SymbolTable context) {
+	public Type visit(Return returnStatement, SymbolTable context) throws SemanticError {
 		return returnStatement.getValue().accept(this, context);//return stmt type is the type which he returns
 	}
 
 	@Override
-	public Type visit(If ifStatement, SymbolTable context) {
+	public Type visit(If ifStatement, SymbolTable context) throws SemanticError {
 		//get condition type
 		Type cond=ifStatement.getCondition().accept(null, context);
 		//condition type must be boolean
-		if (IC.Types.Type.type_compare(cond, pastSeenTypes.type_map_primitive.get(DataTypes.BOOLEAN))){
+		//if (IC.Types.Type.type_compare(cond, pastSeenTypes.type_map_primitive.get(DataTypes.BOOLEAN))){
 			//TODO -throw error
-		}
+		//}
 		//else - all is fine
 		return null;//if has no type
 	}
 
 	@Override
-	public Type visit(While whileStatement, SymbolTable context) {
+	public Type visit(While whileStatement, SymbolTable context) throws SemanticError {
 		//get condition type
 		Type cond=whileStatement.getCondition().accept(null, context);
 		//condition type must be boolean
-		if (IC.Types.Type.type_compare(cond, pastSeenTypes.type_map_primitive.get(DataTypes.BOOLEAN))){
+		//if (IC.Types.Type.type_compare(cond, pastSeenTypes.type_map_primitive.get(DataTypes.BOOLEAN))){
 			//TODO -throw error
-		}
+		//}
 		//else - all is fine
 		return null;//while has no type
 	}
@@ -309,7 +258,8 @@ public class TypeBuilder implements PropagatingVisitor<SymbolTable, Type> {
 	@Override
 	public Type visit(Literal literal, SymbolTable context) {
 		//for literal always return string
-		return pastSeenTypes.type_map_primitive.get(DataTypes.STRING);
+		//return pastSeenTypes.type_map_primitive.get(DataTypes.STRING);
+		return null;
 	}
 
 	@Override
@@ -319,7 +269,7 @@ public class TypeBuilder implements PropagatingVisitor<SymbolTable, Type> {
 	}
 	
 	//both virtual and static visits act the same.Only the context differ.
-	private Type static_or_virtual_visit(Method method,SymbolTable context) {
+	private Type static_or_virtual_visit(Method method,SymbolTable context) throws SemanticError {
 		boolean is_there_return = false;
 		//calc all formal types
 		for (Formal method_argument :method.getFormals()){
@@ -342,13 +292,14 @@ public class TypeBuilder implements PropagatingVisitor<SymbolTable, Type> {
 		}
 		
 		//if not void return type - return stmt must be
-		if (!is_there_return 
+		/*if (!is_there_return 
 			&& IC.Types.Type.type_compare(ret_type, pastSeenTypes.type_map_primitive.get(DataTypes.VOID)))
 		{
 			//TODO-throw error
-		}
+		}*/
 		
-		return pastSeenTypes.getMethodTypeFromMap(method);
+		//return pastSeenTypes.getMethodTypeFromMap(method);
+		return null;
 	}
 	
 

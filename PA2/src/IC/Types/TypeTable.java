@@ -10,11 +10,13 @@ import IC.AST.Formal;
 import IC.AST.ICClass;
 import IC.AST.Method;
 import IC.AST.Program;
+import IC.SemanticChecks.SemanticError;
+import IC.SymTables.SymbolTable;
 
 public class TypeTable {
 
 	public Map<String ,ClassType> type_map_class;
-	public Map<Type, List <MethodType>> type_map_method;//change Int later
+	public Map<Type, List <MethodType>> type_map_method;
 	public Map<DataTypes, PrimitiveType> type_map_primitive;
 	public Map<DataTypes, Map <Integer, ArrayType>> type_map_arrays_primitive;
 	public Map<String, Map <Integer, ArrayType>> type_map_arrays_class;
@@ -35,7 +37,7 @@ public class TypeTable {
 	}
 	
 	/* ASSUMPTION - there are no "recursive type definitions*/
-	public TypeTable(Program prog,Program lib)
+	public TypeTable(Program prog,Program lib,SymbolTable symbol_table)
 	{
 		type_map_class = new HashMap<String, ClassType>();
 		type_map_method = new HashMap<Type, List <MethodType>>();
@@ -45,14 +47,17 @@ public class TypeTable {
 		/* put primitive types to collection */
 		addPrimitiveTypes();
 		
+		SymbolSetter test = new SymbolSetter(this);
+		try {
+			prog.accept(test, symbol_table);
+		} catch (SemanticError e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		//TODO-should add library class and methods here to the Type table.
 		
-		/* We  should calculate all possible ClassTypes first, for a method may has as return type
-		 *  a class parameter, which may be defined later in the code.*/
-		addClassTypes(prog);
-		//Calculate the method types- WARNING: this require part types evaluation of the tree 
-		addMethodTypes(prog);
-		//travel over the rest of the tree and evaluate- add array types
+		//travel with symbolSetter
+		//travel with TypeBuilder
 		
 	}
 	
@@ -138,23 +143,15 @@ public class TypeTable {
 		
 	}
 	
-	/*this method travels over part of the tree and gather all possible class types
-	* ASSUMPTION - if A extends B than B came in the code before A (IC spec)*/
-	private void addClassTypes(Program prog) {
-		for (ICClass IC_class:prog.getClasses()){
-			add_class_type(IC_class);
-		}
-	}
-	
 	//this method adds new class type (with all proper ClassType parameters)
-	private void add_class_type(ICClass iC_class) {
+	public Type add_class_type(ICClass iC_class) throws SemanticError {
 		ClassType userClassType = null;
 		if(iC_class.hasSuperClass()){
 			//get ClassType of super class
 			ClassType superClass= type_map_class.get(iC_class.getSuperClassName());
 			//If super class does not exist - this is a semantic error
 			if(superClass ==null){
-				//TODO- throw error
+				throw new SemanticError(iC_class.getLine(), "hasSuperClass() return true but superClass == null");
 			}
 			//get getSuperClassName_list so we will add her later to current class A<=B<=C ==> A<=C
 			List<ClassType> super_super_list = superClass.getSuperClassName_list();
@@ -168,27 +165,18 @@ public class TypeTable {
 		}
 		//check if class defined twice
 		if (type_map_class.get(iC_class.getName()) != null){
-			//TODO- throw error
+			throw new SemanticError(iC_class.getLine(), "the class "+iC_class.getName()+" is defined twice");
 		}
 		else{
 			type_map_class.put(iC_class.getName(), userClassType);
+			return userClassType;
 		}
 		
-	}
-	
-	//this method travels over part of the tree and gather all possible method types
-	private void addMethodTypes(Program prog)
-	{
-		for (ICClass IC_class:prog.getClasses()){
-			for(Method class_method : IC_class.getMethods()){
-					add_mathod_type(class_method);
-				}
-		}
 	}
 
 	//This method adds new method type (with all proper MethodType parameters)
 	//This method can be used only after  return statement type evaluation was done!
-	private void add_mathod_type(Method class_method) {
+	public MethodType add_mathod_type(Method class_method) throws SemanticError {
 		
 		//calc type of return method
 		Type returnType = getTypeFromASTType(class_method.getType());
@@ -202,8 +190,10 @@ public class TypeTable {
 			//if didn't - make list and add new method type
 			List<MethodType> return_type_list = new ArrayList<MethodType>();
 
-			return_type_list.add(new MethodType(formals_type_list,returnType));
+			MethodType new_method_type = new MethodType(formals_type_list,returnType);
+			return_type_list.add(new_method_type);
 			type_map_method.put(returnType, return_type_list);
+			return new_method_type;
 		}
 		else {
 			//if did -get list of all the methods with the same return type
@@ -211,31 +201,33 @@ public class TypeTable {
 			
 			//check list to find if this method type (all parameter types correspond) is already in the list
 			for (MethodType method_same_return_type : return_type_list){
-				if (method_same_return_type.formals_compare(formals_type_list)) return; 
+				if (method_same_return_type.formals_compare(formals_type_list)) return method_same_return_type; 
 			}
 			
-			//if we came till here, no such type exist in the list.
-			return_type_list.add(new MethodType(formals_type_list,returnType));
+			//if we came till here, no such type exist in the list.Add it
+			MethodType new_method_type = new MethodType(formals_type_list,returnType);
+			return_type_list.add(new_method_type);
 			type_map_method.put(returnType, return_type_list);
+			return new_method_type;
 		}
 	}
 
 	//Given List<Formal> calc list of there "table types"
-	private List<Type> getTypesOfFormals(List<Formal> formals) {
+	private List<Type> getTypesOfFormals(List<Formal> formals) throws SemanticError {
 		List<Type> formals_type_list = new ArrayList<Type>(); 
 		for(Formal class_formal : formals){
-			Type formalType = class_formal.accept(new TypeBuilder(this),null); //in finding a type of formal, no context should be used
+			Type formalType = class_formal.accept(new SymbolSetter(this),null); //in finding a type of formal, no context should be used
 			formals_type_list.add(formalType);
 		}
 		return formals_type_list;
 	}
 	
 	//Given AST node type calc type for table type
-	private Type getTypeFromASTType(IC.AST.Type type) {
-		return type.accept(new TypeBuilder(this), null);//in finding a type of type, no context should be used
+	private Type getTypeFromASTType(IC.AST.Type type) throws SemanticError {
+		return type.accept(new SymbolSetter(this), null);//in finding a type of type, no context should be used
 	}
 	
-	public MethodType getMethodTypeFromMap(Method class_method){
+	public MethodType getMethodTypeFromMap(Method class_method) throws SemanticError{
 		//calc type of return method
 		Type returnType = getTypeFromASTType(class_method.getType());
 				
@@ -252,7 +244,7 @@ public class TypeTable {
 		return null;
 	}
 	
-	private List<Type> get_arguments_type_list(Method class_method) {
+	private List<Type> get_arguments_type_list(Method class_method) throws SemanticError {
 		List<Type> formals_type_list = new ArrayList<Type>();
 		
 		//calc parameters type (if any) and 

@@ -64,7 +64,7 @@ public abstract class SymbolTable {
 	 */
 	public List<SymbolTable> getChildrenTables()
 	{
-		return this.getChildrenTables();
+		return childrenTables;
 	}
 	
 	
@@ -158,7 +158,7 @@ public abstract class SymbolTable {
 		for(int i = 0; i < this.childrenTables.size(); ++i)
 		{
 			sb.append("\n");
-			//sb.append(childrenTables.get(i).toString());
+			sb.append(childrenTables.get(i).toString());
 			// not last child
 			if( i  < childrenTables.size() - 1)
 			{

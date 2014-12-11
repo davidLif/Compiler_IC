@@ -38,6 +38,10 @@ public abstract class Symbol {
 		this.type = type;
 	}
 	
+	public Type getType(){
+		return type;
+	}
+	
 	
 	public String getId()
 	{
