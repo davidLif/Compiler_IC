@@ -234,14 +234,8 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 		for(Statement statement : statements)
 		{
 			
-			/* maybe get another sub scope */
-			SymbolTable statementSymTable = statement.accept(this, symTable);
-			if(statementSymTable != null)
-			{
-				/* in case of statement block */
-				symTable.addChildTable(statementSymTable);
-				statementSymTable.setParentSymbolTable(symTable);
-			}
+			 statement.accept(this, symTable);
+			
 		}
 	}
 	
@@ -444,9 +438,9 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 		StatementBlockSymTable symTable = new StatementBlockSymTable(enclosingScope);
 		addStatementsToSymTable(statementsBlock.getStatements(), symTable);
 
-		//add symTable as child table
-		//enclosingScope.addChildTable(symTable);
-		//symTable.setParentSymbolTable(enclosingScope);
+		
+		enclosingScope.addChildTable(symTable);
+		symTable.setParentSymbolTable(enclosingScope);
 		
 		return symTable;
 	}
