@@ -1,9 +1,19 @@
 package IC.SymTables;
 
+import IC.SymTables.Symbols.VariableSymbol;
+
+
+/**
+ * 
+ * @author Denis
+ *
+ *	represents Statement block scope
+ */
 
 public class StatementBlockSymTable extends VariableSymbolTable{
 
 	
+
 	
 	/**
 	 * 
@@ -20,6 +30,9 @@ public class StatementBlockSymTable extends VariableSymbolTable{
 	protected String getSymbolTableHeader() {
 		return String.format("Statement Block Symbol Table ( located in %s )", this.parentSymbolTable.getId());
 	}
+
+
+
 
 
 

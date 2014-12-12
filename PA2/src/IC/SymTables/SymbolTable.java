@@ -25,7 +25,7 @@ public abstract class SymbolTable {
 	 * maps from identifiers to corresponding table entries.
 	 * a string key is sufficient, since all symbols must have different ids in this symbol table
 	 */
-	protected Map<String, Symbol> entries;  
+	//protected Map<String, Symbol> entries;  
 	
 	/**
 	 * name of the scope (name of class, method, .. )
@@ -47,14 +47,14 @@ public abstract class SymbolTable {
 		this.id = id;
 		childrenTables = new ArrayList<SymbolTable>();
 		this.parentSymbolTable = null;
-		entries = new HashMap<String, Symbol>();
+		//entries = new HashMap<String, Symbol>();
 	}
 	
 	public SymbolTable(String id, SymbolTable parentSymbolTable)
 	{
 		this(id);
 		this.parentSymbolTable = parentSymbolTable;
-		entries = new HashMap<String, Symbol>();
+		//entries = new HashMap<String, Symbol>();
 	}
 	
 	
@@ -64,7 +64,7 @@ public abstract class SymbolTable {
 	 */
 	public List<SymbolTable> getChildrenTables()
 	{
-		return childrenTables;
+		return this.getChildrenTables();
 	}
 	
 	
@@ -91,10 +91,10 @@ public abstract class SymbolTable {
 	 * @param id - identifier of symbol
 	 * @return true iff symbol is in current scope (current symbol table)
 	 */
-	public boolean containsLocally(String id)
-	{
-		return this.entries.containsKey(id);
-	}
+	public abstract boolean containsLocally(String id);
+//	{
+	//	return this.entries.containsKey(id);
+//	}
 	
 	/**
 	 * this method returns a symbol from the SymbolTable (local scope only). Lookup is done only by string id
@@ -102,25 +102,25 @@ public abstract class SymbolTable {
 	 * @return symbol if such a symbol exists, else returns null
 	 */
 	
-	public Symbol getSymbol(String id)
-	{
-		if(this.containsLocally(id))
-		{
-			return this.entries.get(id);
-		}
-		return null;
+	//public abstract Symbol getLocalSymbol(String id);
+	//{
+	//	if(this.containsLocally(id))
+	//	{
+	//		return this.entries.get(id);
+	//	}
+	//	return null;
 		
-	}
+	//}
 	
 	
 	/**
-	 * add new symbol to local scope, key is string id
-	 * @param sym
+	 * add new symbol to local scope
+	 * @param sym - symbol to add
 	 */
-	public void addSymbol(Symbol sym)
-	{
-		this.entries.put(sym.getId(), sym);
-	}
+//	public abstract void addSymbol(Symbol sym);
+	//{
+	//	this.entries.put(sym.getId(), sym);
+	//}
 	
 	/**
 	 * 
@@ -138,10 +138,10 @@ public abstract class SymbolTable {
 		/* add title */
 		sb.append(this.getSymbolTableHeader() + "\n");
 		/* add body */
-		for(Symbol sym : this.entries.values())
-		{
-			sb.append("\t" + sym.toString() + "\n");
-		}
+		//for(Symbol sym : this.entries.values())
+		//{
+		//	sb.append("\t" + sym.toString() + "\n");
+		//}
 		/* add footer */
 		sb.append("Children tables: \n");
 		
@@ -213,7 +213,7 @@ public abstract class SymbolTable {
 	
 	/**
 	 * method returns true iff the symbol table or its parents contain a VariableSymbol named id (may be a field, parameter or local variable)
-	 * 
+	 * (variable may be a field, a local variable or a method parameter ), useful for low level scopes
 	 * @param id - id of variable to resolve
 	 * @return
 	 */
@@ -221,6 +221,7 @@ public abstract class SymbolTable {
 	
 	/**
 	 * Return variable with given id, according to the specific logic of the current symbol table
+	 * (variable may be a field, a local variable or a method parameter ), useful for low level scopes
 	 * @param id - variable name
 	 * @return the desired variable, or null if not found
 	 */

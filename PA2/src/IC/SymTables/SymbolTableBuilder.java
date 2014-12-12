@@ -5,7 +5,6 @@ import IC.AST.*;
 import IC.SymTables.Symbols.ClassSymbol;
 import IC.SymTables.Symbols.FieldSymbol;
 import IC.SymTables.Symbols.LocalVariableSymbol;
-import IC.SymTables.Symbols.MethodSymbol;
 import IC.SymTables.Symbols.ParameterSymbol;
 import IC.SymTables.Symbols.StaticMethodSymbol;
 import IC.SymTables.Symbols.VirtualMethodSymbol;
@@ -89,7 +88,7 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 				}
 				else
 				{
-					ClassSymbol super_symbol = (ClassSymbol) globalSymTable.getSymbol(superClassName);
+					ClassSymbol super_symbol =  ((GlobalSymbolTable)globalSymTable).getClassSymbol(superClassName);
 					// fetch super class symbol table
 				    SymbolTable super_symbol_table = super_symbol.getClassSymbolTable();
 				    
@@ -134,7 +133,7 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 		
 		// add class entry to global symbol table
 		ClassSymbol classSym = new ClassSymbol(icClass.getName(), classSymTable);
-		globalSymbolTable.addSymbol(classSym);
+		((GlobalSymbolTable)globalSymbolTable).addClassSymbol(classSym);
 		
 		// link AST node to globalSymbolTable
 		icClass.setEnclosingScope(globalSymbolTable);
@@ -146,8 +145,6 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 		List<Field> fields = icClass.getFields();
 		for(Field field : fields)
 		{
-			// link scope to AST node
-			field.setEnclosingScope(classSymTable);
 			
 			// check that the field was not defined in current scope
 			if(classSymTable.containsLocally(field.getName()))
@@ -165,8 +162,6 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 		
 		for(Method method : methods)
 		{
-			// link scope to AST node
-			method.setEnclosingScope(classSymTable);
 			
 			// check that method was not defined before (in current scope)
 			if(classSymTable.containsLocally(method.getName()))
@@ -192,10 +187,13 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 	@Override
 	public SymbolTable visit(Field field, SymbolTable classSymbolTable) {
 		
+		// link scope to AST node
+		field.setEnclosingScope(classSymbolTable);
+		
 		/* simply add the created symbol to the given symbol table */
 		
 		FieldSymbol fieldSym = new FieldSymbol(field.getName());
-		classSymbolTable.addSymbol(fieldSym);
+		((ClassSymbolTable)classSymbolTable).addField(fieldSym);
 
 		// no symbol table is constructed for field
 		return null;
@@ -219,8 +217,7 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 					throw new SemanticError(formal.getLine(), err_msg);
 				}
 					
-				// link AST
-				formal.setEnclosingScope(methodSymTable);
+				
 				// add proper symbol to scope
 				formal.accept(this, methodSymTable);
 		}
@@ -236,8 +233,6 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 		
 		for(Statement statement : statements)
 		{
-			/* link AST to method scope */
-			statement.setEnclosingScope(symTable);
 			
 			/* maybe get another sub scope */
 			SymbolTable statementSymTable = statement.accept(this, symTable);
@@ -256,18 +251,17 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 	 * this method handles all methods visits
 	 * 
 	 * @param method  -   The method AST node
-	 * @param methodSym - method symbol
+	 * 
 	 * @param classSymbolTable - the symbol table of enclosing class
 	 * @return proper method symbol table
 	 * @throws SemanticError 
 	 */
 	
-	private  SymbolTable commonMethodVisit(Method method, MethodSymbol methodSym, SymbolTable classSymbolTable) throws SemanticError
+	private  SymbolTable commonMethodVisit(Method method,  ClassSymbolTable classSymbolTable) throws SemanticError
 	{
-
-		// add the method symbol to class symbol table
-		classSymbolTable.addSymbol(methodSym);
-		
+        // link method to classSymbolTable
+		method.setEnclosingScope(classSymbolTable);
+	
 		// create method symbol table
 		MethodSymbolTable methodSymTable = new MethodSymbolTable(method.getName());
 		
@@ -286,91 +280,166 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 	@Override
 	public SymbolTable visit(VirtualMethod method, SymbolTable classSymbolTable) throws SemanticError {
 		
-		MethodSymbol methodSym =  new VirtualMethodSymbol(method.getName());
-		return commonMethodVisit(method, methodSym, classSymbolTable);
+		VirtualMethodSymbol methodSym =  new VirtualMethodSymbol(method.getName());
+		ClassSymbolTable classSymTable = (ClassSymbolTable)classSymbolTable;
+		
+		/* add symbol */
+		classSymTable.addVirtualMethod(methodSym);
+		
+		
+		return commonMethodVisit(method, classSymTable);
 	}
 
 	@Override
 	public SymbolTable visit(StaticMethod method, SymbolTable classSymbolTable) throws SemanticError {
 		
-		MethodSymbol methodSym =  new StaticMethodSymbol(method.getName());
-		return commonMethodVisit(method, methodSym, classSymbolTable);
+		StaticMethodSymbol methodSym =  new StaticMethodSymbol(method.getName());
+		ClassSymbolTable classSymTable = (ClassSymbolTable)classSymbolTable;
+		
+		/* add symbol */
+		classSymTable.addStaticMethod(methodSym);
+		
+		return commonMethodVisit(method, classSymTable);
 	}
 
 	@Override
 	public SymbolTable visit(LibraryMethod method, SymbolTable classSymbolTable) throws SemanticError {
 		
-		MethodSymbol methodSym =  new StaticMethodSymbol(method.getName());
-		return commonMethodVisit(method, methodSym, classSymbolTable);
+		/* same as static method */
+		
+		StaticMethodSymbol methodSym =  new StaticMethodSymbol(method.getName());
+		ClassSymbolTable classSymTable = (ClassSymbolTable)classSymbolTable;
+		
+		/* add symbol */
+		classSymTable.addStaticMethod(methodSym);
+		
+		return commonMethodVisit(method, classSymTable);
 	}
 
 	@Override
-	public SymbolTable visit(Formal formal, SymbolTable methodSymbolTable) {
+	public SymbolTable visit(Formal formal, SymbolTable scope) throws SemanticError {
+		
+		/* link AST to scope */
+		formal.setEnclosingScope(scope);
 		
 		/* simply add new symbol to given scope */
 		ParameterSymbol param = new ParameterSymbol(formal.getName());
-		methodSymbolTable.addSymbol(param);
+		MethodSymbolTable methodTable =  (MethodSymbolTable)scope;
+		
+		methodTable.addParameter(param);
+		
+		formal.getType().accept(this, scope);
+		
 		return null;
 	}
 
 	@Override
 	public SymbolTable visit(PrimitiveType type, SymbolTable context) {
 		
-		// nothing to do
+		/* link AST to scope */
+		type.setEnclosingScope(context);
+		
 		return null;
 	}
 
 	@Override
 	public SymbolTable visit(UserType type, SymbolTable context) {
-		// nothing to do
+		/* link AST to scope */
+		type.setEnclosingScope(context);
+		
 		return null;
 	}
 
 	@Override
-	public SymbolTable visit(Assignment assignment, SymbolTable context) {
-		// nothing to do
+	public SymbolTable visit(Assignment assignment, SymbolTable context) throws SemanticError {
+		
+		/* link AST to scope */
+		assignment.setEnclosingScope(context);
+		
+		/* continue visiting sub expressions */
+		assignment.getVariable().accept(this, context);
+		assignment.getAssignment().accept(this, context);
+		
 		return null;
 	}
 
 	@Override
-	public SymbolTable visit(CallStatement callStatement, SymbolTable context) {
-		// nothing to do
-		// call statements will be handled in later phases
+	public SymbolTable visit(CallStatement callStatement, SymbolTable context) throws SemanticError {
+		
+		/* link AST to scope */
+		callStatement.setEnclosingScope(context);
+		
+		callStatement.getCall().accept(this, context);
+		
 		return null;
 	}
 
 	@Override
-	public SymbolTable visit(Return returnStatement, SymbolTable context) {
-		// nothing to do
+	public SymbolTable visit(Return returnStatement, SymbolTable context) throws SemanticError {
+		
+		/* link AST to scope */
+		returnStatement.setEnclosingScope(context);
+		
+		if(returnStatement.hasValue())
+			returnStatement.getValue().accept(this, context);
+
 		return null;
 	}
 
 	@Override
-	public SymbolTable visit(If ifStatement, SymbolTable context) {
-		// nothing to do
+	public SymbolTable visit(If ifStatement, SymbolTable context) throws SemanticError {
+		
+		/* link AST to scope */
+		ifStatement.setEnclosingScope(context);
+		
+		/* visit condition expression */
+		ifStatement.getCondition().accept(this, context);
+		/* visit action statement */
+		ifStatement.getOperation().accept(this, context);
+		
+		/* visit else statement */
+		if(ifStatement.hasElse())
+			ifStatement.getElseOperation().accept(this, context);
+		
 		return null;
 	}
 
 	@Override
-	public SymbolTable visit(While whileStatement, SymbolTable context) {
-		// nothing to do
+	public SymbolTable visit(While whileStatement, SymbolTable context) throws SemanticError {
+		
+		/* link AST to scope */
+		whileStatement.setEnclosingScope(context);
+		
+		/* visit condition */
+		whileStatement.getCondition().accept(this, context);
+		/* visit statement */
+		whileStatement.getOperation().accept(this, context);
+		
 		return null;
 	}
 
 	@Override
 	public SymbolTable visit(Break breakStatement, SymbolTable context) {
-		// nothing to do
+		/* link AST to scope */
+		breakStatement.setEnclosingScope(context);
+		
 		return null;
 	}
 
 	@Override
 	public SymbolTable visit(Continue continueStatement, SymbolTable context) {
-		// nothing to do
+		
+		/* link AST to scope */
+		continueStatement.setEnclosingScope(context);
+		
 		return null;
 	}
 
 	@Override
 	public SymbolTable visit(StatementsBlock statementsBlock, SymbolTable enclosingScope) throws SemanticError {
+		
+		/* link AST to scope */
+		statementsBlock.setEnclosingScope(enclosingScope);
 		
 		StatementBlockSymTable symTable = new StatementBlockSymTable(enclosingScope);
 		addStatementsToSymTable(statementsBlock.getStatements(), symTable);
@@ -383,7 +452,11 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 	@Override
 	public SymbolTable visit(LocalVariable localVariable, SymbolTable scope) throws SemanticError {
 		
+		/* link AST to scope */
+		localVariable.setEnclosingScope(scope);
+		
 		String name = localVariable.getName();
+		
 		// check redefinition
 		if(scope.containsLocally(name))
 		{
@@ -392,7 +465,13 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 		}
 		
 		LocalVariableSymbol varSym = new LocalVariableSymbol(name);
-		scope.addSymbol(varSym);
+		/* scope is either method scope, or statement block */
+		((VariableSymbolTable)scope).addLocalVariable(varSym);
+		
+		// visit init expression
+		
+		if(localVariable.hasInitValue())
+			localVariable.getInitValue().accept(this, scope);
 		
 		// no symbol table is constructed
 		return null;
@@ -401,7 +480,16 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 	@Override
 	public SymbolTable visit(VariableLocation location, SymbolTable context) throws SemanticError {
 		
-		if(!location.isExternal())
+		/* link AST to scope */
+		location.setEnclosingScope(context);
+		
+		
+		if(location.isExternal())
+		{
+			location.getLocation().accept(this, context);
+		}
+		
+		else
 		{
 			// variable needs to be resolved now
 			if(!context.resolveVariable(location.getName()))
@@ -417,82 +505,166 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 	}
 
 	@Override
-	public SymbolTable visit(ArrayLocation location, SymbolTable context) {
+	public SymbolTable visit(ArrayLocation location, SymbolTable context) throws SemanticError {
 		
-		// nothing to do
+		/* link AST to scope */
+		location.setEnclosingScope(context);
+	
+		Expression arrExp = location.getArray();
+		Expression indexExp = location.getIndex();
+		
+		arrExp.accept(this, context);
+		indexExp.accept(this, context);
+		
+		
 		return null;
 	}
 
 	@Override
-	public SymbolTable visit(StaticCall call, SymbolTable context) {
-		// calls are handled in later phases
+	public SymbolTable visit(StaticCall call, SymbolTable context) throws SemanticError {
+		
+		/* link AST to scope */
+		call.setEnclosingScope(context);
+		
+		List<Expression> args = call.getArguments();
+		/* visit each argument */
+		for(Expression arg : args)
+		{
+			arg.accept(this, context);
+		}
+		
+		
 		return null;
 	}
 
 	@Override
-	public SymbolTable visit(VirtualCall call, SymbolTable context) {
-		// calls are handled in later phases
+	public SymbolTable visit(VirtualCall call, SymbolTable context) throws SemanticError {
+		
+		/* link AST to scope */
+		call.setEnclosingScope(context);
+	
+		if(call.isExternal())
+		{
+			/* visit location expression */
+			call.getLocation().accept(this, context);
+		}
+		
+		List<Expression> args = call.getArguments();
+		/* visit each argument */
+		for(Expression arg : args)
+		{
+			arg.accept(this, context);
+		}
+		
 		return null;
 	}
 
 	@Override
 	public SymbolTable visit(This thisExpression, SymbolTable context) {
-		// nothing to do
+		
+		/* link AST to scope */
+		thisExpression.setEnclosingScope(context);
+		
 		return null;
 	}
 
 	@Override
 	public SymbolTable visit(NewClass newClass, SymbolTable context) {
-		// nothing to do
+		
+		/* link AST to scope */
+		newClass.setEnclosingScope(context);
+		
+		
 		return null;
 	}
 
 	@Override
-	public SymbolTable visit(NewArray newArray, SymbolTable context) {
-		// nothing to do
+	public SymbolTable visit(NewArray newArray, SymbolTable context) throws SemanticError {
+		
+		/* link AST to scope */
+		newArray.setEnclosingScope(context);
+		
+		/* visit the size expression */
+		newArray.getSize().accept(this, context);
+		
+		/* visit type */
+		newArray.getType().accept(this, context);
+		
 		return null;
 	}
 
 	@Override
-	public SymbolTable visit(Length length, SymbolTable context) {
-		// nothing to do
+	public SymbolTable visit(Length length, SymbolTable context) throws SemanticError {
+		/* link AST to scope */
+		length.setEnclosingScope(context);
+		
+		Expression array = length.getArray();
+		
+		/* visit the array expression */
+		array.accept(this, context);
+		
 		return null;
 	}
 
 	@Override
-	public SymbolTable visit(MathBinaryOp binaryOp, SymbolTable context) {
-		// nothing to do
+	public SymbolTable visit(MathBinaryOp binaryOp, SymbolTable context) throws SemanticError {
+		
+		/* link AST to scope */
+		binaryOp.setEnclosingScope(context);
+		
+		binaryOp.getFirstOperand().accept(this, context);
+		binaryOp.getSecondOperand().accept(this, context);
+		
 		return null;
 	}
 
 	@Override
-	public SymbolTable visit(LogicalBinaryOp binaryOp, SymbolTable context) {
-		// nothing to do
+	public SymbolTable visit(LogicalBinaryOp binaryOp, SymbolTable context) throws SemanticError {
+		/* link AST to scope */
+		binaryOp.setEnclosingScope(context);
+		
+		binaryOp.getFirstOperand().accept(this, context);
+		binaryOp.getSecondOperand().accept(this, context);
 		return null;
 	}
 
 	@Override
-	public SymbolTable visit(MathUnaryOp unaryOp, SymbolTable context) {
-		// nothing to doub
+	public SymbolTable visit(MathUnaryOp unaryOp, SymbolTable context) throws SemanticError {
+		
+		
+		/* link AST to scope */
+		unaryOp.setEnclosingScope(context);
+		
+		unaryOp.getOperand().accept(this, context);
 		return null;
 	}
 
 	@Override
-	public SymbolTable visit(LogicalUnaryOp unaryOp, SymbolTable context) {
-		// nothing to do
+	public SymbolTable visit(LogicalUnaryOp unaryOp, SymbolTable context) throws SemanticError {
+		
+		/* link AST to scope */
+		unaryOp.setEnclosingScope(context);
+		
+		unaryOp.getOperand().accept(this, context);
 		return null;
 	}
 
 	@Override
 	public SymbolTable visit(Literal literal, SymbolTable context) {
-		// nothing to do
+		/* link AST to scope */
+		literal.setEnclosingScope(context);
+	
+		
 		return null;
 	}
 
 	@Override
 	public SymbolTable visit(ExpressionBlock expressionBlock,
-			SymbolTable context) {
-		// nothing to do
+			SymbolTable context) throws SemanticError {
+		/* link AST to scope */
+		expressionBlock.setEnclosingScope(context);
+		
+		expressionBlock.getExpression().accept(this, context);
 		return null;
 	}
 	

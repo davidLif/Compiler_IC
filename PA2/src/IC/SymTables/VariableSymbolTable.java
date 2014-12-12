@@ -1,22 +1,29 @@
 package IC.SymTables;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import IC.SymTables.Symbols.FieldSymbol;
 import IC.SymTables.Symbols.MethodSymbol;
 import IC.SymTables.Symbols.VariableSymbol;
-
+import IC.SymTables.Symbols.LocalVariableSymbol;;
 
 
 /**
  * 
  * @author Denis
  *
- * this abstract class represents a symbol table that contains only variable symbols such as parameters and local vars
- * requests to receive method symbols or field methods will be passed to the parent table
+ * this abstract class represents a symbol table that contains variable symbols and does not contain fields and methods
+ * 
  *
  */
 public abstract class VariableSymbolTable  extends SymbolTable{
 
+	/**
+	 * maps string ids to local variables
+	 */
 	
+	protected Map<String, LocalVariableSymbol> localVariables = new HashMap<String, LocalVariableSymbol>();
 	
 	/**
 	 * 
@@ -36,14 +43,6 @@ public abstract class VariableSymbolTable  extends SymbolTable{
 	}
 	
 	
-	@Override
-	public VariableSymbol getVariable(String id) {
-		
-		if(this.containsLocally(id))
-			return (VariableSymbol)this.entries.get(id);
-		
-		return this.parentSymbolTable.getVariable(id);
-	}
 
 	@Override
 	public MethodSymbol getMethod(String id) {
@@ -79,6 +78,34 @@ public abstract class VariableSymbolTable  extends SymbolTable{
 		
 		/* only parent symbol table may contain methods */
 		return this.parentSymbolTable.resolveMethod(id, virtualMethod);
+	}
+	
+	@Override
+	public boolean containsLocally(String id) {
+		
+		return this.localVariables.containsKey(id);
+		
+	}
+
+
+	@Override
+	public VariableSymbol getVariable(String id) {
+		
+		if(this.localVariables.containsKey(id))
+			return this.localVariables.get(id);
+		
+		/* try parent */
+		return this.parentSymbolTable.getVariable(id);
+	}
+	
+	
+	/**
+	 * method adds new local variable
+	 * @param sym
+	 */
+	public void addLocalVariable(LocalVariableSymbol sym)
+	{
+		this.localVariables.put(sym.getId(), sym);
 	}
 	
 
