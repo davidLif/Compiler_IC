@@ -58,4 +58,10 @@ public class MethodType extends Type{
 		return true;
 	}
 
+	@Override
+	public boolean subTypeOf(Type t) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

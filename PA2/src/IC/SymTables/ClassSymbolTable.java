@@ -7,7 +7,7 @@ import IC.SymTables.Symbols.FieldSymbol;
 import IC.SymTables.Symbols.MethodSymbol;
 import IC.SymTables.Symbols.StaticMethodSymbol;
 import IC.SymTables.Symbols.Symbol;
-import IC.SymTables.Symbols.VariableSymbol;
+
 import IC.SymTables.Symbols.VirtualMethodSymbol;
 
 public class ClassSymbolTable extends SymbolTable{
@@ -117,7 +117,7 @@ public class ClassSymbolTable extends SymbolTable{
 	}
 
 	@Override
-	public VariableSymbol getVariable(String id) {
+	public Symbol getVariable(String id) {
 		/* may be only a field */
 	
 		

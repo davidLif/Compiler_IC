@@ -5,7 +5,8 @@ import java.util.Map;
 
 import IC.SymTables.Symbols.FieldSymbol;
 import IC.SymTables.Symbols.MethodSymbol;
-import IC.SymTables.Symbols.VariableSymbol;
+import IC.SymTables.Symbols.Symbol;
+
 import IC.SymTables.Symbols.LocalVariableSymbol;;
 
 
@@ -89,7 +90,7 @@ public abstract class VariableSymbolTable  extends SymbolTable{
 
 
 	@Override
-	public VariableSymbol getVariable(String id) {
+	public Symbol getVariable(String id) {
 		
 		if(this.localVariables.containsKey(id))
 			return this.localVariables.get(id);

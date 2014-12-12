@@ -76,6 +76,11 @@ public class ClassType extends Type{
 	public List<ClassType> getSuperClassName_list() {
 		return superClassName_list;
 	}
+	@Override
+	public boolean subTypeOf(Type t) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 	
 
 }

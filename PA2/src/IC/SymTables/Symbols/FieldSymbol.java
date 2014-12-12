@@ -1,17 +1,12 @@
 package IC.SymTables.Symbols;
 
 
-public class FieldSymbol extends VariableSymbol{
+public class FieldSymbol extends Symbol{
 
 	public FieldSymbol(String id) {
 		super(id);
 		
 	}
 
-	@Override
-	protected String getVarKind() {
-		return "Field";
-	}
-	
 
 }

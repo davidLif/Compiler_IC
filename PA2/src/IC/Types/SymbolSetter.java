@@ -45,7 +45,8 @@ import IC.SymTables.Symbols.ClassSymbol;
 import IC.SymTables.Symbols.FieldSymbol;
 import IC.SymTables.Symbols.LocalVariableSymbol;
 import IC.SymTables.Symbols.MethodSymbol;
-import IC.SymTables.Symbols.VariableSymbol;
+import IC.SymTables.Symbols.Symbol;
+
 
 
 
@@ -130,7 +131,7 @@ public class SymbolSetter implements PropagatingVisitor<SymbolTable, Type>{
 			//get argument type
 			Type arg_type = arg.accept(this, null);
 			//get argument symbol
-			VariableSymbol arg_symbol =  symTable.getVariable(arg.getName());
+			Symbol arg_symbol =  symTable.getVariable(arg.getName());
 			//set type to symbol
 			arg_symbol.setType(arg_type);
 		}
@@ -158,7 +159,7 @@ public class SymbolSetter implements PropagatingVisitor<SymbolTable, Type>{
 			//get argument type
 			Type arg_type = arg.accept(this, null);
 			//get argument symbol
-			VariableSymbol arg_symbol =  symTable.getVariable(arg.getName());
+			Symbol arg_symbol =  symTable.getVariable(arg.getName());
 			//set type to symbol
 			arg_symbol.setType(arg_type);
 		}
@@ -187,7 +188,7 @@ public class SymbolSetter implements PropagatingVisitor<SymbolTable, Type>{
 			//get argument type
 			Type arg_type = arg.accept(this, null);
 			//get argument symbol
-			VariableSymbol arg_symbol =  symTable.getVariable(arg.getName());
+			Symbol arg_symbol =  symTable.getVariable(arg.getName());
 			//set type to symbol
 			arg_symbol.setType(arg_type);
 		}
@@ -312,7 +313,7 @@ public class SymbolSetter implements PropagatingVisitor<SymbolTable, Type>{
 		//get localVariable type
 		Type localVariable_type = localVariable.getType().accept(this, null);
 		//get localVariable symbol
-		VariableSymbol localVariable_symbol = ((VariableSymbolTable)context).getVariable(localVariable.getName());
+		Symbol localVariable_symbol = ((VariableSymbolTable)context).getVariable(localVariable.getName());
 		//set type to symbol
 		localVariable_symbol.setType(localVariable_type);
 		

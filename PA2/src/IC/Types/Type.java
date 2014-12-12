@@ -19,15 +19,16 @@ public abstract class Type {
 		return this.table_id;
 	}
 	
+
+	
+	
+	
 	/**
-	 * 
-	 * @return method returns a textual representation for the type table
-	 *         for example:
-	 *         		"1: Primitive type: int"
-	 *         or
-	 *         		 "15: Method type: {string[] -> void}"
-	 *       
+	 * return true iff current type is subset of given type
+	 * @param t
+	 * @return
 	 */
+	public abstract boolean subTypeOf(Type t);
 	
 	public String getTypeTableRep()
 	{

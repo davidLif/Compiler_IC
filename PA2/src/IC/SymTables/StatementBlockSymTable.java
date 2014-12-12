@@ -1,7 +1,5 @@
 package IC.SymTables;
 
-import IC.SymTables.Symbols.VariableSymbol;
-
 
 /**
  * 

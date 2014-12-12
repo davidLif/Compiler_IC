@@ -48,4 +48,11 @@ public abstract class Symbol {
 		return this.id;
 	}
 	
+	//
+	//@Override
+	//public String toString()
+	//{
+	//	return String.format("%s: %s %s", this.getVarKind(), this.type.toString(), this.id);
+	//}
+	
 }

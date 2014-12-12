@@ -17,9 +17,13 @@ public class TypeTable {
 
 	public Map<String ,ClassType> type_map_class;
 	public Map<Type, List <MethodType>> type_map_method;
-	public Map<DataTypes, PrimitiveType> type_map_primitive;
+	public Map<DataTypes, Type>type_map_primitive = new HashMap<DataTypes, Type>();
 	public Map<DataTypes, Map <Integer, ArrayType>> type_map_arrays_primitive;
 	public Map<String, Map <Integer, ArrayType>> type_map_arrays_class;
+	
+
+	
+	
 	
 	/**
 	 * how many unique types have we found so far
@@ -41,7 +45,7 @@ public class TypeTable {
 	{
 		type_map_class = new HashMap<String, ClassType>();
 		type_map_method = new HashMap<Type, List <MethodType>>();
-		type_map_primitive = new HashMap<DataTypes, PrimitiveType>();
+		type_map_primitive = new HashMap<DataTypes, Type>();
 		type_map_arrays_primitive = new HashMap<DataTypes, Map <Integer, ArrayType>>();
 		type_map_arrays_class = new HashMap<String, Map <Integer, ArrayType>>();
 		/* put primitive types to collection */
@@ -129,14 +133,14 @@ public class TypeTable {
 	private void addPrimitiveTypes()
 	{
 		//doesn't this add +1 to there numbers?
-		PrimitiveType integerType = new PrimitiveType(DataTypes.INT);
-		PrimitiveType booleanType = new PrimitiveType(DataTypes.BOOLEAN);
-		PrimitiveType nullType = new PrimitiveType(null);
-		PrimitiveType stringType = new PrimitiveType(DataTypes.STRING);
-		PrimitiveType voidType = new PrimitiveType(DataTypes.VOID);
+		Type intType = new IntType();
+		Type boolType = new BoolType();
+		Type nullType = new NullType();
+		Type stringType = new StringType();
+		Type voidType = new VoidType();
 		
-		type_map_primitive.put(DataTypes.INT, integerType);
-		type_map_primitive.put(DataTypes.BOOLEAN, booleanType);
+		type_map_primitive.put(DataTypes.INT, intType);
+		type_map_primitive.put(DataTypes.BOOLEAN, boolType);
 		type_map_primitive.put(null, nullType);
 		type_map_primitive.put(DataTypes.STRING, stringType);
 		type_map_primitive.put(DataTypes.VOID, voidType);

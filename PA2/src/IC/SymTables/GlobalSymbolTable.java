@@ -5,8 +5,8 @@ import java.util.Map;
 
 import IC.SymTables.Symbols.FieldSymbol;
 import IC.SymTables.Symbols.MethodSymbol;
+import IC.SymTables.Symbols.Symbol;
 
-import IC.SymTables.Symbols.VariableSymbol;
 import IC.SymTables.Symbols.ClassSymbol;
 
 
@@ -39,7 +39,7 @@ public class GlobalSymbolTable extends SymbolTable{
 	}
 
 	@Override
-	public VariableSymbol getVariable(String id) {
+	public Symbol getVariable(String id) {
 	
 		return null;
 	}

@@ -5,7 +5,8 @@ import java.util.Map;
 
 import IC.SymTables.Symbols.LocalVariableSymbol;
 import IC.SymTables.Symbols.ParameterSymbol;
-import IC.SymTables.Symbols.VariableSymbol;
+import IC.SymTables.Symbols.Symbol;
+
 
 public class MethodSymbolTable extends VariableSymbolTable{
 	
@@ -41,7 +42,7 @@ public class MethodSymbolTable extends VariableSymbolTable{
 	
 
 	@Override
-	public VariableSymbol getVariable(String id) {
+	public Symbol getVariable(String id) {
 		
 		if(params.containsKey(id))
 			return this.params.get(id);

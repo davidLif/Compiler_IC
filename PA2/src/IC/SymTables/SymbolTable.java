@@ -12,7 +12,7 @@ import java.util.Map;
 import IC.SymTables.Symbols.FieldSymbol;
 import IC.SymTables.Symbols.MethodSymbol;
 import IC.SymTables.Symbols.Symbol;
-import IC.SymTables.Symbols.VariableSymbol;
+
 
 /**
  * @author Denis
@@ -92,35 +92,10 @@ public abstract class SymbolTable {
 	 * @return true iff symbol is in current scope (current symbol table)
 	 */
 	public abstract boolean containsLocally(String id);
-//	{
-	//	return this.entries.containsKey(id);
-//	}
-	
-	/**
-	 * this method returns a symbol from the SymbolTable (local scope only). Lookup is done only by string id
-	 * @param id - id of the symbol
-	 * @return symbol if such a symbol exists, else returns null
-	 */
-	
-	//public abstract Symbol getLocalSymbol(String id);
-	//{
-	//	if(this.containsLocally(id))
-	//	{
-	//		return this.entries.get(id);
-	//	}
-	//	return null;
-		
-	//}
+
+
 	
 	
-	/**
-	 * add new symbol to local scope
-	 * @param sym - symbol to add
-	 */
-//	public abstract void addSymbol(Symbol sym);
-	//{
-	//	this.entries.put(sym.getId(), sym);
-	//}
 	
 	/**
 	 * 
@@ -228,7 +203,7 @@ public abstract class SymbolTable {
 	
 	
 	
-	public abstract VariableSymbol getVariable(String id);
+	public abstract Symbol getVariable(String id);
 	
 	
 	/**
