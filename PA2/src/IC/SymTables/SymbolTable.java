@@ -64,7 +64,7 @@ public abstract class SymbolTable {
 	 */
 	public List<SymbolTable> getChildrenTables()
 	{
-		return this.getChildrenTables();
+		return childrenTables;
 	}
 	
 	

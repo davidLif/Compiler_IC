@@ -8,7 +8,7 @@ import IC.AST.Program;
 
 public class LibrarySemanticChecker {
 
-	
+	//no need 
 	public Boolean check(Program program) throws SemanticError
 	{
 		List<ICClass> classList = program.getClasses();

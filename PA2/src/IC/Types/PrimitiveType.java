@@ -57,4 +57,14 @@ public class PrimitiveType extends Type {
 	}
 	
 	
+	@Override
+	public boolean subTypeOf(Type t) {
+		//of the primitive types, only NullType can be others sub type
+		if (t instanceof NullType){
+			return true;
+		}
+		return false;
+	}
+	
+	
 }

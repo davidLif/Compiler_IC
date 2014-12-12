@@ -180,7 +180,7 @@ public class TypeTable {
 
 	//This method adds new method type (with all proper MethodType parameters)
 	//This method can be used only after  return statement type evaluation was done!
-	public MethodType add_mathod_type(Method class_method) throws SemanticError {
+	public MethodType add_method_type(Method class_method) throws SemanticError {
 		
 		//calc type of return method
 		Type returnType = getTypeFromASTType(class_method.getType());
@@ -260,4 +260,16 @@ public class TypeTable {
 	}
 	
 	
+	public String toString(){
+		StringBuilder sb = new StringBuilder();
+		sb.append("primitive: " + "\n");
+		sb.append(type_map_primitive.values()+ "\n");
+		sb.append("class: " + "\n");
+		sb.append(type_map_class.values()+ "\n");
+		sb.append("methods: " + "\n");
+		sb.append(type_map_method.values()+ "\n");
+		return sb.toString() ;
+	}
+	
+	//TODO-get_main_methodType
 }

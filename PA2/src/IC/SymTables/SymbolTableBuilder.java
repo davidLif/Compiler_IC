@@ -444,7 +444,9 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 		StatementBlockSymTable symTable = new StatementBlockSymTable(enclosingScope);
 		addStatementsToSymTable(statementsBlock.getStatements(), symTable);
 
-		// no need to create a symbol !
+		//add symTable as child table
+		//enclosingScope.addChildTable(symTable);
+		//symTable.setParentSymbolTable(enclosingScope);
 		
 		return symTable;
 	}

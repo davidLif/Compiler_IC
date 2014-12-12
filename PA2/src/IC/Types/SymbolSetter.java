@@ -54,7 +54,6 @@ import IC.SymTables.Symbols.Symbol;
 // use ASTNODE.getEnclosing..
 // set the type at the first chance you have
 // when you see the method, set its type (already when visiting the class)
-// too many nulls are passed as arguments for no reason
 
 public class SymbolSetter implements PropagatingVisitor<SymbolTable, Type>{
 	
@@ -69,17 +68,18 @@ public class SymbolSetter implements PropagatingVisitor<SymbolTable, Type>{
 		GlobalSymbolTable globalSymbolTable = (GlobalSymbolTable)context;
 		
 		// first, set build all class types on first iteration
-		
-		
 		for (ICClass program_class : program.getClasses()){
-			
 			//get class symbol out of GlobalSymbolTable
 			ClassSymbol class_symbol = globalSymbolTable.getClassSymbol(program_class.getName());
 			//calc class type
-			Type class_type = program_class.accept(this, context.getChildSymbolTableById(program_class.getName()));
+			Type class_type = all_pos_types.add_class_type(program_class);
 			//set class type
 			class_symbol.setType(class_type);
-			
+		}
+		
+		//travel into classes
+		for (ICClass program_class : program.getClasses()){
+			program_class.accept(this, context.getChildSymbolTableById(program_class.getName()));
 		}
 		return null;
 	}
@@ -99,6 +99,7 @@ public class SymbolSetter implements PropagatingVisitor<SymbolTable, Type>{
 			field_symbol.setType(field_type);
 		}
 		
+		
 		//now travel into each method
 		for (Method class_method : icClass.getMethods()) {
 			//calc type for method
@@ -110,7 +111,7 @@ public class SymbolSetter implements PropagatingVisitor<SymbolTable, Type>{
 		}
 
 		//in case of error add_class_type will both return null and throw error
-		return all_pos_types.add_class_type(icClass);
+		return all_pos_types.type_map_class.get(icClass.getName());
 	}
 
 	@Override
@@ -120,84 +121,29 @@ public class SymbolSetter implements PropagatingVisitor<SymbolTable, Type>{
 
 	@Override
 	public Type visit(VirtualMethod method, SymbolTable context) throws SemanticError {
-		//no need to visit method return type- there is no symbol for it (??)
-		
-		MethodSymbolTable symTable = (MethodSymbolTable)context;
-		
-		//TODO: where do you set the return type ?
-		
-		//visit all the arguments
-		for (Formal arg : method.getFormals()){
-			//get argument type
-			Type arg_type = arg.accept(this, null);
-			//get argument symbol
-			Symbol arg_symbol =  symTable.getVariable(arg.getName());
-			//set type to symbol
-			arg_symbol.setType(arg_type);
-		}
-		
-		//visit all statements
-		for (Statement stmt : method.getStatements()){
-			SymbolTable stmt_table = getStmtContext(symTable, stmt); 
-			
-			stmt.accept(this, stmt_table);
-		}
-		
-		return all_pos_types.add_mathod_type(method);
+		method_visit(method, context);
+		return all_pos_types.add_method_type(method);
 	}
 
 	@Override
 	public Type visit(StaticMethod method, SymbolTable context) throws SemanticError {
-		//no need to visit method return type- there is no symbol for it
-		
-		MethodSymbolTable symTable = (MethodSymbolTable)context;
-		
-		//TODO: where do you set the return type ?
-		
-		//visit all the arguments
-		for (Formal arg : method.getFormals()){
-			//get argument type
-			Type arg_type = arg.accept(this, null);
-			//get argument symbol
-			Symbol arg_symbol =  symTable.getVariable(arg.getName());
-			//set type to symbol
-			arg_symbol.setType(arg_type);
-		}
-		
-		//visit all statements.statements does not have symbols, so just visit.
-		for (Statement stmt : method.getStatements()){
-			SymbolTable stmt_table = getStmtContext(symTable, stmt); 
-			
-			stmt.accept(this, stmt_table);
-		}
-		
-		return all_pos_types.add_mathod_type(method);
+
+		method_visit(method, context);
+		return all_pos_types.add_method_type(method);
 	}
+
+
 
 	@Override
 	public Type visit(LibraryMethod method, SymbolTable context) throws SemanticError {
-		//no need to visit method return type- there is no symbol for it
 		
 		MethodSymbolTable symTable = (MethodSymbolTable)context;
 		
-		//TODO: where do you set the return type ?
-		//TODO: too much code duplication, take out common implementation
-		
-		//visit all the arguments
-		for (Formal arg : method.getFormals()){
-			//get argument type
-			Type arg_type = arg.accept(this, null);
-			//get argument symbol
-			Symbol arg_symbol =  symTable.getVariable(arg.getName());
-			//set type to symbol
-			arg_symbol.setType(arg_type);
-		}
+		formal_list_visit(method, symTable);
 		
 		//in library method there are no statements
 		
-		//TODO: TYPO : mathod -> method
-		
-		return all_pos_types.add_mathod_type(method);
+		return all_pos_types.add_method_type(method);
 	}
 
 	@Override
@@ -207,10 +153,10 @@ public class SymbolSetter implements PropagatingVisitor<SymbolTable, Type>{
 
 	@Override
 	public Type visit(PrimitiveType type, SymbolTable context) throws SemanticError {
-		IC.Types.Type nodeType = null;
+		IC.Types.Type nodeType= null;
 		if (type.getDimension() == 0){
 			//we already entered into the table all primitive types - just get it
-			nodeType = all_pos_types.type_map_primitive.get(type.getDataTypes());
+			nodeType= all_pos_types.type_map_primitive.get(type.getDataTypes());
 		}
 		else{
 			//add new type of array if needed.
@@ -221,12 +167,13 @@ public class SymbolSetter implements PropagatingVisitor<SymbolTable, Type>{
 
 	@Override
 	public Type visit(UserType type, SymbolTable context) throws SemanticError {
-		// there is no forward reference for classes
-		
-		//TODO: this is wrong in this case, you visit classes one by one, a good chance that
-		//you have not created this a class type yet
-		
-		return all_pos_types.type_map_class.get(type.getName());
+		// when first visiting program, we created all class possible types
+		ClassType class_type = all_pos_types.type_map_class.get(type.getName());
+		//so if we didn't find the class, it isn't defined in the program
+		if (class_type ==null){
+			throw new SemanticError(type.getLine(),type.getName()+": no such class is defined");
+		}
+		return class_type;
 	}
 
 	@Override
@@ -234,25 +181,18 @@ public class SymbolSetter implements PropagatingVisitor<SymbolTable, Type>{
 		//travel into left side of assignment to set for name type
 		assignment.getVariable().accept(this, context);
 		
-		//TODO : what about the other side ? you must visit ALL expressions
-		//assignment.getAssignment(); 
-		
 		return null;
 	}
 
 	@Override
 	public Type visit(CallStatement callStatement, SymbolTable context) throws SemanticError {
 		// CallStatement holds only a call and doesn't have a symbol
-		//TODO: Nop, also has expressions, may create new types
 		
 		return null;
 	}
 
 	@Override
 	public Type visit(Return returnStatement, SymbolTable context)throws SemanticError {
-		
-		//TODO gotta visit expression
-		
 		return null;//Return statement will be evaluated only in TypeBuilder
 	}
 
@@ -317,36 +257,30 @@ public class SymbolSetter implements PropagatingVisitor<SymbolTable, Type>{
 		//set type to symbol
 		localVariable_symbol.setType(localVariable_type);
 		
-		//TODO : visit localVariable.getInitValue() (if not null) ; 
 		return localVariable_type;
 	}
 
 	@Override
 	public Type visit(VariableLocation location, SymbolTable context) throws SemanticError {
 		//Warning-May be a problem
-		//TODO: yep, gotta visit sub experssions
 		return null;
 	}
 
 	@Override
 	public Type visit(ArrayLocation location, SymbolTable context) throws SemanticError {
 		//Warning-May be a problem
-		//TODO: yep, gotta visit sub experssions
 		return null;
 	}
 
 	@Override
 	public Type visit(StaticCall call, SymbolTable context) throws SemanticError {
 		//Warning-May be a problem
-		//TODO: yep, gotta visit sub experssions
-	//	System.err.println("should no be here - StaticCall"); (will visit this node)
 		return null;
 	}
 
 	@Override
 	public Type visit(VirtualCall call, SymbolTable context) throws SemanticError {
 		//Warning-May be a problem, same
-		//System.err.println("should no be here - VirtualCall");
 		return null;
 	}
 
@@ -365,41 +299,35 @@ public class SymbolSetter implements PropagatingVisitor<SymbolTable, Type>{
 	@Override
 	public Type visit(NewArray newArray, SymbolTable context) throws SemanticError {
 		//calc this only in TypeBuilder
-		//TODO: sub expressions
 		return null;
 	}
 
 	@Override
 	public Type visit(Length length, SymbolTable context) throws SemanticError {
-		//TODO: sub expressions
 		return null;
 	}
 
 	@Override
 	public Type visit(MathBinaryOp binaryOp, SymbolTable context)
 			throws SemanticError {
-		//TODO: sub expressions
 		return null;
 	}
 
 	@Override
 	public Type visit(LogicalBinaryOp binaryOp, SymbolTable context)
 			throws SemanticError {
-		//TODO sub expressions
 		return null;
 	}
 
 	@Override
 	public Type visit(MathUnaryOp unaryOp, SymbolTable context)
 			throws SemanticError {
-		//TODO sub expressions
 		return null;
 	}
 
 	@Override
 	public Type visit(LogicalUnaryOp unaryOp, SymbolTable context)
 			throws SemanticError {
-		//TODO sub expressions
 		return null;
 	}
 
@@ -414,8 +342,6 @@ public class SymbolSetter implements PropagatingVisitor<SymbolTable, Type>{
 			throws SemanticError {
 		
 		//calc this only in TypeBuilder
-		//System.err.println("should no be here - ExpressionBlock");
-		//TODO sub expressions
 		return null;
 	}
 	
@@ -429,7 +355,36 @@ public class SymbolSetter implements PropagatingVisitor<SymbolTable, Type>{
 		}
 		return stmt_table;
 		
-		//TODO: you probably dont need this method
+		//Warning-you probably don't need this method
+	}
+	
+	private void method_visit(Method method, SymbolTable context) throws SemanticError {
+		
+		MethodSymbolTable symTable = (MethodSymbolTable)context;
+		
+		//return type and argument type calculation for clalc method type are handled in add_mathod_type
+		
+		formal_list_visit(method, symTable);
+		
+		//visit all statements
+		for (Statement stmt : method.getStatements()){
+			SymbolTable stmt_table = getStmtContext(symTable, stmt); 
+			
+			stmt.accept(this, stmt_table);
+		}
+	}
+
+	private void formal_list_visit(Method method, MethodSymbolTable symTable)
+			throws SemanticError {
+		//visit all the arguments
+		for (Formal arg : method.getFormals()){
+			//get argument type
+			Type arg_type = arg.accept(this, null);
+			//get argument symbol
+			Symbol arg_symbol =  symTable.getVariable(arg.getName());
+			//set type to symbol
+			arg_symbol.setType(arg_type);
+		}
 	}
 
 }
