@@ -61,8 +61,8 @@ public class ArrayType extends Type{
 
 	@Override
 	public boolean subTypeOf(Type t) {
-		// TODO Auto-generated method stub
-		return false;
+		
+		return this == t;
 	}
 
 

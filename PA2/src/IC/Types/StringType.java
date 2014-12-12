@@ -9,8 +9,8 @@ public class StringType extends Type{
 
 	@Override
 	public boolean subTypeOf(Type t) {
-		// TODO Auto-generated method stub
-		return false;
+		
+		return this == t;
 	}
 
 }

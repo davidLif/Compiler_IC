@@ -1,29 +1,32 @@
 package IC.SymTables;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import IC.AST.Method;
 import IC.SymTables.Symbols.FieldSymbol;
 import IC.SymTables.Symbols.MethodSymbol;
+import IC.SymTables.Symbols.StaticMethodSymbol;
 import IC.SymTables.Symbols.Symbol;
+import IC.SymTables.Symbols.VirtualMethodSymbol;
 
 import IC.SymTables.Symbols.ClassSymbol;
 
 
 public class GlobalSymbolTable extends SymbolTable{
 
-	private Map<String, ClassSymbol> classMap = new HashMap<String, ClassSymbol>();
+	/**
+	 * this list holds all the class entries
+	 */
+	private List<ClassSymbol> classList = new ArrayList<ClassSymbol>();
 	
 	public GlobalSymbolTable(String id) {
 		super(id);
 		
 	}
 
-	@Override
-	protected String getSymbolTableHeader() {
-		
-		return String.format("Global Symbol Table: %s", this.id);
-	}
 
 	@Override
 	public boolean resolveVariable(String id) {
@@ -32,11 +35,6 @@ public class GlobalSymbolTable extends SymbolTable{
 		return false;
 	}
 
-	@Override
-	public boolean resolveMethod(String id, boolean virtualMethod) {
-		/* this symbol table does not contain method symbols */
-		return false;
-	}
 
 	@Override
 	public Symbol getVariable(String id) {
@@ -44,11 +42,7 @@ public class GlobalSymbolTable extends SymbolTable{
 		return null;
 	}
 
-	@Override
-	public MethodSymbol getMethod(String id) {
 	
-		return null;
-	}
 
 	@Override
 	public boolean resolveField(String id) {
@@ -65,23 +59,12 @@ public class GlobalSymbolTable extends SymbolTable{
 	@Override
 	public boolean containsLocally(String id) {
 		
-		if(this.classMap.containsKey(id))
-			return true;
-		return false;
+		if(this.getClassSymbol(id) == null)
+			return false;
+		return true;
 	}
 
-	//@Override
-	//public Symbol getLocalSymbol(String id) {
-	//	
-	//	return null;
-	//}
 
-//	@Override
-	//public void addSymbol(ClassSymbol sym) {
-	//	
-	//	this.classMap.put(sym.getId(), sym);
-	//	
-	//}
 	
 	/**
 	 * add new class symbol to the table
@@ -90,7 +73,8 @@ public class GlobalSymbolTable extends SymbolTable{
 	
 	public void addClassSymbol(ClassSymbol sym)
 	{
-		this.classMap.put(sym.getId(), sym);
+		
+		this.classList.add(sym);
 	}
 
 	
@@ -103,11 +87,34 @@ public class GlobalSymbolTable extends SymbolTable{
 	 */
 	public ClassSymbol getClassSymbol(String id)	
 	{
-		if(this.containsLocally(id))
-			return this.classMap.get(id);
+		for(ClassSymbol sym : this.classList)
+		{
+			if(sym.getId().equals(id))
+				return sym;
+		}
 		
 		return null;
 	}
+
+	
+
+	@Override
+	public void printTable() {
+		
+		System.out.println(String.format("Global Symbol Table: %s", this.id));
+		
+		/* print body */
+		
+		for(ClassSymbol classSym : this.classList)
+		{
+			System.out.println("\t" + classSym.toString());
+		}
+		
+		this.printChildernTables();
+		
+	}
+
+
 	
 
 	

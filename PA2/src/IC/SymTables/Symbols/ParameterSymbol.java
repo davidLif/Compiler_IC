@@ -8,6 +8,12 @@ public class ParameterSymbol extends Symbol{
 		
 	}
 
+	@Override
+	public String toString()
+	{
+		return String.format("Parameter: %s %s", (this.type == null ? "NONE" : this.type), this.id);
+	}
+
 
 	
 	

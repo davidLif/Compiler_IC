@@ -10,11 +10,11 @@ public abstract class MethodSymbol extends Symbol{
 	@Override
 	public String toString()
 	{
-		return String.format("%s method: %s %s",this.getMethodKind() ,this.id, this.type.toString());
+		return String.format("%s method: %s %s",this.getMethodKind() ,this.id, (this.type == null ? "NONE" : this.type.toString()));
 	}
 	
 	protected abstract String getMethodKind();
 	
-	
+	public abstract boolean isStatic();
 
 }

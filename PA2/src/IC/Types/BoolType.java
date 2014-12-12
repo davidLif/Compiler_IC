@@ -4,14 +4,14 @@ public class BoolType extends Type{
 
 	@Override
 	protected String getTypeRep() {
-		return "boolean type";
+		return "boolean";
 		
 	}
 
 	@Override
 	public boolean subTypeOf(Type t) {
-		// TODO Auto-generated method stub
-		return false;
+		
+		return t == this;
 	}
 
 }

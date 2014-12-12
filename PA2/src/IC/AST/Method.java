@@ -53,4 +53,7 @@ public abstract class Method extends ASTNode {
 	public List<Statement> getStatements() {
 		return statements;
 	}
+	
+	public abstract boolean isStatic();
+	
 }

@@ -13,6 +13,14 @@ public class StaticMethodSymbol extends MethodSymbol{
 		
 		return "Static";
 	}
+
+
+
+	@Override
+	public boolean isStatic() {
+		
+		return true;
+	}
 	
 
 }

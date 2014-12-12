@@ -38,4 +38,11 @@ public class StaticMethod extends Method {
 		super(type, name, formals, statements);
 	}
 
+
+	@Override
+	public boolean isStatic() {
+		
+		return true;
+	}
+
 }

@@ -1,8 +1,11 @@
 package IC.SymTables;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import IC.AST.Method;
 import IC.SymTables.Symbols.FieldSymbol;
 import IC.SymTables.Symbols.MethodSymbol;
 import IC.SymTables.Symbols.Symbol;
@@ -15,16 +18,17 @@ import IC.SymTables.Symbols.LocalVariableSymbol;;
  * @author Denis
  *
  * this abstract class represents a symbol table that contains variable symbols and does not contain fields and methods
- * 
+ * for example : method symbol table, statement block symbol table
  *
  */
 public abstract class VariableSymbolTable  extends SymbolTable{
 
 	/**
-	 * maps string ids to local variables
+	 * list saved local variable symbols
 	 */
 	
-	protected Map<String, LocalVariableSymbol> localVariables = new HashMap<String, LocalVariableSymbol>();
+	
+	protected List<LocalVariableSymbol> localVarsList = new ArrayList<LocalVariableSymbol>();
 	
 	/**
 	 * 
@@ -44,12 +48,6 @@ public abstract class VariableSymbolTable  extends SymbolTable{
 	}
 	
 	
-
-	@Override
-	public MethodSymbol getMethod(String id) {
-		
-		return this.parentSymbolTable.getMethod(id);
-	}
 
 	@Override
 	public boolean resolveField(String id) {
@@ -74,17 +72,17 @@ public abstract class VariableSymbolTable  extends SymbolTable{
 		return this.parentSymbolTable.resolveVariable(id);
 	}
 
-	@Override
-	public boolean resolveMethod(String id, boolean virtualMethod) {
-		
-		/* only parent symbol table may contain methods */
-		return this.parentSymbolTable.resolveMethod(id, virtualMethod);
-	}
+	
 	
 	@Override
 	public boolean containsLocally(String id) {
 		
-		return this.localVariables.containsKey(id);
+		for(Symbol sym : this.localVarsList)
+		{
+			if(sym.getId().equals(id))
+				return true;
+		}
+		return false;
 		
 	}
 
@@ -92,8 +90,11 @@ public abstract class VariableSymbolTable  extends SymbolTable{
 	@Override
 	public Symbol getVariable(String id) {
 		
-		if(this.localVariables.containsKey(id))
-			return this.localVariables.get(id);
+		for(Symbol sym : this.localVarsList)
+		{
+			if(sym.getId().equals(id))
+				return sym;
+		}
 		
 		/* try parent */
 		return this.parentSymbolTable.getVariable(id);
@@ -106,8 +107,36 @@ public abstract class VariableSymbolTable  extends SymbolTable{
 	 */
 	public void addLocalVariable(LocalVariableSymbol sym)
 	{
-		this.localVariables.put(sym.getId(), sym);
+		
+		this.localVarsList.add(sym);
 	}
 	
+	
+	/**
+	 * 
+	 * @param name
+	 * @return
+	 */
+	
+	public boolean resolveMethod(String name) {
+		
+		
+		return ((VariableSymbolTable)this.parentSymbolTable).resolveMethod(name);
+	}
+
+	/**
+	 * 
+	 * @param name
+	 * @return
+	 */
+
+	public MethodSymbol getMethod(String name) {
+		
+		
+		return ((VariableSymbolTable)this.parentSymbolTable).getMethod(name);
+	}
+	
+	
+
 
 }

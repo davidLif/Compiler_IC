@@ -1,5 +1,7 @@
 package IC.SymTables;
 
+import IC.SymTables.Symbols.Symbol;
+
 
 /**
  * 
@@ -24,9 +26,19 @@ public class StatementBlockSymTable extends VariableSymbolTable{
 	}
 	
 
+
+
 	@Override
-	protected String getSymbolTableHeader() {
-		return String.format("Statement Block Symbol Table ( located in %s )", this.parentSymbolTable.getId());
+	public void printTable() {
+		System.out.println(String.format("Statement Block Symbol Table ( located in %s )", this.parentSymbolTable.getId()));
+		
+		for(Symbol sym : this.localVarsList)
+		{
+			System.out.println("\t" + sym.toString());
+		}
+		
+		this.printChildernTables();
+		
 	}
 
 

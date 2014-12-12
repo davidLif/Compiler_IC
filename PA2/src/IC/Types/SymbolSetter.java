@@ -105,7 +105,10 @@ public class SymbolSetter implements PropagatingVisitor<SymbolTable, Type>{
 			//calc type for method
 			Type method_type = class_method.accept(this, classSymbolTable.getChildSymbolTableById(class_method.getName())); 
 			//get method symbol - can be virtual or static
-			MethodSymbol method_symbol = classSymbolTable.getMethod(class_method.getName());
+			MethodSymbol method_symbol = classSymbolTable.getMethod(class_method.getName(), class_method.isStatic());
+			
+			
+			
 			//set to symbol
 			method_symbol.setType(method_type);
 		}

@@ -78,7 +78,10 @@ public class ClassType extends Type{
 	}
 	@Override
 	public boolean subTypeOf(Type t) {
-		// TODO Auto-generated method stub
+		
+		if(this.superClassName_list.contains(t))
+			return true;
+		
 		return false;
 	}
 	

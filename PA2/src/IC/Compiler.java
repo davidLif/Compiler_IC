@@ -108,13 +108,15 @@ public class Compiler {
 				
 				SymbolTableBuilder symTableBuilder = new SymbolTableBuilder();
 				
-				SymbolTable tbl = symTableBuilder.createGlobalSymbolTable(prog, args[0]);
+			SymbolTable tbl = symTableBuilder.createGlobalSymbolTable(prog, args[0]);
 				
 				
-				SymbolTable tbl_lib = symTableBuilder.createGlobalSymbolTable(lib_prog, args[1]);
+				//SymbolTable tbl_lib = symTableBuilder.createGlobalSymbolTable(lib_prog, args[1]);
 				
-				TypeTable test1 = new TypeTable(prog, lib_prog,tbl);
-				System.out.println(tbl);
+				//TypeTable test1 = new TypeTable(prog, lib_prog,tbl);
+				//System.out.println(tbl);
+				
+				tbl.printTable();
 				
 			//	System.out.println(tbl);
 				
@@ -150,7 +152,7 @@ public class Compiler {
 				}
 				else{
 					System.err.println( e.getMessage());
-					System.err.println( e.getStackTrace());
+					//System.err.println( e.getStackTrace());
 				}
 				
 			}

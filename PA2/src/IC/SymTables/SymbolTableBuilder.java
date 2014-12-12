@@ -5,6 +5,7 @@ import IC.AST.*;
 import IC.SymTables.Symbols.ClassSymbol;
 import IC.SymTables.Symbols.FieldSymbol;
 import IC.SymTables.Symbols.LocalVariableSymbol;
+import IC.SymTables.Symbols.MethodSymbol;
 import IC.SymTables.Symbols.ParameterSymbol;
 import IC.SymTables.Symbols.StaticMethodSymbol;
 import IC.SymTables.Symbols.VirtualMethodSymbol;
@@ -35,6 +36,7 @@ import IC.SemanticChecks.SemanticError;
 public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, SymbolTable>{
 
 	
+	private GlobalSymbolTable globalSymTable;
 	
 	
 	/**
@@ -51,6 +53,7 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 	{
 		
 		GlobalSymbolTable symTable = new GlobalSymbolTable(fileName);
+		this.globalSymTable = symTable;
 		return program.accept(this, symTable);
 		
 	}
@@ -64,14 +67,13 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 		for(ICClass curr_class : classList)
 		{
 			
-			/* a class symbol will be added to globalSymTable, and a classSymbolTable will be returned */
-			ClassSymbolTable classSymTable = (ClassSymbolTable) curr_class.accept(this, globalSymTable);
+			
 			
 			if(curr_class.hasSuperClass())
 			{
 				String superClassName = curr_class.getSuperClassName();
 				
-				if(curr_class.getName() == superClassName)
+				if(curr_class.getName().equals( superClassName))
 				{
 					/* a class cannot extend it self */
 					String err_msg = String.format("class %s cannot extends itself", curr_class.getName());
@@ -92,10 +94,13 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 					// fetch super class symbol table
 				    SymbolTable super_symbol_table = super_symbol.getClassSymbolTable();
 				    
+					/* a class symbol will be added to globalSymTable, and a classSymbolTable will be returned */
+					ClassSymbolTable classSymTable = (ClassSymbolTable) curr_class.accept(this, super_symbol_table);
+				   
 				    // add classSymTable as a child of superclass's symbol table
 				    super_symbol_table.addChildTable(classSymTable);
-				    // set enclosing scope
-				    classSymTable.setParentSymbolTable(super_symbol_table);
+				    
+				    
 					
 				}
 				
@@ -103,8 +108,9 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 			else
 			{
 				// has no super class, enclosing scope is global scope
+				ClassSymbolTable classSymTable = (ClassSymbolTable) curr_class.accept(this, globalSymTable);
+				
 				globalSymTable.addChildTable(classSymTable);
-				classSymTable.setParentSymbolTable(globalSymTable);
 			}
 			
 		}
@@ -118,10 +124,10 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 
 	
 	@Override
-	public SymbolTable visit(ICClass icClass, SymbolTable globalSymbolTable) throws SemanticError {
+	public SymbolTable visit(ICClass icClass, SymbolTable parentSymTable) throws SemanticError {
 		
 		// check if the class is defined for the first time 
-		if(globalSymbolTable.containsLocally(icClass.getName()))
+		if(this.globalSymTable.containsLocally(icClass.getName()))
 		{
 			
 			String err_msg = String.format("class %s was already defined ", icClass.getName());
@@ -133,10 +139,11 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 		
 		// add class entry to global symbol table
 		ClassSymbol classSym = new ClassSymbol(icClass.getName(), classSymTable);
-		((GlobalSymbolTable)globalSymbolTable).addClassSymbol(classSym);
+		((GlobalSymbolTable)globalSymTable).addClassSymbol(classSym);
 		
 		// link AST node to globalSymbolTable
-		icClass.setEnclosingScope(globalSymbolTable);
+		icClass.setEnclosingScope(parentSymTable);
+		classSymTable.setParentSymbolTable(parentSymTable);
 		
 		
 		/* we need to fill current class's symbol table that we built */
@@ -149,7 +156,7 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 			// check that the field was not defined in current scope
 			if(classSymTable.containsLocally(field.getName()))
 			{
-				String err_msg = String.format("field %s was already defined in class %s",field.getName(), icClass.getName());
+				String err_msg = String.format("identifer %s was already defined in class %s (instance scope)",field.getName(), icClass.getName());
 				throw new SemanticError(field.getLine(), err_msg);
 			}
 			
@@ -164,18 +171,31 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 		{
 			
 			// check that method was not defined before (in current scope)
-			if(classSymTable.containsLocally(method.getName()))
+			if(classSymTable.containsLocallyStatic(method.getName()))
 			{
-				String err_msg = String.format("field/method with id %s was already defined in class %s", method.getName(), icClass.getName());
-				throw new SemanticError(method.getLine(), err_msg);
+				if(method.isStatic())
+				{
+					String err_msg = String.format("static method %s was already defined in class %s", method.getName(), icClass.getName());
+					throw new SemanticError(method.getLine(), err_msg);
+				}
 			}
+			else if(classSymTable.containsLocallyVirtual(method.getName()))
+			{
+				if(!method.isStatic())
+				{
+					String err_msg = String.format("id %s was already defined in class %s (instance scope)", method.getName(), icClass.getName());
+					throw new SemanticError(method.getLine(), err_msg);
+				}
+			}
+			
 			
 			// fill the method table
 			SymbolTable methodSymTable =  method.accept(this, classSymTable);
 			
 			// link parent/child
-			methodSymTable.setParentSymbolTable(classSymTable);
 			classSymTable.addChildTable(methodSymTable);
+			
+			
 			
 		}
 		
@@ -235,7 +255,6 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 		{
 			
 			 statement.accept(this, symTable);
-			
 		}
 	}
 	
@@ -251,13 +270,14 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 	 * @throws SemanticError 
 	 */
 	
-	private  SymbolTable commonMethodVisit(Method method,  ClassSymbolTable classSymbolTable) throws SemanticError
+	private  SymbolTable commonMethodVisit(Method method, ClassSymbolTable classSymbolTable, boolean isStatic) throws SemanticError
 	{
         // link method to classSymbolTable
 		method.setEnclosingScope(classSymbolTable);
-	
+		
 		// create method symbol table
-		MethodSymbolTable methodSymTable = new MethodSymbolTable(method.getName());
+		MethodSymbolTable methodSymTable = new MethodSymbolTable(method.getName(), isStatic);
+		methodSymTable.setParentSymbolTable(classSymbolTable);
 		
 		// go over argument list, and add them to symbol table
 		addFormalsToMethodSymTable(method, methodSymTable);
@@ -281,7 +301,7 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 		classSymTable.addVirtualMethod(methodSym);
 		
 		
-		return commonMethodVisit(method, classSymTable);
+		return commonMethodVisit(method, classSymTable, false);
 	}
 
 	@Override
@@ -293,7 +313,7 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 		/* add symbol */
 		classSymTable.addStaticMethod(methodSym);
 		
-		return commonMethodVisit(method, classSymTable);
+		return commonMethodVisit(method, classSymTable, true);
 	}
 
 	@Override
@@ -307,7 +327,7 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 		/* add symbol */
 		classSymTable.addStaticMethod(methodSym);
 		
-		return commonMethodVisit(method, classSymTable);
+		return commonMethodVisit(method, classSymTable, true);
 	}
 
 	@Override
@@ -435,12 +455,11 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 		/* link AST to scope */
 		statementsBlock.setEnclosingScope(enclosingScope);
 		
+		/* create statementblock sym table and add parent scope */
 		StatementBlockSymTable symTable = new StatementBlockSymTable(enclosingScope);
-		addStatementsToSymTable(statementsBlock.getStatements(), symTable);
-
-		
 		enclosingScope.addChildTable(symTable);
-		symTable.setParentSymbolTable(enclosingScope);
+		
+		addStatementsToSymTable(statementsBlock.getStatements(), symTable);
 		
 		return symTable;
 	}

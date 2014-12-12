@@ -1,41 +1,56 @@
 package IC.SymTables;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import IC.AST.Method;
 import IC.SymTables.Symbols.LocalVariableSymbol;
+import IC.SymTables.Symbols.MethodSymbol;
 import IC.SymTables.Symbols.ParameterSymbol;
 import IC.SymTables.Symbols.Symbol;
 
 
 public class MethodSymbolTable extends VariableSymbolTable{
 	
+	/**
+	 * flags holds whether this method scope is static or virtual
+	 */
 	
-	/* maps for paramaters and local variables */
-	private Map<String, ParameterSymbol> params = new HashMap<String, ParameterSymbol>();
-	
-	public MethodSymbolTable(String id) {
-		super(id);
-	
-	}
+	private boolean isStatic;
 
-	@Override
-	protected String getSymbolTableHeader() {
+	/**
+	 * list contains all the parameters of the method
+	 */
+	
+	private List<ParameterSymbol> paramsList = new ArrayList<ParameterSymbol>();
+	
+	public MethodSymbolTable(String id, boolean isStatic) {
 		
-		return String.format("Method Symbol Table: %s", this.id);
+		super(id);
+		this.isStatic = isStatic;
+		
+	
 	}
+	
+	
+	
 
 	@Override
 	public boolean containsLocally(String id) {
 		
 		/* check local variables */
-		if(this.localVariables.containsKey(id))
+		if(super.containsLocally(id))
 			return true;
 		
 		/* check params */
 		
-		if(this.params.containsKey(id))
-			return true;
+		for(Symbol sym : paramsList)
+		{
+			if(sym.getId().equals(id))
+				return true;
+		}
 		
 		return false;
 	}
@@ -44,12 +59,20 @@ public class MethodSymbolTable extends VariableSymbolTable{
 	@Override
 	public Symbol getVariable(String id) {
 		
-		if(params.containsKey(id))
-			return this.params.get(id);
+		/* check params */
+		for(Symbol sym : paramsList)
+		{
+			if(sym.getId().equals(id))
+				return sym;
+		}
 		
-		if(this.localVariables.containsKey(id))
-			return this.localVariables.get(id);
+		if(super.containsLocally(id))
+		{
+			/* id is a local variable and not a parameter */
+			return super.getVariable(id);
+		}
 		
+		/* try parent */
 		return this.parentSymbolTable.getVariable(id);
 	}
 
@@ -59,9 +82,67 @@ public class MethodSymbolTable extends VariableSymbolTable{
 	 */
 	public void addParameter(ParameterSymbol sym)
 	{
-		this.params.put(sym.getId(), sym);
+	
+		this.paramsList.add(sym);
+	}
+
+	
+
+	@Override
+	public void printTable() {
+
+		System.out.println(String.format("Method Symbol Table: %s", this.id));
+		
+		for(Symbol sym : this.paramsList)
+		{
+			System.out.println("\t" + sym.toString());
+		}
+		
+		for(Symbol sym : this.localVarsList)
+		{
+			System.out.println("\t" + sym.toString());
+		}
+		
+		this.printChildernTables();
+	}
+
+
+
+	@Override
+	public boolean resolveMethod(String name)
+	{
+		
+		ClassSymbolTable enclosingClass = (ClassSymbolTable)parentSymbolTable;
+		return enclosingClass.resolveMethod(name, isStatic);
+		
 	}
 	
+	@Override
+	public MethodSymbol getMethod(String name)
+	{
+		ClassSymbolTable enclosingClass = (ClassSymbolTable)parentSymbolTable;
+		return enclosingClass.getMethod(name, isStatic);
+	}
+	
+	@Override
+	public boolean resolveVariable(String id) {
+		/* may be a local variable or a parameter or a field */
+		
+		if(this.containsLocally(id))
+				return true; 
+		
+		/* otherwise, try parent if not static ! */
+		if(this.isStatic)
+		{
+			// no static fields
+			return false;
+		}
+		
+		return this.parentSymbolTable.resolveField(id);
+	
+		
+	}
+
 	
 	
 

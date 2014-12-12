@@ -1,8 +1,11 @@
 package IC.SymTables;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import IC.AST.Method;
 import IC.SymTables.Symbols.FieldSymbol;
 import IC.SymTables.Symbols.MethodSymbol;
 import IC.SymTables.Symbols.StaticMethodSymbol;
@@ -12,59 +15,43 @@ import IC.SymTables.Symbols.VirtualMethodSymbol;
 
 public class ClassSymbolTable extends SymbolTable{
 
-	/* more specific maps, allows us to handle static and instance scopes differently */
-	private Map<String, FieldSymbol> fieldSymbols;
-	private Map<String, StaticMethodSymbol> staticMethodSymbols;
-	private Map<String, VirtualMethodSymbol> virtualMethodSymbols;
+	
+	
+	/* lists of possible symbols */
+	private List<FieldSymbol>         fieldSymbolsList;
+	private List<StaticMethodSymbol>  staticSymbolList;
+	private List<VirtualMethodSymbol> virtualSymbolList;
 	
 	public ClassSymbolTable(String id) {
 		super(id);
-		/* init maps */
-		this.initMaps();
+		
+		/* init lists */
+	
+		this.initLists();
 	}
 
 	public ClassSymbolTable(String id, SymbolTable parentSymTable) {
 		super(id, parentSymTable);
-		/* init maps */
-		this.initMaps();
+		
+		/* init lists */
+	
+		this.initLists();
 		
 	}
 	
 	/**
 	 * initialize data structures
 	 */
-	private void initMaps()
-	{
-		fieldSymbols = new HashMap<String, FieldSymbol>();
-		staticMethodSymbols = new HashMap<String, StaticMethodSymbol>();
-		virtualMethodSymbols = new HashMap<String, VirtualMethodSymbol>();
-	}
+	
 
-	@Override
-	protected String getSymbolTableHeader() {
-		
-		return String.format("Class Symbol Table: %s", this.id);
+	private void initLists()
+	{
+		this.fieldSymbolsList = new ArrayList<FieldSymbol>();
+		this.staticSymbolList = new ArrayList<StaticMethodSymbol>();
+		this.virtualSymbolList = new ArrayList<VirtualMethodSymbol>();
 	}
 	
-//	@Override
-//	public void addSymbol(Symbol sym)
-//	{
-//		
-//		/* add it to a more specific list, for fast lookup and static/instance scoping */
-//		if(sym instanceof FieldSymbol)
-//		{
-//			fieldSymbols.put(sym.getId(), (FieldSymbol) sym);
-//		}
-//		else if (sym instanceof StaticMethodSymbol)
-//		{
-//			staticMethodSymbols.put(sym.getId(), (StaticMethodSymbol) sym);
-//		}
-//		else
-//		{
-//			virtualMethodSymbols.put(sym.getId(), (VirtualMethodSymbol) sym);
-//		}
-//	}
-//	
+	
 	
 	/**
 	 * various setters for methods and fields
@@ -72,17 +59,20 @@ public class ClassSymbolTable extends SymbolTable{
 	
 	public void addStaticMethod(StaticMethodSymbol method)
 	{
-		this.staticMethodSymbols.put(method.getId(), method);
+		
+		this.staticSymbolList.add(method);
 	}
 	
 	public void addVirtualMethod(VirtualMethodSymbol method)
 	{
-		this.virtualMethodSymbols.put(method.getId(), method);
+		
+		this.virtualSymbolList.add(method);
 	}
 	
 	public void addField(FieldSymbol field)
 	{
-		this.fieldSymbols.put(field.getId(), field);
+		
+		this.fieldSymbolsList.add(field);
 	}
 
 
@@ -91,51 +81,28 @@ public class ClassSymbolTable extends SymbolTable{
 	public boolean resolveVariable(String id) {
 		
 		/* it may only be a field */
-		if(this.fieldSymbols.containsKey(id))
-			return true;
+		for(Symbol sym : this.fieldSymbolsList)
+		{
+			if(sym.getId().equals(id))
+				return true;
+		}
 		
 		/* try parent symbol table */
 		return this.parentSymbolTable.resolveVariable(id);
 
 	}
 
-	@Override
-	public boolean resolveMethod(String id, boolean virtualMethod) {
-		
-		if(virtualMethod)
-		{
-			if(this.virtualMethodSymbols.containsKey(id))
-				return true;
-		}
-		
-		if( this.staticMethodSymbols.containsKey(id))
-			return true;
-		
-		/* otherwise, try parent symbol table */
-		return this.parentSymbolTable.resolveMethod(id, virtualMethod);
-		
-	}
+	
 
 	@Override
 	public Symbol getVariable(String id) {
 		/* may be only a field */
-	
 		
 		return this.getField(id);
 		
-		
 	}
 
-	@Override
-	public MethodSymbol getMethod(String id) {
-		
-		if(this.staticMethodSymbols.containsKey(id))
-			return staticMethodSymbols.get(id);
-		if(this.virtualMethodSymbols.containsKey(id))
-			return virtualMethodSymbols.get(id);
-		
-		return this.parentSymbolTable.getMethod(id);
-	}
+	
 
 	@Override
 	public boolean resolveField(String id) {
@@ -146,8 +113,11 @@ public class ClassSymbolTable extends SymbolTable{
 	@Override
 	public FieldSymbol getField(String id) {
 		
-		if(this.fieldSymbols.containsKey(id))
-			return fieldSymbols.get(id);
+		for(FieldSymbol sym : this.fieldSymbolsList)
+		{
+			if(sym.getId().equals(id))
+				return sym;
+		}
 		
 		/* fetch from parent table */
 		return this.parentSymbolTable.getField(id);
@@ -156,34 +126,158 @@ public class ClassSymbolTable extends SymbolTable{
 	@Override
 	public boolean containsLocally(String id) {
 		
-		/* check that one of the maps have the id */
+		/* check that one of the lists have the id */
+
+		return this.containsLocallyStatic(id) || this.containsLocallyVirtual(id);
+	}
+	
+	
+	/**
+	 * 
+	 * @param id - name of method
+	 * @return true iff current LOCAL static scope already contains a method with given id
+	 */
+	public boolean containsLocallyStatic(String id)
+	{
+		for(MethodSymbol sym : this.staticSymbolList)
+		{
+			if(sym.getId().equals(id))
+				return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * 
+	 * @param id - name of method
+	 * @return true iff current virtual scope already contains a method with given id
+	 */
+	
+	public boolean containsLocallyVirtual(String id)
+	{
 		
-		if(this.fieldSymbols.containsKey(id))
-			return true;
-		if(this.virtualMethodSymbols.containsKey(id))
-			return true;
-		if(this.staticMethodSymbols.containsKey(id))
-			return true;
+		for(FieldSymbol sym : this.fieldSymbolsList)
+		{
+			if(sym.getId().equals(id))
+				return true;
+		}
+			
+		for(MethodSymbol sym : this.virtualSymbolList)
+		{
+			if(sym.getId().equals(id))
+				return true;
+		}
+		
+		return false;
+		
+	}
+
+
+
+	@Override
+	public void printTable() {
+		
+		/* print title */
+		System.out.println(String.format("Class Symbol Table: %s", this.id));
+		
+		/* print body */
+		
+		for(FieldSymbol field : this.fieldSymbolsList)
+		{
+			System.out.println("\t" + field.toString());
+		}
+		
+		for(StaticMethodSymbol staticMethod : this.staticSymbolList)
+		{
+			System.out.println("\t" + staticMethod.toString());
+		}
+		
+		for(VirtualMethodSymbol virtualMethod : this.virtualSymbolList)
+		{
+			System.out.println("\t" + virtualMethod.toString());
+		}
+		
+		this.printChildernTables();
+		
+	}
+
+	
+	/**
+	 * 
+	 * @param name
+	 * @param isStatic
+	 * @return
+	 */
+	
+	public boolean resolveMethod(String name, boolean isStatic) {
+		
+		if(isStatic)
+		{
+			if(this.containsLocallyStatic(name))
+			{
+				return true;
+			}
+		}
+		else
+		{
+			if(this.containsLocallyVirtual(name))
+			{
+				return true;
+			}
+		}
+		
+		if(this.parentSymbolTable instanceof ClassSymbolTable)
+		{
+			return ((ClassSymbolTable)this.parentSymbolTable).resolveMethod(name, isStatic);
+		}
+		
+		/* parent is global scope, method was not found */
+		
 		return false;
 	}
 
-	//@Override
-	//public Symbol getLocalSymbol(String id) {
-//		
-		/* check local scope only */
-	//	if(this.fieldSymbols.containsKey(id))
-	//		return this.fieldSymbols.get(id);
-	//	
-	//	if(this.virtualMethodSymbols.containsKey(id))
-	//		return this.virtualMethodSymbols.get(id);
+	/**
+	 * 
+	 * @param name
+	 * @param isStatic
+	 * @return
+	 */
+	
+	public MethodSymbol getMethod(String name, boolean isStatic) {
 		
-	//	if(this.staticMethodSymbols.containsKey(id))
-	//		return this.staticMethodSymbols.get(id);
-	//	
-	//	return null;
-	//}
+		/* search the method in local scopes */
+		
+		if(isStatic)
+		{
+			for(MethodSymbol sym : this.staticSymbolList)
+			{
+				if(sym.getId().equals(name))
+					return sym;
+			}
+		}
+		else
+		{
+			for(MethodSymbol sym : this.virtualSymbolList)
+			{
+				if(sym.getId().equals(name))
+					return sym;
+			}
+		}
+		
+		/* try parent */
+		
+		if(this.parentSymbolTable instanceof ClassSymbolTable)
+		{
+			return ((ClassSymbolTable)this.parentSymbolTable).getMethod(name, isStatic);
+		}
+		
+		
+		return null;
+	}
 
 	
+	
+
 	
 
 }

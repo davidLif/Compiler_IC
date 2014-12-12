@@ -34,4 +34,12 @@ public class LibraryMethod extends Method {
 	public LibraryMethod(Type type, String name, List<Formal> formals) {
 		super(type, name, formals, new ArrayList<Statement>());
 	}
+
+	@Override
+	public boolean isStatic() {
+		
+		return true;
+	}
+	
+	
 }

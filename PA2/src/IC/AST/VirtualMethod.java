@@ -37,4 +37,10 @@ public class VirtualMethod extends Method {
 		super(type, name, formals, statements);
 	}
 
+	@Override
+	public boolean isStatic() {
+		
+		return false;
+	}
+
 }

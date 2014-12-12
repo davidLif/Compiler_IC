@@ -12,6 +12,7 @@ import java.util.Map;
 import IC.SymTables.Symbols.FieldSymbol;
 import IC.SymTables.Symbols.MethodSymbol;
 import IC.SymTables.Symbols.Symbol;
+import IC.AST.Method;
 
 
 /**
@@ -20,12 +21,6 @@ import IC.SymTables.Symbols.Symbol;
  */
 public abstract class SymbolTable {
 
-	
-	/**
-	 * maps from identifiers to corresponding table entries.
-	 * a string key is sufficient, since all symbols must have different ids in this symbol table
-	 */
-	//protected Map<String, Symbol> entries;  
 	
 	/**
 	 * name of the scope (name of class, method, .. )
@@ -47,19 +42,19 @@ public abstract class SymbolTable {
 		this.id = id;
 		childrenTables = new ArrayList<SymbolTable>();
 		this.parentSymbolTable = null;
-		//entries = new HashMap<String, Symbol>();
+		
 	}
 	
 	public SymbolTable(String id, SymbolTable parentSymbolTable)
 	{
 		this(id);
 		this.parentSymbolTable = parentSymbolTable;
-		//entries = new HashMap<String, Symbol>();
+		
 	}
 	
 	
 	/**
-	 * method returns the list of childern symbol tables of current symbol table
+	 * method returns the list of children symbol tables of current symbol table
 	 * @return
 	 */
 	public List<SymbolTable> getChildrenTables()
@@ -94,8 +89,7 @@ public abstract class SymbolTable {
 	public abstract boolean containsLocally(String id);
 
 
-	
-	
+
 	
 	/**
 	 * 
@@ -106,53 +100,44 @@ public abstract class SymbolTable {
 		return parentSymbolTable != null;
 	}
 	
-	@Override
-	public String toString()
-	{
-		StringBuilder sb = new StringBuilder();
-		/* add title */
-		sb.append(this.getSymbolTableHeader() + "\n");
-		/* add body */
-		//for(Symbol sym : this.entries.values())
-		//{
-		//	sb.append("\t" + sym.toString() + "\n");
-		//}
-		/* add footer */
-		sb.append("Children tables: \n");
-		
-		for(int i = 0; i < this.childrenTables.size(); ++i)
-		{
-			sb.append(childrenTables.get(i).getId());
-			// not last child
-			if( i  < childrenTables.size() - 1)
-			{
-				sb.append(",");
-			}
-		}
-		
-		for(int i = 0; i < this.childrenTables.size(); ++i)
-		{
-			sb.append("\n");
-			sb.append(childrenTables.get(i).toString());
-			// not last child
-			if( i  < childrenTables.size() - 1)
-			{
-				sb.append("\n");
-			}
-		}
-		
-		return sb.toString();
-	}
 	
 	/**
-	 * 
-	 * @return symbol table header(title) representation
-	 * for example: Class Symbol Table: A
-	 *              Statement Block Symbol Table ( located in sfunc )
+	 * this method prints the symbol table and its childern
 	 */
+	public abstract void printTable();
 	
-	protected abstract String getSymbolTableHeader();
-
+	/**
+	*  this method prints the footer of the symbol table
+	*/
+	
+	protected void printChildernTables()
+	{
+		
+		if(this.childrenTables.isEmpty())
+			return;
+		
+		System.out.print("Children tables: ");
+		for(int i = 0; i < this.childrenTables.size(); ++i)
+		{
+			System.out.print(childrenTables.get(i).getId());
+			
+			// if not last child
+			if( i  < childrenTables.size() - 1)
+				System.out.print(", ");
+			else
+				System.out.print("\n");
+		}
+		
+		/*  print child tables */
+	
+		for( int i = 0; i < this.childrenTables.size(); ++i)
+		{
+			System.out.print("\n");
+			childrenTables.get(i).printTable();
+		}
+		
+		
+	}
 	
 	
 	/**
@@ -206,22 +191,6 @@ public abstract class SymbolTable {
 	public abstract Symbol getVariable(String id);
 	
 	
-	/**
-	 * method returns true iff the symbol table or its parents contain a MethodSymbol with given id, and its scope matched virtualMethod
-	 * @param id - id of the method you're looking for
-	 * @param virtualMethod - set true if you're looking for a virtual method, otherwise, set false
-	 * @return
-	 */
-	
-	public abstract boolean resolveMethod(String id, boolean virtualMethod);
-	
-	/**
-	 * Return method with given id, according to the specific logic of the current symbol table
-	 * @param id - method name
-	 * @return the desired method, or null if not found
-	 */
-	
-	public abstract MethodSymbol getMethod(String id);
 	
 	/**
 	 * 
@@ -238,5 +207,6 @@ public abstract class SymbolTable {
 	
 	public abstract FieldSymbol getField(String id);
 
+	
 	
 }

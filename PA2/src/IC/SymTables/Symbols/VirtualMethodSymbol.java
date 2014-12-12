@@ -12,6 +12,11 @@ public class VirtualMethodSymbol extends MethodSymbol{
 		return "Virtual";
 	}
 
+	@Override
+	public boolean isStatic() {
+		return false;
+	}
+
 	
 
 }

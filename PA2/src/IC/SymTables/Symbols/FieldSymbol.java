@@ -8,5 +8,11 @@ public class FieldSymbol extends Symbol{
 		
 	}
 
+	
+	@Override
+	public String toString()
+	{
+		return String.format("Field: %s %s", (this.type == null ? "NONE" : this.type), this.id);
+	}
 
 }
