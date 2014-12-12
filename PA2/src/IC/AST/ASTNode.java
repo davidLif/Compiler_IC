@@ -3,7 +3,6 @@ package IC.AST;
 import IC.SemanticChecks.SemanticError;
 import IC.SymTables.SymbolTable;
 
-
 /**
  * Abstract AST node base class.
  * 
@@ -13,7 +12,6 @@ public abstract class ASTNode {
 
 	private int line;
 	private SymbolTable enclosingScope;
-	private IC.Types.Type type;
 
 	/**
 	 * Double dispatch method, to allow a visitor to visit a specific subclass.
@@ -66,20 +64,6 @@ public abstract class ASTNode {
 	public void setEnclosingScope(SymbolTable scope)
 	{
 		this.enclosingScope = scope;
-	}
-	
-	/**
-	 * this method sets the type of the AST node
-	 * @param type - type of node
-	 */
-	public void setType(IC.Types.Type type)
-	{
-		this.type = type;
-	}
-	
-	public IC.Types.Type getType()
-	{
-		return this.type;
 	}
 
 }
