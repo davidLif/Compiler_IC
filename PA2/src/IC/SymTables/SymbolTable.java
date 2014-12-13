@@ -171,41 +171,7 @@ public abstract class SymbolTable {
 	}
 	
 	
-	/**
-	 * method returns true iff the symbol table or its parents contain a VariableSymbol named id (may be a field, parameter or local variable)
-	 * (variable may be a field, a local variable or a method parameter ), useful for low level scopes
-	 * @param id - id of variable to resolve
-	 * @return
-	 */
-	public abstract boolean resolveVariable(String id);
-	
-	/**
-	 * Return variable with given id, according to the specific logic of the current symbol table
-	 * (variable may be a field, a local variable or a method parameter ), useful for low level scopes
-	 * @param id - variable name
-	 * @return the desired variable, or null if not found
-	 */
-	
-	
-	
-	public abstract Symbol getVariable(String id);
-	
-	
-	
-	/**
-	 * 
-	 * @param id - name of field
-	 * @return true iff the table symbol or its parents contain a field named id
-	 */
-	public abstract boolean resolveField(String id);
-	
-	/**
-	 * Return field with given id, according to the specific logic of the current symbol table
-	 * @param id - field name
-	 * @return the desired field, or null if not found
-	 */
-	
-	public abstract FieldSymbol getField(String id);
+
 
 	
 	

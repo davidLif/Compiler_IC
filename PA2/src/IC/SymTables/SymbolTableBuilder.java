@@ -68,6 +68,13 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 		{
 			
 			
+			// check if the class is defined for the first time 
+			if(globalSymTable.containsLocally(curr_class.getName()))
+			{
+				
+				String err_msg = String.format("class %s was already defined ", curr_class.getName());
+				throw new SemanticError(curr_class.getLine(), err_msg);
+			}
 			
 			if(curr_class.hasSuperClass())
 			{
@@ -125,14 +132,7 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 	
 	@Override
 	public SymbolTable visit(ICClass icClass, SymbolTable parentSymTable) throws SemanticError {
-		
-		// check if the class is defined for the first time 
-		if(this.globalSymTable.containsLocally(icClass.getName()))
-		{
-			
-			String err_msg = String.format("class %s was already defined ", icClass.getName());
-			throw new SemanticError(icClass.getLine(), err_msg);
-		}
+	
 		
 		// create the class symbol table
 		ClassSymbolTable classSymTable = new ClassSymbolTable(icClass.getName());
@@ -507,7 +507,7 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 		else
 		{
 			// variable needs to be resolved now
-			if(!context.resolveVariable(location.getName()))
+			if(!((VariableSymbolTable)context).resolveVariable(location.getName()))
 			{
 				String err_msg = String.format("%s could not be resolved to a variable", location.getName());
 				throw new SemanticError(location.getLine(), err_msg);

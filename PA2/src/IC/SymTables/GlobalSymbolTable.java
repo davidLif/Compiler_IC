@@ -28,33 +28,6 @@ public class GlobalSymbolTable extends SymbolTable{
 	}
 
 
-	@Override
-	public boolean resolveVariable(String id) {
-		
-		/* this symbol table does not contain variable symbols */
-		return false;
-	}
-
-
-	@Override
-	public Symbol getVariable(String id) {
-	
-		return null;
-	}
-
-	
-
-	@Override
-	public boolean resolveField(String id) {
-		
-		return false;
-	}
-
-	@Override
-	public FieldSymbol getField(String id) {
-		
-		return null;
-	}
 
 	@Override
 	public boolean containsLocally(String id) {

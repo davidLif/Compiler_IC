@@ -66,14 +66,21 @@ public class MethodSymbolTable extends VariableSymbolTable{
 				return sym;
 		}
 		
-		if(super.containsLocally(id))
+		/* check local vars and parents */
+		
+		for(Symbol sym : this.localVarsList)
 		{
-			/* id is a local variable and not a parameter */
-			return super.getVariable(id);
+			if(sym.getId().equals(id))
+				return sym;
 		}
 		
-		/* try parent */
-		return this.parentSymbolTable.getVariable(id);
+		/* enclosing scope is a class, may be a field */
+		if(this.isStatic)
+			return null;
+		
+		return ((ClassSymbolTable)this.parentSymbolTable).getField(id);
+		
+	
 	}
 
 	/** 
@@ -82,7 +89,6 @@ public class MethodSymbolTable extends VariableSymbolTable{
 	 */
 	public void addParameter(ParameterSymbol sym)
 	{
-	
 		this.paramsList.add(sym);
 	}
 
@@ -107,15 +113,11 @@ public class MethodSymbolTable extends VariableSymbolTable{
 	}
 
 
+	/**
+	 * in this case, we know if current scope is static or not, so we're looking for a method
+	 * that must be isStatic like current scope
+	 */
 
-	@Override
-	public boolean resolveMethod(String name)
-	{
-		
-		ClassSymbolTable enclosingClass = (ClassSymbolTable)parentSymbolTable;
-		return enclosingClass.resolveMethod(name, isStatic);
-		
-	}
 	
 	@Override
 	public MethodSymbol getMethod(String name)
@@ -124,24 +126,7 @@ public class MethodSymbolTable extends VariableSymbolTable{
 		return enclosingClass.getMethod(name, isStatic);
 	}
 	
-	@Override
-	public boolean resolveVariable(String id) {
-		/* may be a local variable or a parameter or a field */
-		
-		if(this.containsLocally(id))
-				return true; 
-		
-		/* otherwise, try parent if not static ! */
-		if(this.isStatic)
-		{
-			// no static fields
-			return false;
-		}
-		
-		return this.parentSymbolTable.resolveField(id);
-	
-		
-	}
+
 
 	
 	

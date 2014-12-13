@@ -77,40 +77,25 @@ public class ClassSymbolTable extends SymbolTable{
 
 
 
-	@Override
-	public boolean resolveVariable(String id) {
-		
-		/* it may only be a field */
-		for(Symbol sym : this.fieldSymbolsList)
-		{
-			if(sym.getId().equals(id))
-				return true;
-		}
-		
-		/* try parent symbol table */
-		return this.parentSymbolTable.resolveVariable(id);
-
-	}
-
 	
+	/**
+	 * Method tries to find given field, returns the field that was found in the inner most scope
+	 * @param id - field to search
+	 * @return true iff the field is found in enclosing scopes
+	 */
 
-	@Override
-	public Symbol getVariable(String id) {
-		/* may be only a field */
-		
-		return this.getField(id);
-		
-	}
-
-	
-
-	@Override
 	public boolean resolveField(String id) {
-		/* variable in a class may be only a field */
-		return this.resolveVariable(id);
+
+		return getField(id) != null;
 	}
 
-	@Override
+	
+	/**
+	 * Method tries to find given field, returns the field if found, o/w returns null
+	 * method will also search parent scopes
+	 * @param id
+	 * @return FieldSymbol if found, null otherwise
+	 */
 	public FieldSymbol getField(String id) {
 		
 		for(FieldSymbol sym : this.fieldSymbolsList)
@@ -120,7 +105,12 @@ public class ClassSymbolTable extends SymbolTable{
 		}
 		
 		/* fetch from parent table */
-		return this.parentSymbolTable.getField(id);
+		
+		if(this.parentSymbolTable instanceof ClassSymbolTable)
+			return ((ClassSymbolTable)this.parentSymbolTable).getField(id);
+		
+		/* field not found */
+		return null;
 	}
 
 	@Override
@@ -211,29 +201,7 @@ public class ClassSymbolTable extends SymbolTable{
 	
 	public boolean resolveMethod(String name, boolean isStatic) {
 		
-		if(isStatic)
-		{
-			if(this.containsLocallyStatic(name))
-			{
-				return true;
-			}
-		}
-		else
-		{
-			if(this.containsLocallyVirtual(name))
-			{
-				return true;
-			}
-		}
-		
-		if(this.parentSymbolTable instanceof ClassSymbolTable)
-		{
-			return ((ClassSymbolTable)this.parentSymbolTable).resolveMethod(name, isStatic);
-		}
-		
-		/* parent is global scope, method was not found */
-		
-		return false;
+		return this.getMethod(name,  isStatic) != null;
 	}
 
 	/**

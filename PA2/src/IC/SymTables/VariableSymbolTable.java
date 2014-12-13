@@ -19,12 +19,13 @@ import IC.SymTables.Symbols.LocalVariableSymbol;;
  *
  * this abstract class represents a symbol table that contains variable symbols and does not contain fields and methods
  * for example : method symbol table, statement block symbol table
+ * the parent table will always be a ClassSymbolTable or VariableSymbolTable
  *
  */
 public abstract class VariableSymbolTable  extends SymbolTable{
 
 	/**
-	 * list saved local variable symbols
+	 * list of local variable symbols
 	 */
 	
 	
@@ -41,6 +42,11 @@ public abstract class VariableSymbolTable  extends SymbolTable{
 		
 	}
 	
+	/**
+	 * 
+	 * @param id of scope
+	 * @param parentSymbolTable enclosing scope
+	 */
 	public VariableSymbolTable(String id, SymbolTable parentSymbolTable) {
 		
 		super(id, parentSymbolTable);
@@ -48,28 +54,17 @@ public abstract class VariableSymbolTable  extends SymbolTable{
 	}
 	
 	
-
-	@Override
-	public boolean resolveField(String id) {
-		
-		return this.parentSymbolTable.resolveField(id);
-	}
-
-	@Override
-	public FieldSymbol getField(String id) {
-		
-		return this.parentSymbolTable.getField(id);
-	}
-	
-	@Override
+	/**
+	 * this method will resolve variable with given id (local var, param or field )
+	 * returns true iff found in this scope and enclosing scopes, otherwise false
+	 * @param id - to look for
+	 * @return true iff found recursively
+	 */
 	public boolean resolveVariable(String id) {
+		
 		/* may be a local variable or a parameter or a field */
 		
-		if(this.containsLocally(id))
-				return true; 
-		
-		/* otherwise, try parent */
-		return this.parentSymbolTable.resolveVariable(id);
+		return this.getVariable(id) != null;
 	}
 
 	
@@ -86,19 +81,20 @@ public abstract class VariableSymbolTable  extends SymbolTable{
 		
 	}
 
+	/**
+	 * this method will resolve variable with given id (local var, param or field )
+	 * returns the symbol iff found in this scope and enclosing scopes, otherwise null
+	 * 
+	 * NOTE: if current scope is static method scope, and id is not found locally, the 
+	 * method will not search for fields in the enclosing scope, since its a different scope
+	 * 
+	 * @param id - of var to look for
+	 * @return the symbol if found, null otherwise
+	 */
+	
+	public abstract Symbol getVariable(String id);
+		
 
-	@Override
-	public Symbol getVariable(String id) {
-		
-		for(Symbol sym : this.localVarsList)
-		{
-			if(sym.getId().equals(id))
-				return sym;
-		}
-		
-		/* try parent */
-		return this.parentSymbolTable.getVariable(id);
-	}
 	
 	
 	/**
@@ -113,28 +109,24 @@ public abstract class VariableSymbolTable  extends SymbolTable{
 	
 	
 	/**
-	 * 
-	 * @param name
-	 * @return
+	 * method resolves a method with given id
+	 * @param name - name of method
+	 * @return true iff the method is found in the upper scopes
 	 */
 	
 	public boolean resolveMethod(String name) {
 		
 		
-		return ((VariableSymbolTable)this.parentSymbolTable).resolveMethod(name);
+		return getMethod(name) != null;
 	}
 
 	/**
-	 * 
+	 * method retrieves the method from upper scopes corresponding to this name
 	 * @param name
-	 * @return
+	 * @return method symbol if method is found, null o/w
 	 */
 
-	public MethodSymbol getMethod(String name) {
-		
-		
-		return ((VariableSymbolTable)this.parentSymbolTable).getMethod(name);
-	}
+	public abstract MethodSymbol getMethod(String name) ;
 	
 	
 

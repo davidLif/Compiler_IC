@@ -1,5 +1,6 @@
 package IC.SymTables;
 
+import IC.SymTables.Symbols.MethodSymbol;
 import IC.SymTables.Symbols.Symbol;
 
 
@@ -40,7 +41,33 @@ public class StatementBlockSymTable extends VariableSymbolTable{
 		this.printChildernTables();
 		
 	}
+	
+	@Override
+	public Symbol getVariable(String id) {
+		
+		/* may be a local variable or a parameter or a field */
+		
+		for(Symbol sym : this.localVarsList)
+		{
+			if(sym.getId().equals(id))
+				return sym;
+		}
+		
+		
+		/* have not reached parent class yet, may be a local var or param or field */
+		return ((VariableSymbolTable)this.parentSymbolTable).getVariable(id);
+	}
 
+	
+	@Override
+	public  MethodSymbol getMethod(String name) {
+		
+		/* we know for certain we need to continue to the enclosing scope
+		 * we also know that we cannot determine yet if the scope is static or not
+		 */
+		
+		return ((VariableSymbolTable)this.parentSymbolTable).getMethod(name);
+	}
 
 
 
