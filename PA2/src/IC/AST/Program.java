@@ -13,7 +13,7 @@ public class Program extends ASTNode {
 
 	private List<ICClass> classes;
 
-	public Object accept(Visitor visitor) throws SemanticError {
+	public Object accept(Visitor visitor) throws SemanticError{
 		return visitor.visit(this);
 	}
 	

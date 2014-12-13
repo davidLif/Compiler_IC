@@ -36,7 +36,7 @@ public class PrettyPrinter implements Visitor {
 		indent(output, null);
 	}
 
-	public Object visit(Program program) throws SemanticError {
+	public Object visit(Program program) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output);
@@ -46,7 +46,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(ICClass icClass) throws SemanticError {
+	public Object visit(ICClass icClass) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 		
 		indent(output, icClass);
@@ -62,7 +62,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(PrimitiveType type) {
+	public Object visit(PrimitiveType type) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, type);
@@ -73,7 +73,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(UserType type) {
+	public Object visit(UserType type) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, type);
@@ -84,7 +84,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(Field field) throws SemanticError {
+	public Object visit(Field field) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, field);
@@ -95,7 +95,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(LibraryMethod method) throws SemanticError {
+	public Object visit(LibraryMethod method) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, method);
@@ -108,7 +108,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(Formal formal) throws SemanticError {
+	public Object visit(Formal formal) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, formal);
@@ -119,7 +119,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(VirtualMethod method) throws SemanticError {
+	public Object visit(VirtualMethod method) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, method);
@@ -134,7 +134,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(StaticMethod method) throws SemanticError {
+	public Object visit(StaticMethod method) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, method);
@@ -149,7 +149,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(Assignment assignment) throws SemanticError {
+	public Object visit(Assignment assignment) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, assignment);
@@ -161,7 +161,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(CallStatement callStatement) throws SemanticError {
+	public Object visit(CallStatement callStatement) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, callStatement);
@@ -172,7 +172,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(Return returnStatement) throws SemanticError {
+	public Object visit(Return returnStatement) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, returnStatement);
@@ -187,7 +187,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(If ifStatement) throws SemanticError {
+	public Object visit(If ifStatement) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, ifStatement);
@@ -203,7 +203,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(While whileStatement) throws SemanticError {
+	public Object visit(While whileStatement) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, whileStatement);
@@ -223,7 +223,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(Continue continueStatement) {
+	public Object visit(Continue continueStatement) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, continueStatement);
@@ -231,7 +231,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(StatementsBlock statementsBlock) throws SemanticError {
+	public Object visit(StatementsBlock statementsBlock) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, statementsBlock);
@@ -243,7 +243,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(LocalVariable localVariable) throws SemanticError {
+	public Object visit(LocalVariable localVariable) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, localVariable);
@@ -263,7 +263,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(VariableLocation location) throws SemanticError {
+	public Object visit(VariableLocation location) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, location);
@@ -278,7 +278,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(ArrayLocation location) throws SemanticError {
+	public Object visit(ArrayLocation location) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, location);
@@ -290,7 +290,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(StaticCall call) throws SemanticError {
+	public Object visit(StaticCall call) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, call);
@@ -303,7 +303,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(VirtualCall call) throws SemanticError {
+	public Object visit(VirtualCall call) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, call);
@@ -319,7 +319,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(This thisExpression) {
+	public Object visit(This thisExpression) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, thisExpression);
@@ -327,7 +327,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(NewClass newClass) {
+	public Object visit(NewClass newClass) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, newClass);
@@ -335,7 +335,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(NewArray newArray) throws SemanticError {
+	public Object visit(NewArray newArray) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, newArray);
@@ -347,7 +347,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(Length length) throws SemanticError {
+	public Object visit(Length length) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, length);
@@ -358,7 +358,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(MathBinaryOp binaryOp) throws SemanticError {
+	public Object visit(MathBinaryOp binaryOp) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, binaryOp);
@@ -371,7 +371,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(LogicalBinaryOp binaryOp) throws SemanticError {
+	public Object visit(LogicalBinaryOp binaryOp) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, binaryOp);
@@ -384,7 +384,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(MathUnaryOp unaryOp) throws SemanticError {
+	public Object visit(MathUnaryOp unaryOp) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, unaryOp);
@@ -396,7 +396,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(LogicalUnaryOp unaryOp) throws SemanticError {
+	public Object visit(LogicalUnaryOp unaryOp) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, unaryOp);
@@ -408,7 +408,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(Literal literal) {
+	public Object visit(Literal literal) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, literal);
@@ -417,7 +417,7 @@ public class PrettyPrinter implements Visitor {
 		return output.toString();
 	}
 
-	public Object visit(ExpressionBlock expressionBlock) throws SemanticError {
+	public Object visit(ExpressionBlock expressionBlock) throws SemanticError{
 		StringBuffer output = new StringBuffer();
 
 		indent(output, expressionBlock);

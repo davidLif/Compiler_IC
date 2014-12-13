@@ -13,7 +13,7 @@ public class StaticCall extends Call {
 
 	private String className;
 
-	public Object accept(Visitor visitor) throws SemanticError {
+	public Object accept(Visitor visitor) throws SemanticError{
 		return visitor.visit(this);
 	}
 	

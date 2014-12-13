@@ -20,7 +20,7 @@ public class LocalVariable extends Statement {
 		return v.visit(this, context);
 	}
 	
-	public Object accept(Visitor visitor) throws SemanticError {
+	public Object accept(Visitor visitor) throws SemanticError{
 		return visitor.visit(this);
 	}
 

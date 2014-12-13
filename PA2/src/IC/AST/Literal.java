@@ -14,7 +14,7 @@ public class Literal extends Expression {
 
 	private Object value;
 
-	public Object accept(Visitor visitor) throws SemanticError {
+	public Object accept(Visitor visitor) throws SemanticError{
 		return visitor.visit(this);
 	}
 	

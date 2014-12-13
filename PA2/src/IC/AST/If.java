@@ -15,7 +15,7 @@ public class If extends Statement {
 
 	private Statement elseOperation = null;
 
-	public Object accept(Visitor visitor) throws SemanticError {
+	public Object accept(Visitor visitor) throws SemanticError{
 		return visitor.visit(this);
 	}
 	

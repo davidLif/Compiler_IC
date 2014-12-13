@@ -86,6 +86,12 @@ public class GlobalSymbolTable extends SymbolTable{
 		this.printChildernTables();
 		
 	}
+	
+	
+	public List<ClassSymbol> getClassList()
+	{
+		return this.classList;
+	}
 
 
 	

@@ -7,13 +7,13 @@ import IC.SemanticChecks.SemanticError;
  * 
  * @author Tovi Almozlino
  */
-public class ArrayLocation extends Location {
+public class ArrayLocation extends Location  {
 
 	private Expression array;
 
 	private Expression index;
 
-	public Object accept(Visitor visitor) throws SemanticError {
+	public Object accept(Visitor visitor) throws SemanticError{
 		return visitor.visit(this);
 	}
 	

@@ -11,7 +11,7 @@ public class UserType extends Type {
 
 	private String name;
 
-	public Object accept(Visitor visitor) throws SemanticError {
+	public Object accept(Visitor visitor) throws SemanticError{
 		return visitor.visit(this);
 	}
 

@@ -255,7 +255,7 @@ public class SymbolSetter implements Visitor{
 		//get localVariable type
 		Type localVariable_type = (Type) localVariable.getType().accept(this);
 		//get localVariable symbol
-		Symbol localVariable_symbol = localVariable.enclosingScope().getVariable(localVariable.getName());
+		Symbol localVariable_symbol = ((VariableSymbolTable)localVariable.enclosingScope()).getVariable(localVariable.getName());
 		//set type to symbol
 		localVariable_symbol.setType(localVariable_type);
 		

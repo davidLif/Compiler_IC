@@ -61,6 +61,7 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 	@Override
 	public SymbolTable visit(Program program, SymbolTable globalSymTable) throws SemanticError {
 		
+
 		
 		/* iterate over the classes in the program */
 		List<ICClass> classList = program.getClasses();

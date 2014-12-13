@@ -5,9 +5,15 @@ public class NullType extends Type{
 	@Override
 	protected String getTypeRep() {
 		
-		return "null";
+		return "Primitive type: null";
 	}
 
+	@Override
+	public String toString()
+	{
+		return "null";
+	}
+	
 	@Override
 	public boolean subTypeOf(Type t) {
 		

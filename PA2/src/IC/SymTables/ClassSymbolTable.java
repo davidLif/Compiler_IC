@@ -129,12 +129,7 @@ public class ClassSymbolTable extends SymbolTable{
 	 */
 	public boolean containsLocallyStatic(String id)
 	{
-		for(MethodSymbol sym : this.staticSymbolList)
-		{
-			if(sym.getId().equals(id))
-				return true;
-		}
-		return false;
+		return getStaticMethod(id) != null;
 	}
 	
 	/**
@@ -146,19 +141,8 @@ public class ClassSymbolTable extends SymbolTable{
 	public boolean containsLocallyVirtual(String id)
 	{
 		
-		for(FieldSymbol sym : this.fieldSymbolsList)
-		{
-			if(sym.getId().equals(id))
-				return true;
-		}
-			
-		for(MethodSymbol sym : this.virtualSymbolList)
-		{
-			if(sym.getId().equals(id))
-				return true;
-		}
+		return getFieldSymById(id) != null || getVirtualMethod(id) != null;
 		
-		return false;
 		
 	}
 
@@ -214,23 +198,20 @@ public class ClassSymbolTable extends SymbolTable{
 	public MethodSymbol getMethod(String name, boolean isStatic) {
 		
 		/* search the method in local scopes */
-		
+		MethodSymbol res = null; 
 		if(isStatic)
 		{
-			for(MethodSymbol sym : this.staticSymbolList)
-			{
-				if(sym.getId().equals(name))
-					return sym;
-			}
+			res = getStaticMethod(name);
 		}
 		else
 		{
-			for(MethodSymbol sym : this.virtualSymbolList)
-			{
-				if(sym.getId().equals(name))
-					return sym;
-			}
+			res = getVirtualMethod(name);
+			
 		}
+		
+		/* check if found in local scope */
+		if(res != null)
+			return res;
 		
 		/* try parent */
 		
@@ -243,6 +224,68 @@ public class ClassSymbolTable extends SymbolTable{
 		return null;
 	}
 
+	public List<FieldSymbol> getFieldSymbolsList() {
+		return fieldSymbolsList;
+	}
+
+	public List<StaticMethodSymbol> getStaticSymbolList() {
+		return staticSymbolList;
+	}
+
+	public List<VirtualMethodSymbol> getVirtualSymbolList() {
+		return virtualSymbolList;
+	}
+
+	
+	/**
+	 * 
+	 * this method returns field symbol with given id, only from local scope (not from parents)
+	 * 
+	 * @param id - name of field symbol
+	 * @return the symbol if found, null o/w.
+	 */
+	public FieldSymbol getFieldSymById(String id)
+	{
+		for(FieldSymbol field : this.fieldSymbolsList)
+		{
+			if(field.getId().equals( id))
+				return field;
+			
+		}
+		return null;
+	}
+	
+	/**
+	 * method returns virtual method with given id from local scope, returns null if not found
+	 * @param id
+	 * @return
+	 */
+	
+	public MethodSymbol getVirtualMethod(String id)
+	{
+		for(MethodSymbol sym : this.virtualSymbolList)
+		{
+			if(sym.getId().equals(id))
+				return sym;
+		}
+		return null;
+	}
+	
+	/**
+	 * method returns static method symbol with given id from local scope, returns null if not found
+	 * @param id
+	 * @return
+	 */
+	
+	public MethodSymbol getStaticMethod(String id)
+	{
+		for(MethodSymbol sym : this.staticSymbolList)
+		{
+			if(sym.getId().equals(id))
+				return sym;
+		}
+		return null;
+	}
 	
 	
 

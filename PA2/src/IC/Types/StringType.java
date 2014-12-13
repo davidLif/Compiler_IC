@@ -4,6 +4,13 @@ public class StringType extends Type{
 
 	@Override
 	protected String getTypeRep() {
+		return "Primitive type: string";
+	}
+	
+	
+	@Override
+	public String toString()
+	{
 		return "string";
 	}
 

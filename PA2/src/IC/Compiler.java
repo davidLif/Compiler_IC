@@ -113,7 +113,9 @@ public class Compiler {
 				
 				//GlobalSymbolTable tbl_lib = symTableBuilder.createGlobalSymbolTable(lib_prog, args[1]);
 				
-				TypeTable test1 = new TypeTable(prog, lib_prog,tbl);
+				TypeTable test1 = new TypeTable(prog, lib_prog, tbl);
+				
+				IC.SemanticChecks.InheritanceCheck.check(prog, tbl);
 				
 				tbl.printTable();
 				

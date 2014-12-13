@@ -11,7 +11,7 @@ public class Return extends Statement {
 
 	private Expression value = null;
 
-	public Object accept(Visitor visitor) throws SemanticError {
+	public Object accept(Visitor visitor) throws SemanticError{
 		return visitor.visit(this);
 	}
 	

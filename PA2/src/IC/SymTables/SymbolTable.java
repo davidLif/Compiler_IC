@@ -170,11 +170,10 @@ public abstract class SymbolTable {
 		this.parentSymbolTable = parent;
 	}
 	
-	public Symbol getVariable(String name) {
-		// TODO Auto-generated method stub
-		return null;
+	public SymbolTable getParentSymbolTable()
+	{
+		return this.parentSymbolTable;
 	}
-	
 	
 
 

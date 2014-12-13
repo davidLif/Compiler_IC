@@ -11,7 +11,7 @@ public class Length extends Expression {
 
 	private Expression array;
 
-	public Object accept(Visitor visitor) throws SemanticError {
+	public Object accept(Visitor visitor) throws SemanticError{
 		return visitor.visit(this);
 	}
 	

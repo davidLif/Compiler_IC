@@ -31,7 +31,7 @@ public interface Visitor {
 
 	public Object visit(CallStatement callStatement) throws SemanticError;
 
-	public Object visit(Return returnStatement) throws SemanticError;
+	public Object visit(Return returnStatement ) throws SemanticError;
 
 	public Object visit(If ifStatement) throws SemanticError;
 
@@ -61,7 +61,7 @@ public interface Visitor {
 
 	public Object visit(Length length) throws SemanticError;
 
-	public Object visit(MathBinaryOp binaryOp) throws SemanticError;
+	public Object visit(MathBinaryOp binaryOp) throws SemanticError; 
 
 	public Object visit(LogicalBinaryOp binaryOp) throws SemanticError;
 

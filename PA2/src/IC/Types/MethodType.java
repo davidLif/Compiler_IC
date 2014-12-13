@@ -45,6 +45,7 @@ public class MethodType extends Type{
 			sb.append(arg.toString());
 		}
 		sb.append(" -> " + returnType.toString());
+		sb.append("}");
 		return sb.toString();
 	}
 
@@ -58,12 +59,45 @@ public class MethodType extends Type{
 		return true;
 	}
 
+	
+	/**
+	 * this method type is a subtype of t if and only if the following holds:
+	 * 		[0. t is a MethodType]
+	 * 		1. same number of arguments
+	 *      2. exactly same type of arguments
+	 *      3. return type is subtype of t's return type
+	 *      
+	 * 
+	 */
+	
 	@Override
 	public boolean subTypeOf(Type t) {
 		
+		if(t == this)
+			return true;
 		
-		//TODO maybe needs a change
-		return this == t;
+		if(!(t instanceof MethodType))
+			return false;
+		
+		MethodType other = (MethodType)t; 
+		
+		/* number of arguments check */
+		if(other.arguments.size() != this.arguments.size())
+			return false;
+		
+		/* return type check */
+		if(!this.returnType.subTypeOf(t))
+			return false;
+		
+		for( int i = 0; i < this.arguments.size(); ++ i)
+		{
+			if(this.arguments.get(i) != other.arguments.get(i))
+			{
+				return false;
+			}
+		}
+	
+		return true;
 	}
 
 }

@@ -7,6 +7,12 @@ public class IntType extends Type{
 	@Override
 	protected String getTypeRep() {
 		
+		return "Primitive type: int";
+	}
+	
+	@Override
+	public String toString()
+	{
 		return "int";
 	}
 

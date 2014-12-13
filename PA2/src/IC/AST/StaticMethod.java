@@ -11,7 +11,7 @@ import IC.SemanticChecks.SemanticError;
  */
 public class StaticMethod extends Method {
 
-	public Object accept(Visitor visitor) throws SemanticError {
+	public Object accept(Visitor visitor) throws SemanticError{
 		return visitor.visit(this);
 	}
 	

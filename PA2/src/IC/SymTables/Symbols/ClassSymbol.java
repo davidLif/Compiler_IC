@@ -17,7 +17,7 @@ public class ClassSymbol extends Symbol {
 	}
 	
 	
-	public SymbolTable getClassSymbolTable()
+	public ClassSymbolTable getClassSymbolTable()
 	{
 		return this.symbolTable;
 	}
@@ -27,4 +27,5 @@ public class ClassSymbol extends Symbol {
 	{
 		return String.format("Class : %s", this.id);
 	}
+	
 }

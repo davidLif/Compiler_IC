@@ -19,7 +19,7 @@ public class ICClass extends ASTNode {
 
 	private List<Method> methods;
 
-	public Object accept(Visitor visitor) throws SemanticError {
+	public Object accept(Visitor visitor) throws SemanticError{
 		return visitor.visit(this);
 	}
 	

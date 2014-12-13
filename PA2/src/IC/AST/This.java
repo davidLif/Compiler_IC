@@ -9,7 +9,7 @@ import IC.SemanticChecks.SemanticError;
  */
 public class This extends Expression {
 
-	public Object accept(Visitor visitor) throws SemanticError {
+	public Object accept(Visitor visitor) throws SemanticError{
 		return visitor.visit(this);
 	}
 	

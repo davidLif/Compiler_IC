@@ -11,6 +11,12 @@ public class VoidType extends Type{
 	@Override
 	protected String getTypeRep() {
 		
+		return "Primitive type: void";
+	}
+	
+	@Override
+	public String toString()
+	{
 		return "void";
 	}
 

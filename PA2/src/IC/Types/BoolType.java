@@ -4,8 +4,14 @@ public class BoolType extends Type{
 
 	@Override
 	protected String getTypeRep() {
-		return "boolean";
+		return "Primitive type: boolean";
 		
+	}
+	
+	@Override
+	public String toString()
+	{
+		return "boolean";
 	}
 
 	@Override
