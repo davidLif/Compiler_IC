@@ -34,6 +34,7 @@ import IC.AST.UserType;
 import IC.AST.VariableLocation;
 import IC.AST.VirtualCall;
 import IC.AST.VirtualMethod;
+import IC.AST.Visitor;
 import IC.AST.While;
 import IC.SemanticChecks.SemanticError;
 import IC.SymTables.ClassSymbolTable;
@@ -55,20 +56,23 @@ import IC.SymTables.Symbols.Symbol;
 // set the type at the first chance you have
 // when you see the method, set its type (already when visiting the class)
 
-public class SymbolSetter implements PropagatingVisitor<SymbolTable, Type>{
+public class SymbolSetter implements Visitor{
 	
 	TypeTable all_pos_types;
+	GlobalSymbolTable globalSymbolTable;
 	
-	public SymbolSetter(TypeTable table){
+	public SymbolSetter(TypeTable table,GlobalSymbolTable globalSymbolTable){
 		all_pos_types = table;
+		this.globalSymbolTable = globalSymbolTable;
 	}
 
 	@Override
-	public Type visit(Program program, SymbolTable context) throws SemanticError {
-		GlobalSymbolTable globalSymbolTable = (GlobalSymbolTable)context;
+	public Type visit(Program program) throws SemanticError {
+
 		
 		// first, set build all class types on first iteration
 		for (ICClass program_class : program.getClasses()){
+
 			//get class symbol out of GlobalSymbolTable
 			ClassSymbol class_symbol = globalSymbolTable.getClassSymbol(program_class.getName());
 			//calc class type
@@ -79,20 +83,29 @@ public class SymbolSetter implements PropagatingVisitor<SymbolTable, Type>{
 		
 		//travel into classes
 		for (ICClass program_class : program.getClasses()){
-			program_class.accept(this, context.getChildSymbolTableById(program_class.getName()));
+			program_class.accept(this);
 		}
 		return null;
 	}
 
 	@Override
-	public Type visit(ICClass icClass, SymbolTable context) throws SemanticError {
+	public Type visit(ICClass icClass) throws SemanticError {
+		//get class symbol table from field enclosingTable or method enclosing table
+		ClassSymbolTable classSymbolTable =null;
 		
-		ClassSymbolTable classSymbolTable = (ClassSymbolTable)context;
+		if (icClass.getFields().size() >0){
+			classSymbolTable= (ClassSymbolTable)icClass.getFields().get(0).enclosingScope();
+		}
+		else {
+			if(icClass.getMethods().size() > 0  ){
+				classSymbolTable= (ClassSymbolTable)icClass.getMethods().get(0).enclosingScope();
+			}
+		}
+		
 		//move over all fields and set their type.
-		
 		for (Field class_field : icClass.getFields()) {
 			//calc type for field
-			Type field_type  = class_field.accept(this, null);
+			Type field_type  = (Type) class_field.accept(this);
 			//get field symbol
 			FieldSymbol field_symbol = classSymbolTable.getField(class_field.getName());
 			//set type
@@ -103,12 +116,9 @@ public class SymbolSetter implements PropagatingVisitor<SymbolTable, Type>{
 		//now travel into each method
 		for (Method class_method : icClass.getMethods()) {
 			//calc type for method
-			Type method_type = class_method.accept(this, classSymbolTable.getChildSymbolTableById(class_method.getName())); 
+			Type method_type = (Type) class_method.accept(this); 
 			//get method symbol - can be virtual or static
 			MethodSymbol method_symbol = classSymbolTable.getMethod(class_method.getName(), class_method.isStatic());
-			
-			
-			
 			//set to symbol
 			method_symbol.setType(method_type);
 		}
@@ -118,31 +128,29 @@ public class SymbolSetter implements PropagatingVisitor<SymbolTable, Type>{
 	}
 
 	@Override
-	public Type visit(Field field, SymbolTable context) throws SemanticError {
-		return field.getType().accept(this, null);
+	public Type visit(Field field) throws SemanticError {
+		return (Type) field.getType().accept(this);
 	}
 
 	@Override
-	public Type visit(VirtualMethod method, SymbolTable context) throws SemanticError {
-		method_visit(method, context);
+	public Type visit(VirtualMethod method) throws SemanticError {
+		method_visit(method);
 		return all_pos_types.add_method_type(method);
 	}
 
 	@Override
-	public Type visit(StaticMethod method, SymbolTable context) throws SemanticError {
+	public Type visit(StaticMethod method) throws SemanticError {
 
-		method_visit(method, context);
+		method_visit(method);
 		return all_pos_types.add_method_type(method);
 	}
 
 
 
 	@Override
-	public Type visit(LibraryMethod method, SymbolTable context) throws SemanticError {
+	public Type visit(LibraryMethod method) throws SemanticError {
 		
-		MethodSymbolTable symTable = (MethodSymbolTable)context;
-		
-		formal_list_visit(method, symTable);
+		formal_list_visit(method);
 		
 		//in library method there are no statements
 		
@@ -150,12 +158,12 @@ public class SymbolSetter implements PropagatingVisitor<SymbolTable, Type>{
 	}
 
 	@Override
-	public Type visit(Formal formal, SymbolTable context) throws SemanticError {
-		return formal.getType().accept(this, null);//formals type is defined by its "type" field
+	public Type visit(Formal formal) throws SemanticError {
+		return (Type) formal.getType().accept(this);//formals type is defined by its "type" field
 	}
 
 	@Override
-	public Type visit(PrimitiveType type, SymbolTable context) throws SemanticError {
+	public Type visit(PrimitiveType type) throws SemanticError {
 		IC.Types.Type nodeType= null;
 		if (type.getDimension() == 0){
 			//we already entered into the table all primitive types - just get it
@@ -169,7 +177,7 @@ public class SymbolSetter implements PropagatingVisitor<SymbolTable, Type>{
 	}
 
 	@Override
-	public Type visit(UserType type, SymbolTable context) throws SemanticError {
+	public Type visit(UserType type) throws SemanticError {
 		// when first visiting program, we created all class possible types
 		ClassType class_type = all_pos_types.type_map_class.get(type.getName());
 		//so if we didn't find the class, it isn't defined in the program
@@ -180,83 +188,74 @@ public class SymbolSetter implements PropagatingVisitor<SymbolTable, Type>{
 	}
 
 	@Override
-	public Type visit(Assignment assignment, SymbolTable context) throws SemanticError {
+	public Type visit(Assignment assignment) throws SemanticError {
 		//travel into left side of assignment to set for name type
-		assignment.getVariable().accept(this, context);
+		assignment.getVariable().accept(this);
 		
 		return null;
 	}
 
 	@Override
-	public Type visit(CallStatement callStatement, SymbolTable context) throws SemanticError {
+	public Type visit(CallStatement callStatement) throws SemanticError {
 		// CallStatement holds only a call and doesn't have a symbol
 		
 		return null;
 	}
 
 	@Override
-	public Type visit(Return returnStatement, SymbolTable context)throws SemanticError {
+	public Type visit(Return returnStatement) throws SemanticError {
 		return null;//Return statement will be evaluated only in TypeBuilder
 	}
 
 	@Override
-	public Type visit(If ifStatement, SymbolTable context) throws SemanticError {
+	public Type visit(If ifStatement) throws SemanticError {
 		
-		//TODO: probably better to just visit each statement
-		
-		//get other symbol table if .getOperation returns Statement block
-		SymbolTable if_operation_symbol_table = getStmtContext(context,ifStatement.getOperation());
-		//visit into if block
-		ifStatement.getOperation().accept(this, if_operation_symbol_table);
+		//visit into if block. 
+		ifStatement.getOperation().accept(this);
 		//visit into else block -if else  exist 
 		if (ifStatement.getElseOperation() != null){
-			//get other symbol table if .getElseOperation returns Statement block
-			SymbolTable else_operation_symbol_table = getStmtContext(context,ifStatement.getElseOperation());
 			//visit into else block
-			ifStatement.getElseOperation().accept(this, else_operation_symbol_table);
+			ifStatement.getElseOperation().accept(this);
 		}
 		return null;
 	}
 
 	@Override
-	public Type visit(While whileStatement, SymbolTable context) throws SemanticError {
-		//TODO: same as if
+	public Type visit(While whileStatement) throws SemanticError {
 		
-		//get other symbol table if .getOperation returns Statement block
-		SymbolTable while_operation_symbol_table = getStmtContext(context,whileStatement.getOperation());
 		//visit into while block
-		whileStatement.getOperation().accept(this, while_operation_symbol_table);
+		whileStatement.getOperation().accept(this);
 		return null;
 	}
 
 	@Override
-	public Type visit(Break breakStatement, SymbolTable context) throws SemanticError {
+	public Type visit(Break breakStatement) throws SemanticError {
 		//AST leaf without type
 		return null;
 	}
 
 	@Override
-	public Type visit(Continue continueStatement, SymbolTable context) throws SemanticError {
+	public Type visit(Continue continueStatement) throws SemanticError {
 		//AST leaf without type
 		return null;
 	}
 
 	//context is the appropriate symbol table for the statement block
 	@Override
-	public Type visit(StatementsBlock statementsBlock, SymbolTable context) throws SemanticError {
+	public Type visit(StatementsBlock statementsBlock) throws SemanticError {
 		//visit into each stmt
 		for (Statement stmt : statementsBlock.getStatements()){
-			stmt.accept(this, getStmtContext(context,stmt));
+			stmt.accept(this);
 		}
 		return null;
 	}
 
 	@Override
-	public Type visit(LocalVariable localVariable, SymbolTable context) throws SemanticError {
+	public Type visit(LocalVariable localVariable) throws SemanticError {
 		//get localVariable type
-		Type localVariable_type = localVariable.getType().accept(this, null);
+		Type localVariable_type = (Type) localVariable.getType().accept(this);
 		//get localVariable symbol
-		Symbol localVariable_symbol = ((VariableSymbolTable)context).getVariable(localVariable.getName());
+		Symbol localVariable_symbol = localVariable.enclosingScope().getVariable(localVariable.getName());
 		//set type to symbol
 		localVariable_symbol.setType(localVariable_type);
 		
@@ -264,127 +263,105 @@ public class SymbolSetter implements PropagatingVisitor<SymbolTable, Type>{
 	}
 
 	@Override
-	public Type visit(VariableLocation location, SymbolTable context) throws SemanticError {
+	public Type visit(VariableLocation location) throws SemanticError {
 		//Warning-May be a problem
 		return null;
 	}
 
 	@Override
-	public Type visit(ArrayLocation location, SymbolTable context) throws SemanticError {
+	public Type visit(ArrayLocation location) throws SemanticError {
 		//Warning-May be a problem
 		return null;
 	}
 
 	@Override
-	public Type visit(StaticCall call, SymbolTable context) throws SemanticError {
+	public Type visit(StaticCall call) throws SemanticError {
 		//Warning-May be a problem
 		return null;
 	}
 
 	@Override
-	public Type visit(VirtualCall call, SymbolTable context) throws SemanticError {
+	public Type visit(VirtualCall call) throws SemanticError {
 		//Warning-May be a problem, same
 		return null;
 	}
 
 	@Override
-	public Type visit(This thisExpression, SymbolTable context)throws SemanticError {
+	public Type visit(This thisExpression) throws SemanticError {
 		//calc this only in TypeBuilder
 		return null;
 	}
 
 	@Override
-	public Type visit(NewClass newClass, SymbolTable context) throws SemanticError {
+	public Type visit(NewClass newClass) throws SemanticError {
 		//calc this only in TypeBuilder
 		return null;
 	}
 
 	@Override
-	public Type visit(NewArray newArray, SymbolTable context) throws SemanticError {
+	public Type visit(NewArray newArray) throws SemanticError {
 		//calc this only in TypeBuilder
 		return null;
 	}
 
 	@Override
-	public Type visit(Length length, SymbolTable context) throws SemanticError {
+	public Type visit(Length length) throws SemanticError {
 		return null;
 	}
 
 	@Override
-	public Type visit(MathBinaryOp binaryOp, SymbolTable context)
-			throws SemanticError {
+	public Type visit(MathBinaryOp binaryOp) throws SemanticError {
 		return null;
 	}
 
 	@Override
-	public Type visit(LogicalBinaryOp binaryOp, SymbolTable context)
-			throws SemanticError {
+	public Type visit(LogicalBinaryOp binaryOp) throws SemanticError {
 		return null;
 	}
 
 	@Override
-	public Type visit(MathUnaryOp unaryOp, SymbolTable context)
-			throws SemanticError {
+	public Type visit(MathUnaryOp unaryOp) throws SemanticError {
 		return null;
 	}
 
 	@Override
-	public Type visit(LogicalUnaryOp unaryOp, SymbolTable context)
-			throws SemanticError {
+	public Type visit(LogicalUnaryOp unaryOp) throws SemanticError {
 		return null;
 	}
 
 	@Override
-	public Type visit(Literal literal, SymbolTable context)
-			throws SemanticError {
+	public Type visit(Literal literal) throws SemanticError {
 		return null;
 	}
 
 	@Override
-	public Type visit(ExpressionBlock expressionBlock, SymbolTable context)
-			throws SemanticError {
+	public Type visit(ExpressionBlock expressionBlock) throws SemanticError {
 		
 		//calc this only in TypeBuilder
 		return null;
 	}
 	
-	//every type we travel into a statement' it may be StatementsBlock- so get the right SymbolTable
-	private SymbolTable getStmtContext(SymbolTable context, Statement stmt) {
-		//if this is a , that we should give it another symbol table
-		SymbolTable stmt_table = context;
-		int stmt_block_counter =0;
-		if (stmt instanceof StatementsBlock ){
-			stmt_table = context.getChildrenTables().get(stmt_block_counter);
-		}
-		return stmt_table;
-		
-		//Warning-you probably don't need this method
-	}
 	
-	private void method_visit(Method method, SymbolTable context) throws SemanticError {
-		
-		MethodSymbolTable symTable = (MethodSymbolTable)context;
+	private void method_visit(Method method) throws SemanticError {
 		
 		//return type and argument type calculation for clalc method type are handled in add_mathod_type
 		
-		formal_list_visit(method, symTable);
+		formal_list_visit(method);
 		
 		//visit all statements
 		for (Statement stmt : method.getStatements()){
-			SymbolTable stmt_table = getStmtContext(symTable, stmt); 
-			
-			stmt.accept(this, stmt_table);
+			stmt.accept(this);
 		}
 	}
 
-	private void formal_list_visit(Method method, MethodSymbolTable symTable)
+	private void formal_list_visit(Method method)
 			throws SemanticError {
 		//visit all the arguments
 		for (Formal arg : method.getFormals()){
 			//get argument type
-			Type arg_type = arg.accept(this, null);
+			Type arg_type = (Type) arg.accept(this);
 			//get argument symbol
-			Symbol arg_symbol =  symTable.getVariable(arg.getName());
+			Symbol arg_symbol =  ((MethodSymbolTable)arg.enclosingScope()).getVariable(arg.getName());
 			//set type to symbol
 			arg_symbol.setType(arg_type);
 		}

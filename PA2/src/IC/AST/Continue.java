@@ -9,7 +9,7 @@ import IC.SemanticChecks.SemanticError;
  */
 public class Continue extends Statement {
 
-	public Object accept(Visitor visitor) {
+	public Object accept(Visitor visitor) throws SemanticError{
 		return visitor.visit(this);
 	}
 	public <D,U> U accept(PropagatingVisitor<D,U> v, D context) throws SemanticError{

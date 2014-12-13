@@ -21,8 +21,9 @@ public abstract class ASTNode {
 	 * @param visitor
 	 *            The visitor.
 	 * @return A value propagated by the visitor.
+	 * @throws SemanticError 
 	 */
-	public abstract Object accept(Visitor visitor);
+	public abstract Object accept(Visitor visitor) throws SemanticError;
 
 	/**
 	 * Constructs an AST node corresponding to a line number in the original
@@ -67,7 +68,7 @@ public abstract class ASTNode {
 	{
 		this.enclosingScope = scope;
 	}
-	
+
 	/**
 	 * this method sets the type of the AST node
 	 * @param type - type of node

@@ -9,7 +9,7 @@ import IC.SemanticChecks.SemanticError;
  */
 public class Break extends Statement {
 
-	public Object accept(Visitor visitor) {
+	public Object accept(Visitor visitor) throws SemanticError {
 		return visitor.visit(this);
 	}
 	

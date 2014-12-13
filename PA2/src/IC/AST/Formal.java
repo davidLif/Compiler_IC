@@ -13,7 +13,7 @@ public class Formal extends ASTNode {
 
 	private String name;
 
-	public Object accept(Visitor visitor) {
+	public Object accept(Visitor visitor) throws SemanticError {
 		return visitor.visit(this);
 	}
 	

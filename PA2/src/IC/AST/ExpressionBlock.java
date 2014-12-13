@@ -11,7 +11,7 @@ public class ExpressionBlock extends Expression {
 
 	private Expression expression;
 
-	public Object accept(Visitor visitor) {
+	public Object accept(Visitor visitor) throws SemanticError {
 		return visitor.visit(this);
 	}
 	

@@ -80,14 +80,14 @@ public class Compiler {
 				
 				// now parse the optional library file 
 				LibParser lib_parser = null;
-				Program lib_prog = null;
+				Program lib_prog=null;
 				if(library_name != null)
 				{
 					FileReader libFile = new FileReader(library_name);
 					scanner = new Lexer(libFile);
 					lib_parser = new LibParser(scanner);
 					
-					Symbol lib_root = lib_parser.parse();
+					Symbol  lib_root = lib_parser.parse();
 					if(syntax_errors != null)
 					{
 						// parsing failed
@@ -95,7 +95,7 @@ public class Compiler {
 						
 					}
 					
-					 lib_prog = (Program)lib_root.value;
+					lib_prog = (Program)lib_root.value;
 					//PrettyPrinter lib_printer = new PrettyPrinter(library_name);
 					//String str_lib = (String) lib_prog.accept(lib_printer);
 					//System.out.print(str_lib); // line for debugging
@@ -108,17 +108,16 @@ public class Compiler {
 				
 				SymbolTableBuilder symTableBuilder = new SymbolTableBuilder();
 				
-			SymbolTable tbl = symTableBuilder.createGlobalSymbolTable(prog, args[0]);
+				GlobalSymbolTable tbl = (GlobalSymbolTable) symTableBuilder.createGlobalSymbolTable(prog, args[0]);
 				
 				
-				//SymbolTable tbl_lib = symTableBuilder.createGlobalSymbolTable(lib_prog, args[1]);
+				//GlobalSymbolTable tbl_lib = symTableBuilder.createGlobalSymbolTable(lib_prog, args[1]);
 				
-				//TypeTable test1 = new TypeTable(prog, lib_prog,tbl);
-				//System.out.println(tbl);
+				TypeTable test1 = new TypeTable(prog, lib_prog,tbl);
 				
 				tbl.printTable();
 				
-			//	System.out.println(tbl);
+				System.out.println(test1);
 				
 				
 				

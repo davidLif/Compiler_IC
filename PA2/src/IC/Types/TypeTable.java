@@ -11,6 +11,7 @@ import IC.AST.ICClass;
 import IC.AST.Method;
 import IC.AST.Program;
 import IC.SemanticChecks.SemanticError;
+import IC.SymTables.GlobalSymbolTable;
 import IC.SymTables.SymbolTable;
 
 public class TypeTable {
@@ -41,7 +42,7 @@ public class TypeTable {
 	}
 	
 	/* ASSUMPTION - there are no "recursive type definitions*/
-	public TypeTable(Program prog,Program lib,SymbolTable symbol_table)
+	public TypeTable(Program prog,Program lib,GlobalSymbolTable symbol_table)
 	{
 		type_map_class = new HashMap<String, ClassType>();
 		type_map_method = new HashMap<Type, List <MethodType>>();
@@ -51,9 +52,9 @@ public class TypeTable {
 		/* put primitive types to collection */
 		addPrimitiveTypes();
 		
-		SymbolSetter test = new SymbolSetter(this);
+		SymbolSetter test = new SymbolSetter(this,symbol_table);
 		try {
-			prog.accept(test, symbol_table);
+			prog.accept(test);
 		} catch (SemanticError e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -220,7 +221,7 @@ public class TypeTable {
 	private List<Type> getTypesOfFormals(List<Formal> formals) throws SemanticError {
 		List<Type> formals_type_list = new ArrayList<Type>(); 
 		for(Formal class_formal : formals){
-			Type formalType = class_formal.accept(new SymbolSetter(this),null); //in finding a type of formal, no context should be used
+			Type formalType = (Type) class_formal.accept(new SymbolSetter(this,null)); //in finding a type of formal, no context should be used
 			formals_type_list.add(formalType);
 		}
 		return formals_type_list;
@@ -228,7 +229,7 @@ public class TypeTable {
 	
 	//Given AST node type calc type for table type
 	private Type getTypeFromASTType(IC.AST.Type type) throws SemanticError {
-		return type.accept(new SymbolSetter(this), null);//in finding a type of type, no context should be used
+		return (Type) type.accept(new SymbolSetter(this,null));//in finding a type of type, no context should be used
 	}
 	
 	public MethodType getMethodTypeFromMap(Method class_method) throws SemanticError{

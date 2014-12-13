@@ -13,7 +13,7 @@ public class NewArray extends New {
 
 	private Expression size;
 
-	public Object accept(Visitor visitor) {
+	public Object accept(Visitor visitor) throws SemanticError {
 		return visitor.visit(this);
 	}
 	
