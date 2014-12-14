@@ -9,6 +9,7 @@ import java.util.List;
 
 import java_cup.runtime.Symbol;
 import IC.SemanticChecks.InitBeforeUse;
+import IC.SemanticChecks.methodReturnPaths;
 import IC.SymTables.*;
 import IC.Types.TypeTable;
 
@@ -118,8 +119,13 @@ public class Compiler {
 				
 				IC.SemanticChecks.InheritanceCheck.check(prog, tbl);
 				
+				/* init before use check */
 				InitBeforeUse initBeforeUseTest = new InitBeforeUse(prog);
 				initBeforeUseTest.check();
+				
+				/* all paths return value */
+				methodReturnPaths methodPaths = new methodReturnPaths(prog, test1);
+				methodPaths.check();
 				
 				tbl.printTable();
 				
