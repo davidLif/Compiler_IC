@@ -45,13 +45,17 @@ public abstract class Type {
 	 */
 	protected abstract String getTypeRep();
 	
+	
+	/**
+	 * method returns true if and only if the types represent exactly the same type (same object)
+	 * @param type_1
+	 * @param type_2
+	 * @return
+	 */
+	
 	protected static boolean type_compare(Type type_1,Type type_2){
-		if(type_1.table_id != type_2.table_id){
-			return false;
-		}
-		else {
-			return true;
-		}
+		return type_1.table_id == type_2.table_id;
+		
 	}
 	
 }

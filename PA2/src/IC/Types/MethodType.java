@@ -40,14 +40,30 @@ public class MethodType extends Type{
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append("{");
-		for(Type arg : arguments)
+		
+		for(int i = 0; i < arguments.size(); ++i)
 		{
-			sb.append(arg.toString());
+			
+			sb.append(arguments.get(i).toString());
+			
+			if(i < arguments.size() - 1)
+			{
+				// not last
+				sb.append(", ");
+				
+			}
 		}
+		
 		sb.append(" -> " + returnType.toString());
 		sb.append("}");
 		return sb.toString();
 	}
+	
+	/**
+	 * method returns true iff the list of formals to_compare is the same
+	 * @param to_compare
+	 * @return
+	 */
 
 	public boolean formals_compare(List<Type> to_compare){
 		if (to_compare.size() != arguments.size()){
@@ -81,21 +97,15 @@ public class MethodType extends Type{
 		
 		MethodType other = (MethodType)t; 
 		
-		/* number of arguments check */
-		if(other.arguments.size() != this.arguments.size())
-			return false;
 		
 		/* return type check */
-		if(!this.returnType.subTypeOf(t))
+		if(!this.returnType.subTypeOf(other.getReturnType()))
 			return false;
 		
-		for( int i = 0; i < this.arguments.size(); ++ i)
-		{
-			if(this.arguments.get(i) != other.arguments.get(i))
-			{
-				return false;
-			}
-		}
+		/* formals check */
+		if(!this.formals_compare(other.arguments))
+			return false;
+	
 	
 		return true;
 	}
