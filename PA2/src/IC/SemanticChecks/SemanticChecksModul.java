@@ -2,6 +2,9 @@ package IC.SemanticChecks;
 import java.util.List;
 
 import IC.AST.*;
+import IC.SymTables.ClassSymbolTable;
+import IC.SymTables.MethodSymbolTable;
+import IC.SymTables.SymbolTable;
 import IC.SymTables.Symbols.ClassSymbol;
 import IC.SymTables.Symbols.FieldSymbol;
 import IC.SymTables.Symbols.LocalVariableSymbol;
@@ -10,15 +13,20 @@ import IC.SymTables.Symbols.ParameterSymbol;
 import IC.SymTables.Symbols.StaticMethodSymbol;
 import IC.SymTables.Symbols.VirtualMethodSymbol;
 import IC.SemanticChecks.SemanticError;
+import IC.Types.ArrayType;
+import IC.Types.MethodType;
+import IC.Types.StringType;
+import IC.Types.Type;
+import IC.Types.VoidType;
 
 
 
 public class SemanticChecksModul implements  PropagatingVisitor<Object, Boolean>  {
 
 	
-	boolean inside_for_or_while_loop = false;
-	boolean inside_virtual_function = false;
-	int how_many_main_functions_found = 0;
+	boolean inside_loop = false;
+	boolean inside_static_function = false;
+	boolean found_main = false;
 	
 	public Boolean check(Program program) throws SemanticError
 	{
@@ -65,111 +73,131 @@ public class SemanticChecksModul implements  PropagatingVisitor<Object, Boolean>
 	public Boolean visit(VirtualMethod method, Object context)
 			throws SemanticError {
 		
+		
+		 List<Statement> stList = method.getStatements();
+		
 		/* checking that it's not a main function */
-		if ( method.getName().equals("main"))
+		if ( method.getName().equals("main") && found_main == true) /* DENIS is that necassetry? */
 		{
-			String err_msg = "Found a non static main method";
+			
+			String err_msg = "Found more than one main functions";
 			throw new SemanticError(method.getLine(), err_msg);
 		}
 		
-		inside_virtual_function = true;
-		method.accept(this,null);
-		inside_virtual_function = false;
-		return null;
+		for (Statement stm: stList)
+		{
+			stm.accept(this,null);
+		}
+		
+		return true;
 	}
+	
+
 
 	@Override
 	public Boolean visit(StaticMethod method, Object context)
 			throws SemanticError {
 
 		String methodName = method.getName();
-		List<Formal> params;
-		params = method.getFormals();
+		List<Statement> stList = method.getStatements();
+		
 		if ( methodName.equals("Main"))
 		{
-			/* checking that it's a real main function */
+			/* checking that it's in a correct form of a main function */
 			boolean fail = false;
-			how_many_main_functions_found++;
-			if( how_many_main_functions_found > 1)
+			ClassSymbolTable scope = (ClassSymbolTable) method.enclosingScope();  // ??
+			MethodSymbol SymbolTable =  scope.getMethod("Main", true );
+			MethodType methodType = (MethodType) SymbolTable.getType();
+			List<Type> arguments = methodType.getArguments();
+			
+			
+			if(found_main == true) /* we have already seen a main function */
 			{
 				fail = true;
 			}
-			/*if ( method.getType() != "VOID" )  denis how should I check it! 
+			if ( ! (methodType.getReturnType() instanceof VoidType) ) /* the return type is not a void */
 			{
 				fail = true;
 			}
 		
-			if( params.length != 1 && params.get(0).getType() = "string array")
+			if( !( (arguments.size() == 1) && (arguments.get(0) instanceof ArrayType) /* params are string [] */
+					&&   ((ArrayType) arguments.get(0)).getBasicType() instanceof StringType   
+					&&    ((ArrayType) arguments.get(0)).getDimensions() != 1 ))
 			{
 				fail = true;
 			}
-			*/
 			
 			if (fail == true)
 			{
 				String err_msg = "Main function is not in the corect signature";
 				throw new SemanticError(method.getLine(), err_msg);
 			}
+			found_main = true;
 			 
 		}
 		
-		
-		method.accept(this,null);
+		inside_static_function = true;
+		for (Statement stm: stList)
+		{
+			stm.accept(this,null);
+		}
+		inside_static_function = false;
 		return true;
 	}
 
 	@Override
 	public Boolean visit(LibraryMethod method, Object context)
 			throws SemanticError {
-		// TODO Auto-generated method stub
 		method.accept(this,null);
 		return true;
 	}
 
 	@Override
 	public Boolean visit(Formal formal, Object context) throws SemanticError {
-		// TODO Auto-generated method stub
-		return null;
+		return true;
 	}
 
 	@Override
 	public Boolean visit(PrimitiveType type, Object context)
 			throws SemanticError {
-		// TODO Auto-generated method stub
-		return null;
+		return true;
 	}
 
 	@Override
 	public Boolean visit(UserType type, Object context) throws SemanticError {
-		// TODO Auto-generated method stub
-		return null;
+		return true;
 	}
 
 	@Override
 	public Boolean visit(Assignment assignment, Object context)
 			throws SemanticError {
-		// TODO Auto-generated method stub
-		return null;
+		assignment.getAssignment().accept(this,null); 
+		return true;
 	}
 
 	@Override
 	public Boolean visit(CallStatement callStatement, Object context)
 			throws SemanticError {
-		// TODO Auto-generated method stub
-		return null;
+		callStatement.getCall().accept(this,null);
+		return true;
 	}
 
 	@Override
 	public Boolean visit(Return returnStatement, Object context)
 			throws SemanticError {
-		// TODO Auto-generated method stub
-		return null;
+		returnStatement.getValue().accept(this,null);
+		return true;
 	}
 
 	@Override
 	public Boolean visit(If ifStatement, Object context) throws SemanticError {
-		// TODO Auto-generated method stub
-		return null;
+		
+		
+		ifStatement.getCondition().accept(this,null);
+		ifStatement.getOperation().accept(this,null);
+		ifStatement.getElseOperation().accept(this,null);
+
+		return true;
 	}
 
 	@Override
@@ -177,16 +205,25 @@ public class SemanticChecksModul implements  PropagatingVisitor<Object, Boolean>
 			throws SemanticError {
 		/* we are in a while loop - thus the visit of a break statement is valid */
 		Statement st = whileStatement.getOperation();
-		inside_for_or_while_loop = true;
-		st.accept(this, null);
-		inside_for_or_while_loop = false;
-		return true;
+		
+		if(inside_loop = true) /* we are already inside a loop */
+		{
+			st.accept(this, null);
+			return true;
+		}
+		else
+		{
+			inside_loop = true;
+			st.accept(this, null);
+			inside_loop = false;
+			return true;
+		}
 	}
 
 	@Override
 	public Boolean visit(Break breakStatement, Object context)
 			throws SemanticError {
-		if( inside_for_or_while_loop == false)
+		if( inside_loop == false)
 		{
 			String err_msg = "Found a break not inside a loop statement";
 			throw new SemanticError(breakStatement.getLine(), err_msg);
@@ -201,7 +238,7 @@ public class SemanticChecksModul implements  PropagatingVisitor<Object, Boolean>
 	@Override
 	public Boolean visit(Continue continueStatement, Object context)
 			throws SemanticError {
-		if( inside_for_or_while_loop == false)
+		if( inside_loop == false)
 		{
 			String err_msg = "Found a break not inside a loop statement";
 			throw new SemanticError(continueStatement.getLine(), err_msg);
@@ -226,42 +263,51 @@ public class SemanticChecksModul implements  PropagatingVisitor<Object, Boolean>
 	@Override
 	public Boolean visit(LocalVariable localVariable, Object context)
 			throws SemanticError {
-		// TODO Auto-generated method stub
-		return null;
+		return true;
 	}
 
 	@Override
 	public Boolean visit(VariableLocation location, Object context)
 			throws SemanticError {
-		// TODO Auto-generated method stub
-		return null;
+		return true;
 	}
 
 	@Override
 	public Boolean visit(ArrayLocation location, Object context)
 			throws SemanticError {
-		// TODO Auto-generated method stub
-		return null;
+		location.getArray().accept(this, null);
+		location.getIndex().accept(this, null);
+		return true;
 	}
 
 	@Override
 	public Boolean visit(StaticCall call, Object context) throws SemanticError {
-		// TODO Auto-generated method stub
-		return null;
+		 List<Expression> arg = call.getArguments();
+		 for (Expression a: arg)
+		 {
+			 a.accept(this, null);
+		 }
+		
+		
+		return true;
 	}
 
 	@Override
 	public Boolean visit(VirtualCall call, Object context) throws SemanticError {
-		// TODO Auto-generated method stub
-		return null;
+		 List<Expression> arg = call.getArguments();
+		 for (Expression a: arg)
+		 {
+			 a.accept(this, null);
+		 }
+		return true;
 	}
 
 	@Override
 	public Boolean visit(This thisExpression, Object context)
 			throws SemanticError {
-		if( inside_virtual_function == false)
+		if( inside_static_function == true)
 		{
-			String err_msg = "Found a this not inside a virtual method";
+			String err_msg = "Found this in use not in an instance method";
 			throw new SemanticError(thisExpression .getLine(), err_msg);
 		}
 		else
@@ -274,62 +320,67 @@ public class SemanticChecksModul implements  PropagatingVisitor<Object, Boolean>
 	@Override
 	public Boolean visit(NewClass newClass, Object context)
 			throws SemanticError {
-		// TODO Auto-generated method stub
-		return null;
+
+		return true;
 	}
 
 	@Override
 	public Boolean visit(NewArray newArray, Object context)
 			throws SemanticError {
-		// TODO Auto-generated method stub
-		return null;
+		newArray.getSize().accept(this,null);
+		return true;
 	}
 
 	@Override
 	public Boolean visit(Length length, Object context) throws SemanticError {
-		// TODO Auto-generated method stub
-		return null;
+		length.getArray().accept(this,null);
+		return true;
 	}
 
 	@Override
 	public Boolean visit(MathBinaryOp binaryOp, Object context)
 			throws SemanticError {
-		// TODO Auto-generated method stub
-		return null;
+		
+		binaryOp.getFirstOperand().accept(this,null);
+		binaryOp.getSecondOperand().accept(this,null);
+	
+		return true;
 	}
 
 	@Override
 	public Boolean visit(LogicalBinaryOp binaryOp, Object context)
 			throws SemanticError {
-		// TODO Auto-generated method stub
-		return null;
+		binaryOp.getFirstOperand().accept(this,null);
+		binaryOp.getSecondOperand().accept(this,null);
+		return true;
 	}
 
 	@Override
 	public Boolean visit(MathUnaryOp unaryOp, Object context)
 			throws SemanticError {
-		// TODO Auto-generated method stub
-		return null;
+		unaryOp.getOperand().accept(this,null);
+		return true;
 	}
 
 	@Override
 	public Boolean visit(LogicalUnaryOp unaryOp, Object context)
 			throws SemanticError {
-		// TODO Auto-generated method stub
-		return null;
+		unaryOp.getOperand().accept(this,null);
+		return true;
 	}
 
 	@Override
 	public Boolean visit(Literal literal, Object context) throws SemanticError {
-		// TODO Auto-generated method stub
-		return null;
+		return true;
 	}
 
 	@Override
 	public Boolean visit(ExpressionBlock expressionBlock, Object context)
 			throws SemanticError {
-		// TODO Auto-generated method stub
-		return null;
+		expressionBlock.getExpression().accept(this, null);
+		
+		
+		return true;
 	}
 
 }

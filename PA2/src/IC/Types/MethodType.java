@@ -4,7 +4,8 @@ import java.util.List;
 
 public class MethodType extends Type{
 
-	
+
+
 	private List<Type> arguments;
 	private Type returnType;
 	
@@ -13,6 +14,20 @@ public class MethodType extends Type{
 	 * @param args - list of types (method argument types)
 	 * @param returnType - return type of method
 	 */
+	
+	
+	
+	/* Getters functions for the fields. Will be used in semantic check process */
+	public List<Type> getArguments() {
+		return arguments;
+	}
+
+
+	public Type getReturnType() {
+		return returnType;
+	}
+
+
 	
 	public MethodType(List<Type> args, Type returnType)
 	{
