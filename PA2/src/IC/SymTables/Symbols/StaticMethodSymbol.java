@@ -4,6 +4,7 @@ public class StaticMethodSymbol extends MethodSymbol{
 
 	public StaticMethodSymbol(String id) {
 		super(id);
+		this.kind = SymbolKind.STATIC_METHOD;
 	}
 
 

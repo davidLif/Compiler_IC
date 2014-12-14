@@ -6,16 +6,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import IC.AST.Method;
+
 import IC.AST.VariableLocation;
-import IC.SymTables.Symbols.LocalVariableSymbol;
 import IC.SymTables.Symbols.MethodSymbol;
 import IC.SymTables.Symbols.ParameterSymbol;
 import IC.SymTables.Symbols.Symbol;
-import IC.SymTables.Symbols.VariableSymbol;
 import IC.Types.ClassType;
 import IC.Types.MethodType;
-import IC.Types.Type;
+
 
 
 public class MethodSymbolTable extends VariableSymbolTable{
@@ -33,10 +31,6 @@ public class MethodSymbolTable extends VariableSymbolTable{
 	private Map<String, ParameterSymbol> paramsList = new LinkedHashMap<String, ParameterSymbol>();
 	
 	
-	/**
-	 * name of variable used to retrieve symbol which contains the method return type
-	 */
-	private static String returnVariableName = "$ret";
 	
 	
 	public MethodSymbolTable(String id, boolean isStatic) {

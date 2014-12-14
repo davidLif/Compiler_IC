@@ -4,6 +4,7 @@ public class VirtualMethodSymbol extends MethodSymbol{
 
 	public VirtualMethodSymbol(String id) {
 		super(id);
+		this.kind = SymbolKind.VIRTUAL_METHOD;
 		
 	}
 

@@ -8,6 +8,7 @@ import java.util.List;
 
 
 import java_cup.runtime.Symbol;
+import IC.SemanticChecks.InitBeforeUse;
 import IC.SymTables.*;
 import IC.Types.TypeTable;
 
@@ -116,6 +117,9 @@ public class Compiler {
 				TypeTable test1 = new TypeTable(prog, lib_prog, tbl);
 				
 				IC.SemanticChecks.InheritanceCheck.check(prog, tbl);
+				
+				InitBeforeUse initBeforeUseTest = new InitBeforeUse(prog);
+				initBeforeUseTest.check();
 				
 				tbl.printTable();
 				

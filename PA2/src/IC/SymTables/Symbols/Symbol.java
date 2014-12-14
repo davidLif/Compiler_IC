@@ -15,6 +15,13 @@ public abstract class Symbol {
 	 */
 	protected Type type;
 	
+	
+	/**
+	 * kind of the symbol, used to avoid is instance operator
+	 */
+	protected SymbolKind kind;
+	
+	
 	public Symbol(String id, Type type)
 	{
 		this.id = id;
@@ -48,5 +55,17 @@ public abstract class Symbol {
 		return this.id;
 	}
 	
+	
+	public SymbolKind getKind()
+	{
+		return this.kind;
+	}
+	
+	
+	@Override
+	public int hashCode()
+	{
+		return this.id.hashCode();
+	}
 	
 }

@@ -13,7 +13,7 @@ public class ClassSymbol extends Symbol {
 	public ClassSymbol(String id, ClassSymbolTable symTable) {
 		super(id);
 		this.symbolTable = symTable;
-		
+		this.kind = SymbolKind.CLASS;
 	}
 	
 	

@@ -80,7 +80,7 @@ public class VariableLocation extends Location {
 	 */
 	public void setDefiningScope(SymbolTable scope)
 	{
-		this.setDefiningScope(scope);
+		this.definingScope = scope;
 	}
 	
 	public SymbolTable getDefiningScope()

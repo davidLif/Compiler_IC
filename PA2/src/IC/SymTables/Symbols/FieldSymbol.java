@@ -5,7 +5,7 @@ public class FieldSymbol extends Symbol{
 
 	public FieldSymbol(String id) {
 		super(id);
-		
+		this.kind = SymbolKind.FIELD;
 	}
 
 	
