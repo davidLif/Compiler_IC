@@ -1,18 +1,17 @@
 package IC.SymTables;
 
-import java.util.ArrayList;
+
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import IC.AST.Method;
-import IC.SymTables.Symbols.FieldSymbol;
-import IC.SymTables.Symbols.MethodSymbol;
-import IC.SymTables.Symbols.StaticMethodSymbol;
-import IC.SymTables.Symbols.Symbol;
-import IC.SymTables.Symbols.VirtualMethodSymbol;
 
+
+import IC.AST.VariableLocation;
 import IC.SymTables.Symbols.ClassSymbol;
+import IC.SymTables.Symbols.Symbol;
 
 
 public class GlobalSymbolTable extends SymbolTable{
@@ -20,8 +19,15 @@ public class GlobalSymbolTable extends SymbolTable{
 	/**
 	 * this list holds all the class entries
 	 */
-	private List<ClassSymbol> classList = new ArrayList<ClassSymbol>();
+	private Map<String, ClassSymbol> classList = new LinkedHashMap<String, ClassSymbol>();
 	
+
+	
+	
+	/**
+	 * 
+	 * @param id - name of file program
+	 */
 	public GlobalSymbolTable(String id) {
 		super(id);
 		
@@ -47,7 +53,7 @@ public class GlobalSymbolTable extends SymbolTable{
 	public void addClassSymbol(ClassSymbol sym)
 	{
 		
-		this.classList.add(sym);
+		this.classList.put(sym.getId(), sym);
 	}
 
 	
@@ -60,12 +66,9 @@ public class GlobalSymbolTable extends SymbolTable{
 	 */
 	public ClassSymbol getClassSymbol(String id)	
 	{
-		for(ClassSymbol sym : this.classList)
-		{
-			if(sym.getId().equals(id))
-				return sym;
-		}
-		
+		if(this.classList.containsKey(id))
+			
+			return this.classList.get(id);
 		return null;
 	}
 
@@ -78,7 +81,7 @@ public class GlobalSymbolTable extends SymbolTable{
 		
 		/* print body */
 		
-		for(ClassSymbol classSym : this.classList)
+		for(ClassSymbol classSym : this.classList.values())
 		{
 			System.out.println("\t" + classSym.toString());
 		}
@@ -87,13 +90,19 @@ public class GlobalSymbolTable extends SymbolTable{
 		
 	}
 	
+	/**
+	 * method returns an ordered collections of class symbols (ordered by insertion order )
+	 * @return
+	 */
 	
-	public List<ClassSymbol> getClassList()
+	public Collection<ClassSymbol> getClassList()
 	{
-		return this.classList;
+		return this.classList.values();
 	}
 
 
+	
+	
 	
 
 	

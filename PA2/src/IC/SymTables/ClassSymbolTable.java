@@ -2,10 +2,12 @@ package IC.SymTables;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import IC.AST.Method;
+import IC.AST.VariableLocation;
 import IC.SymTables.Symbols.FieldSymbol;
 import IC.SymTables.Symbols.MethodSymbol;
 import IC.SymTables.Symbols.StaticMethodSymbol;
@@ -17,17 +19,17 @@ public class ClassSymbolTable extends SymbolTable{
 
 	
 	
-	/* lists of possible symbols */
-	private List<FieldSymbol>         fieldSymbolsList;
-	private List<StaticMethodSymbol>  staticSymbolList;
-	private List<VirtualMethodSymbol> virtualSymbolList;
+	/* maps (ordered) of possible symbols */
+	private Map<String, FieldSymbol>         fieldSymbolsList;   /* fields */
+	private Map<String, StaticMethodSymbol>  staticSymbolList;   /* static methods */
+	private Map<String, VirtualMethodSymbol> virtualSymbolList;  /* virtual methods */
 	
 	public ClassSymbolTable(String id) {
 		super(id);
 		
 		/* init lists */
 	
-		this.initLists();
+		this.initMaps();
 	}
 
 	public ClassSymbolTable(String id, SymbolTable parentSymTable) {
@@ -35,7 +37,7 @@ public class ClassSymbolTable extends SymbolTable{
 		
 		/* init lists */
 	
-		this.initLists();
+		this.initMaps();
 		
 	}
 	
@@ -44,11 +46,11 @@ public class ClassSymbolTable extends SymbolTable{
 	 */
 	
 
-	private void initLists()
+	private void initMaps()
 	{
-		this.fieldSymbolsList = new ArrayList<FieldSymbol>();
-		this.staticSymbolList = new ArrayList<StaticMethodSymbol>();
-		this.virtualSymbolList = new ArrayList<VirtualMethodSymbol>();
+		this.fieldSymbolsList = new LinkedHashMap<String, FieldSymbol>();
+		this.staticSymbolList = new LinkedHashMap<String ,StaticMethodSymbol>();
+		this.virtualSymbolList = new LinkedHashMap<String, VirtualMethodSymbol>();
 	}
 	
 	
@@ -60,48 +62,88 @@ public class ClassSymbolTable extends SymbolTable{
 	public void addStaticMethod(StaticMethodSymbol method)
 	{
 		
-		this.staticSymbolList.add(method);
+		this.staticSymbolList.put(method.getId(), method);
 	}
 	
 	public void addVirtualMethod(VirtualMethodSymbol method)
 	{
 		
-		this.virtualSymbolList.add(method);
+		this.virtualSymbolList.put(method.getId(), method);
 	}
 	
 	public void addField(FieldSymbol field)
 	{
 		
-		this.fieldSymbolsList.add(field);
+		this.fieldSymbolsList.put(field.getId(), field);
 	}
 
 
 
 	
 	/**
-	 * Method tries to find given field, returns the field that was found in the inner most scope
-	 * @param id - field to search
+	 * Method tries to find given field, returns true iff found in current class scope or superclass scope
+	 * @param varLoc - field to search
 	 * @return true iff the field is found in enclosing scopes
+	 *         
+	 * NOTE: 
+	 *       This method will set the defining scope of varLoc if found in current scope
+	 *       >> use this method only when building the symbol tables <<
 	 */
 
-	public boolean resolveField(String id) {
+	public boolean resolveField(VariableLocation varLoc) {
 
-		return getField(id) != null;
+		if(this.fieldSymbolsList.containsKey(varLoc.getName()))
+		{
+			varLoc.setDefiningScope(this);
+			return true;
+		}
+		
+		if(this.parentSymbolTable instanceof ClassSymbolTable)
+		{
+			return ((ClassSymbolTable)parentSymbolTable).resolveField(varLoc);
+		}
+		
+		/* field not found */
+		return false;
+	}
+	
+	
+	/**
+	 * method returns true iff this scope or super scope contain a field with given id
+	 * @param id - if of method to search
+	 * @return true if found, false o/w
+	 */
+	public boolean resolveField(String id)
+	{
+		return this.getField(id) != null;
 	}
 
 	
 	/**
 	 * Method tries to find given field, returns the field if found, o/w returns null
 	 * method will also search parent scopes
+	 * 
+	 * Note: if id is "this", a field will be returned, containing the type of current class
+	 * 
 	 * @param id
 	 * @return FieldSymbol if found, null otherwise
 	 */
 	public FieldSymbol getField(String id) {
 		
-		for(FieldSymbol sym : this.fieldSymbolsList)
+		
+		if(id.equals("this"))
 		{
-			if(sym.getId().equals(id))
-				return sym;
+			/* in case of "this", return a field representing the type of class */
+			
+			GlobalSymbolTable globSymTable = getGlobalSymTable();
+			FieldSymbol thisSym = new FieldSymbol(id);
+			thisSym.setType(globSymTable.getClassSymbol(this.id).getType());
+			return thisSym;
+		}
+		
+		if(this.fieldSymbolsList.containsKey(id))
+		{
+			return fieldSymbolsList.get(id);
 		}
 		
 		/* fetch from parent table */
@@ -111,6 +153,19 @@ public class ClassSymbolTable extends SymbolTable{
 		
 		/* field not found */
 		return null;
+	}
+	
+	
+	/**
+	 * this method retrieves the global symbol table
+	 * @return
+	 */
+	private GlobalSymbolTable getGlobalSymTable()
+	{
+		SymbolTable scope = this.parentSymbolTable;
+		while(scope instanceof ClassSymbolTable)
+			scope = scope.getParentSymbolTable();
+		return (GlobalSymbolTable)scope;
 	}
 
 	@Override
@@ -156,17 +211,17 @@ public class ClassSymbolTable extends SymbolTable{
 		
 		/* print body */
 		
-		for(FieldSymbol field : this.fieldSymbolsList)
+		for(FieldSymbol field : this.fieldSymbolsList.values())
 		{
 			System.out.println("\t" + field.toString());
 		}
 		
-		for(StaticMethodSymbol staticMethod : this.staticSymbolList)
+		for(StaticMethodSymbol staticMethod : this.staticSymbolList.values())
 		{
 			System.out.println("\t" + staticMethod.toString());
 		}
 		
-		for(VirtualMethodSymbol virtualMethod : this.virtualSymbolList)
+		for(VirtualMethodSymbol virtualMethod : this.virtualSymbolList.values())
 		{
 			System.out.println("\t" + virtualMethod.toString());
 		}
@@ -224,17 +279,6 @@ public class ClassSymbolTable extends SymbolTable{
 		return null;
 	}
 
-	public List<FieldSymbol> getFieldSymbolsList() {
-		return fieldSymbolsList;
-	}
-
-	public List<StaticMethodSymbol> getStaticSymbolList() {
-		return staticSymbolList;
-	}
-
-	public List<VirtualMethodSymbol> getVirtualSymbolList() {
-		return virtualSymbolList;
-	}
 
 	
 	/**
@@ -246,12 +290,8 @@ public class ClassSymbolTable extends SymbolTable{
 	 */
 	public FieldSymbol getFieldSymById(String id)
 	{
-		for(FieldSymbol field : this.fieldSymbolsList)
-		{
-			if(field.getId().equals( id))
-				return field;
-			
-		}
+		if(this.fieldSymbolsList.containsKey(id))
+			return this.fieldSymbolsList.get(id);
 		return null;
 	}
 	
@@ -263,11 +303,9 @@ public class ClassSymbolTable extends SymbolTable{
 	
 	public MethodSymbol getVirtualMethod(String id)
 	{
-		for(MethodSymbol sym : this.virtualSymbolList)
-		{
-			if(sym.getId().equals(id))
-				return sym;
-		}
+		if( this.virtualSymbolList.containsKey(id))
+			return this.virtualSymbolList.get(id);
+		
 		return null;
 	}
 	
@@ -279,11 +317,8 @@ public class ClassSymbolTable extends SymbolTable{
 	
 	public MethodSymbol getStaticMethod(String id)
 	{
-		for(MethodSymbol sym : this.staticSymbolList)
-		{
-			if(sym.getId().equals(id))
-				return sym;
-		}
+		if( this.staticSymbolList.containsKey(id))
+			return this.staticSymbolList.get(id);
 		return null;
 	}
 	

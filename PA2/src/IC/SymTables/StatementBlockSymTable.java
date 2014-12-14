@@ -1,7 +1,10 @@
 package IC.SymTables;
 
+import IC.AST.VariableLocation;
 import IC.SymTables.Symbols.MethodSymbol;
 import IC.SymTables.Symbols.Symbol;
+import IC.Types.ClassType;
+import IC.Types.MethodType;
 
 
 /**
@@ -33,7 +36,7 @@ public class StatementBlockSymTable extends VariableSymbolTable{
 	public void printTable() {
 		System.out.println(String.format("Statement Block Symbol Table ( located in %s )", this.parentSymbolTable.getId()));
 		
-		for(Symbol sym : this.localVarsList)
+		for(Symbol sym : this.localVarsList.values())
 		{
 			System.out.println("\t" + sym.toString());
 		}
@@ -42,21 +45,6 @@ public class StatementBlockSymTable extends VariableSymbolTable{
 		
 	}
 	
-	@Override
-	public Symbol getVariable(String id) {
-		
-		/* may be a local variable or a parameter or a field */
-		
-		for(Symbol sym : this.localVarsList)
-		{
-			if(sym.getId().equals(id))
-				return sym;
-		}
-		
-		
-		/* have not reached parent class yet, may be a local var or param or field */
-		return ((VariableSymbolTable)this.parentSymbolTable).getVariable(id);
-	}
 
 	
 	@Override
@@ -67,6 +55,42 @@ public class StatementBlockSymTable extends VariableSymbolTable{
 		 */
 		
 		return ((VariableSymbolTable)this.parentSymbolTable).getMethod(name);
+	}
+
+
+
+
+	@Override
+	public boolean resolveVariable(VariableLocation varLoc) {
+		/* may be a local variable or a parameter or a field */
+		
+		if(this.localVarsList.containsKey(varLoc.getName()))
+		{
+			varLoc.setDefiningScope(this);
+			return true;
+		}
+		
+		// try to resolve the variable in the parent ( can only be variableSymbolTable - method or block )
+		return ((VariableSymbolTable)this.parentSymbolTable).resolveVariable(varLoc);
+	}
+
+
+
+
+	@Override
+	public ClassType getThisType() {
+		
+		return ((VariableSymbolTable)this.parentSymbolTable).getThisType();
+		
+	}
+
+
+
+
+	@Override
+	public MethodType getReturnType() {
+		
+		return ((VariableSymbolTable)this.parentSymbolTable).getReturnType();
 	}
 
 

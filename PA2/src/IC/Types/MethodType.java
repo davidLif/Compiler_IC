@@ -99,5 +99,10 @@ public class MethodType extends Type{
 	
 		return true;
 	}
+	
+	public Type getReturnType()
+	{
+		return this.returnType;
+	}
 
 }

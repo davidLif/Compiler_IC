@@ -2,15 +2,19 @@ package IC.SymTables;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import IC.AST.Method;
+import IC.AST.VariableLocation;
 import IC.SymTables.Symbols.FieldSymbol;
 import IC.SymTables.Symbols.MethodSymbol;
 import IC.SymTables.Symbols.Symbol;
 
-import IC.SymTables.Symbols.LocalVariableSymbol;;
+import IC.SymTables.Symbols.LocalVariableSymbol;
+import IC.Types.ClassType;
+import IC.Types.MethodType;
 
 
 /**
@@ -25,11 +29,11 @@ import IC.SymTables.Symbols.LocalVariableSymbol;;
 public abstract class VariableSymbolTable  extends SymbolTable{
 
 	/**
-	 * list of local variable symbols
+	 * map of local variable symbols
 	 */
 	
 	
-	protected List<LocalVariableSymbol> localVarsList = new ArrayList<LocalVariableSymbol>();
+	protected Map<String, LocalVariableSymbol> localVarsList = new LinkedHashMap<String, LocalVariableSymbol>();
 	
 	/**
 	 * 
@@ -55,47 +59,45 @@ public abstract class VariableSymbolTable  extends SymbolTable{
 	
 	
 	/**
-	 * this method will resolve variable with given id (local var, param or field )
+	 * this method will resolve variable (local var, param or field )
 	 * returns true iff found in this scope and enclosing scopes, otherwise false
-	 * @param id - to look for
-	 * @return true iff found recursively
+	 * 
+	 * IMPORTANT: if varLoc is resolved in current scope, defining scope of varLoc will be set to this
+	 *            >> this method should be used ONLY when building the symbol tables  <<
+	 * 
+	 * @param varLoc - non external local variable location
+	 * @return true iff found recursively, plus sets the defining scope
 	 */
-	public boolean resolveVariable(String id) {
-		
-		/* may be a local variable or a parameter or a field */
-		
-		return this.getVariable(id) != null;
-	}
-
+	public abstract boolean resolveVariable(VariableLocation varLoc); 
 	
 	
 	@Override
 	public boolean containsLocally(String id) {
 		
-		for(Symbol sym : this.localVarsList)
-		{
-			if(sym.getId().equals(id))
-				return true;
-		}
-		return false;
+		return this.localVarsList.containsKey(id);
 		
 	}
 
 	/**
-	 * this method will resolve variable with given id (local var, param or field )
-	 * returns the symbol iff found in this scope and enclosing scopes, otherwise null
 	 * 
-	 * NOTE: if current scope is static method scope, and id is not found locally, the 
-	 * method will not search for fields in the enclosing scope, since its a different scope
+	 * this method returns variable with given id FROM LOCAL SCOPE
 	 * 
-	 * @param id - of var to look for
+	 * 
+	 * @param id - of variable to look for
 	 * @return the symbol if found, null otherwise
 	 */
 	
-	public abstract Symbol getVariable(String id);
+	public Symbol getVariableLocally(String id)
+	{
+		if(this.localVarsList.containsKey(id))
+		{
+			return this.localVarsList.get(id);
+		}
+		return null;
+		
+	}
 		
 
-	
 	
 	/**
 	 * method adds new local variable
@@ -104,7 +106,7 @@ public abstract class VariableSymbolTable  extends SymbolTable{
 	public void addLocalVariable(LocalVariableSymbol sym)
 	{
 		
-		this.localVarsList.add(sym);
+		this.localVarsList.put(sym.getId(), sym);
 	}
 	
 	
@@ -129,6 +131,19 @@ public abstract class VariableSymbolTable  extends SymbolTable{
 	public abstract MethodSymbol getMethod(String name) ;
 	
 	
+	
+	/**
+	 * this method returns the enclosing class type  ("this" expression type)
+	 * @return method type of enclosing class 
+	 */
+	public abstract ClassType getThisType();
 
 
+	/**
+	 * this method returns the return type of enclosing method (static or virtual)
+	 * @return method type
+	 */
+	
+	public abstract MethodType getReturnType();
+	
 }

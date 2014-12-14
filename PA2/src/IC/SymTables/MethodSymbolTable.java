@@ -2,14 +2,20 @@ package IC.SymTables;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import IC.AST.Method;
+import IC.AST.VariableLocation;
 import IC.SymTables.Symbols.LocalVariableSymbol;
 import IC.SymTables.Symbols.MethodSymbol;
 import IC.SymTables.Symbols.ParameterSymbol;
 import IC.SymTables.Symbols.Symbol;
+import IC.SymTables.Symbols.VariableSymbol;
+import IC.Types.ClassType;
+import IC.Types.MethodType;
+import IC.Types.Type;
 
 
 public class MethodSymbolTable extends VariableSymbolTable{
@@ -21,10 +27,17 @@ public class MethodSymbolTable extends VariableSymbolTable{
 	private boolean isStatic;
 
 	/**
-	 * list contains all the parameters of the method
+	 * map contains all the parameters of the method
 	 */
 	
-	private List<ParameterSymbol> paramsList = new ArrayList<ParameterSymbol>();
+	private Map<String, ParameterSymbol> paramsList = new LinkedHashMap<String, ParameterSymbol>();
+	
+	
+	/**
+	 * name of variable used to retrieve symbol which contains the method return type
+	 */
+	private static String returnVariableName = "$ret";
+	
 	
 	public MethodSymbolTable(String id, boolean isStatic) {
 		
@@ -45,43 +58,58 @@ public class MethodSymbolTable extends VariableSymbolTable{
 			return true;
 		
 		/* check params */
-		
-		for(Symbol sym : paramsList)
-		{
-			if(sym.getId().equals(id))
-				return true;
-		}
+		if( paramsList.containsKey(id))
+			return true;
 		
 		return false;
 	}
 	
 
+
+	
 	@Override
-	public Symbol getVariable(String id) {
+	public Symbol getVariableLocally(String id) {
+		
 		
 		/* check params */
-		for(Symbol sym : paramsList)
+		if(paramsList.containsKey(id))
 		{
-			if(sym.getId().equals(id))
-				return sym;
+			return paramsList.get(id);
 		}
 		
-		/* check local vars and parents */
+		/* check local vars  */
+		if(super.containsLocally(id))
+			return super.getVariableLocally(id);
 		
-		for(Symbol sym : this.localVarsList)
-		{
-			if(sym.getId().equals(id))
-				return sym;
-		}
-		
-		/* enclosing scope is a class, may be a field */
-		if(this.isStatic)
-			return null;
-		
-		return ((ClassSymbolTable)this.parentSymbolTable).getField(id);
+		return null;
 		
 	
 	}
+	
+	@Override
+	public boolean resolveVariable(VariableLocation varLocation)
+	{
+		
+		
+		/* check if local scope contains the variable */
+		if(paramsList.containsKey(varLocation.getName()) || this.localVarsList.containsKey(varLocation.getName()))
+		{
+			// if so, return true, but also set defining scope
+			varLocation.setDefiningScope(this);
+			return true;
+		}
+		
+		/* try enclosing classes, if virtual method */
+		
+		if(this.isStatic)
+			/* no static fields */
+			return false;
+		
+		return ((ClassSymbolTable)this.parentSymbolTable).resolveField(varLocation);
+		
+		
+	}
+	
 
 	/** 
 	 * add method parameter symbol
@@ -89,7 +117,7 @@ public class MethodSymbolTable extends VariableSymbolTable{
 	 */
 	public void addParameter(ParameterSymbol sym)
 	{
-		this.paramsList.add(sym);
+		this.paramsList.put(sym.getId(), sym);
 	}
 
 	
@@ -99,12 +127,12 @@ public class MethodSymbolTable extends VariableSymbolTable{
 
 		System.out.println(String.format("Method Symbol Table: %s", this.id));
 		
-		for(Symbol sym : this.paramsList)
+		for(Symbol sym : this.paramsList.values())
 		{
 			System.out.println("\t" + sym.toString());
 		}
 		
-		for(Symbol sym : this.localVarsList)
+		for(Symbol sym : this.localVarsList.values())
 		{
 			System.out.println("\t" + sym.toString());
 		}
@@ -124,6 +152,30 @@ public class MethodSymbolTable extends VariableSymbolTable{
 	{
 		ClassSymbolTable enclosingClass = (ClassSymbolTable)parentSymbolTable;
 		return enclosingClass.getMethod(name, isStatic);
+	}
+
+
+
+
+	@Override
+	public ClassType getThisType() {
+		
+		ClassSymbolTable enclosingClass = (ClassSymbolTable)parentSymbolTable;
+		/* retrieve information from parent class */
+		return (ClassType) enclosingClass.getField("this").getType();
+	}
+
+
+
+
+	@Override
+	public MethodType getReturnType() {
+		
+		ClassSymbolTable enclosingClass = (ClassSymbolTable)parentSymbolTable;
+		/* get current method symbol */
+		MethodSymbol currMethodSym = enclosingClass.getMethod(this.id, isStatic);
+		
+		return (MethodType) currMethodSym.getType();
 	}
 	
 

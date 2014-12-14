@@ -508,7 +508,7 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 		else
 		{
 			// variable needs to be resolved now
-			if(!((VariableSymbolTable)context).resolveVariable(location.getName()))
+			if(!((VariableSymbolTable)context).resolveVariable(location))
 			{
 				String err_msg = String.format("%s could not be resolved to a variable", location.getName());
 				throw new SemanticError(location.getLine(), err_msg);

@@ -255,7 +255,7 @@ public class SymbolSetter implements Visitor{
 		//get localVariable type
 		Type localVariable_type = (Type) localVariable.getType().accept(this);
 		//get localVariable symbol
-		Symbol localVariable_symbol = ((VariableSymbolTable)localVariable.enclosingScope()).getVariable(localVariable.getName());
+		Symbol localVariable_symbol = ((VariableSymbolTable)localVariable.enclosingScope()).getVariableLocally(localVariable.getName());
 		//set type to symbol
 		localVariable_symbol.setType(localVariable_type);
 		
@@ -357,11 +357,12 @@ public class SymbolSetter implements Visitor{
 	private void formal_list_visit(Method method)
 			throws SemanticError {
 		//visit all the arguments
+		
 		for (Formal arg : method.getFormals()){
 			//get argument type
 			Type arg_type = (Type) arg.accept(this);
 			//get argument symbol
-			Symbol arg_symbol =  ((MethodSymbolTable)arg.enclosingScope()).getVariable(arg.getName());
+			Symbol arg_symbol =  ((MethodSymbolTable)arg.enclosingScope()).getVariableLocally(arg.getName());
 			//set type to symbol
 			arg_symbol.setType(arg_type);
 		}

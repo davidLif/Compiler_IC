@@ -1,6 +1,8 @@
 package IC.AST;
 
 import IC.SemanticChecks.SemanticError;
+import IC.SymTables.*;
+import IC.SymTables.Symbols.Symbol;
 
 /**
  * Variable reference AST node.
@@ -10,6 +12,16 @@ import IC.SemanticChecks.SemanticError;
 public class VariableLocation extends Location {
 
 	private Expression location = null;
+	
+	
+	/**
+	 * this field saves a reference to the defining scope of this variable, in case it is not external
+	 * this solves the problem of later definition in enclosing scope, that was added after the variable 
+	 * was resolved. this scope is the scope that resolved the variable
+	 * note that, it doesn't have to be this.enclosingScope;
+	 */
+	private SymbolTable definingScope = null; 
+	
 
 	private String name;
 
@@ -60,6 +72,35 @@ public class VariableLocation extends Location {
 	public <D,U> U accept(PropagatingVisitor<D,U> v, D context) throws SemanticError{
 		
 		return v.visit(this, context);
+	}
+	
+	
+	/**
+	 *  set the scope in which this local variable was defined (NOT EXTERNAL)
+	 */
+	public void setDefiningScope(SymbolTable scope)
+	{
+		this.setDefiningScope(scope);
+	}
+	
+	public SymbolTable getDefiningScope()
+	{
+		return this.definingScope;
+	}
+	
+	/**
+	 * this method retrieves the definition symbol of the variable
+	 * @return
+	 */
+	
+	public Symbol getDefiningSymbol()
+	{
+		if(this.definingScope instanceof ClassSymbolTable)
+		{
+			return ((ClassSymbolTable) definingScope).getField(this.name);
+		}
+		
+		return ((VariableSymbolTable) definingScope).getVariableLocally(this.name);
 	}
 
 }
