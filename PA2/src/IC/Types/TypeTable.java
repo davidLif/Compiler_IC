@@ -18,8 +18,8 @@ public class TypeTable {
 
 	public Map<String ,ClassType> type_map_class;
 	public Map<Type, List <MethodType>> type_map_method;
-	public Map<DataTypes, Type>type_map_primitive = new HashMap<DataTypes, Type>();
-	public Map<DataTypes, Map <Integer, ArrayType>> type_map_arrays_primitive;
+	public Map<DataTypes, Type>type_map_primitive;
+	public Map<Type, Map <Integer, ArrayType>> type_map_arrays_primitive;
 	public Map<String, Map <Integer, ArrayType>> type_map_arrays_class;
 	
 
@@ -47,7 +47,7 @@ public class TypeTable {
 		type_map_class = new HashMap<String, ClassType>();
 		type_map_method = new HashMap<Type, List <MethodType>>();
 		type_map_primitive = new HashMap<DataTypes, Type>();
-		type_map_arrays_primitive = new HashMap<DataTypes, Map <Integer, ArrayType>>();
+		type_map_arrays_primitive = new HashMap<Type, Map <Integer, ArrayType>>();
 		type_map_arrays_class = new HashMap<String, Map <Integer, ArrayType>>();
 		/* put primitive types to collection */
 		addPrimitiveTypes();
@@ -59,10 +59,14 @@ public class TypeTable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		TypeEvaluator evaluate = new TypeEvaluator(this,symbol_table);
+		try {
+			prog.accept(evaluate);
+		} catch (SemanticError e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		//TODO-should add library class and methods here to the Type table.
-		
-		//travel with symbolSetter
-		//travel with TypeBuilder
 		
 	}
 	
@@ -72,18 +76,18 @@ public class TypeTable {
 	protected ArrayType addArrayType_primitive(DataTypes type,int dimension){
 		
 		//check if array of such primitive type existed before
-		if (type_map_arrays_primitive.get(type) == null){
+		if (type_map_arrays_primitive.get(type_map_primitive.get(type)) == null){
 			//if didn't - add it (and proper map)
 			Map <Integer, ArrayType> dimensionMap = new HashMap<Integer, ArrayType>();
 			
 			ArrayType newArrayType = new  ArrayType(type_map_primitive.get(type),dimension);
 			dimensionMap.put(dimension, newArrayType);
-			type_map_arrays_primitive.put(type, dimensionMap);
+			type_map_arrays_primitive.put(type_map_primitive.get(type), dimensionMap);
 			return newArrayType;
 		}
 		else {
 			//if did -check for dimension
-			Map <Integer, ArrayType> dimensionMap = type_map_arrays_primitive.get(type);
+			Map <Integer, ArrayType> dimensionMap = type_map_arrays_primitive.get(type_map_primitive.get(type));
 			
 			if(dimensionMap.get(dimension) != null){
 				//this type all ready exist- return it
@@ -109,7 +113,7 @@ public class TypeTable {
 			//if didn't - add it (and proper map)
 			Map <Integer, ArrayType> dimensionMap = new HashMap<Integer, ArrayType>();
 			
-			ArrayType newArrayType = new  ArrayType(type_map_primitive.get(name),dimension);
+			ArrayType newArrayType = new  ArrayType(type_map_class.get(name),dimension);
 			dimensionMap.put(dimension, newArrayType);
 			type_map_arrays_class.put(name, dimensionMap);
 			return newArrayType;
@@ -124,7 +128,7 @@ public class TypeTable {
 			}
 			else {
 				//if didn't- create
-				ArrayType newArrayType = new  ArrayType(type_map_primitive.get(name),dimension);
+				ArrayType newArrayType = new  ArrayType(type_map_class.get(name),dimension);
 				dimensionMap.put(dimension, newArrayType);
 				return newArrayType;
 			}

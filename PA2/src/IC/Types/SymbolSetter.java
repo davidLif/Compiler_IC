@@ -124,25 +124,28 @@ public class SymbolSetter implements Visitor{
 		}
 
 		//in case of error add_class_type will both return null and throw error
-		return all_pos_types.type_map_class.get(icClass.getName());
+		//set type for Program AST node
+		icClass.setNodeType(all_pos_types.type_map_class.get(icClass.getName()));
+		return icClass.getNodeType();
 	}
 
 	@Override
 	public Type visit(Field field) throws SemanticError {
-		return (Type) field.getType().accept(this);
+		field.setNodeType((Type) field.getType().accept(this));
+		return  field.getNodeType();
 	}
 
 	@Override
 	public Type visit(VirtualMethod method) throws SemanticError {
 		method_visit(method);
-		return all_pos_types.add_method_type(method);
+		return method.getNodeType();
 	}
 
 	@Override
 	public Type visit(StaticMethod method) throws SemanticError {
 
 		method_visit(method);
-		return all_pos_types.add_method_type(method);
+		return method.getNodeType();
 	}
 
 
@@ -153,13 +156,14 @@ public class SymbolSetter implements Visitor{
 		formal_list_visit(method);
 		
 		//in library method there are no statements
-		
-		return all_pos_types.add_method_type(method);
+		method.setNodeType(all_pos_types.add_method_type(method));
+		return method.getNodeType();
 	}
 
 	@Override
 	public Type visit(Formal formal) throws SemanticError {
-		return (Type) formal.getType().accept(this);//formals type is defined by its "type" field
+		formal.setNodeType((Type) formal.getType().accept(this));
+		return  formal.getNodeType();//formals type is defined by its "type" field
 	}
 
 	@Override
@@ -170,20 +174,35 @@ public class SymbolSetter implements Visitor{
 			nodeType= all_pos_types.type_map_primitive.get(type.getDataTypes());
 		}
 		else{
-			//add new type of array if needed.
-			nodeType = all_pos_types.addArrayType_primitive(type.getDataTypes(),type.getDimension());
+			//add new type of array if needed.add all types of arrays with smaller dimentions
+			for (int i=1;i<=type.getDimension();i++){
+				nodeType = all_pos_types.addArrayType_primitive(type.getDataTypes(),i);
+			}
 		}
+		type.setNodeType(nodeType);
 		return nodeType;
 	}
 
 	@Override
 	public Type visit(UserType type) throws SemanticError {
-		// when first visiting program, we created all class possible types
-		ClassType class_type = all_pos_types.type_map_class.get(type.getName());
+		Type class_type = null;
+		if (type.getDimension() == 0){
+			// when first visiting program, we created all class possible types
+			class_type = all_pos_types.type_map_class.get(type.getName());
+		}
+		else{
+			//add new type of array if needed.
+			for (int i=1;i<=type.getDimension();i++){
+				class_type = all_pos_types.addArrayType_class(type.getName(),i);
+			}
+			
+		}
+
 		//so if we didn't find the class, it isn't defined in the program
 		if (class_type ==null){
 			throw new SemanticError(type.getLine(),type.getName()+": no such class is defined");
 		}
+		type.setNodeType(class_type);
 		return class_type;
 	}
 
@@ -255,10 +274,10 @@ public class SymbolSetter implements Visitor{
 		//get localVariable type
 		Type localVariable_type = (Type) localVariable.getType().accept(this);
 		//get localVariable symbol
-		Symbol localVariable_symbol = ((VariableSymbolTable)localVariable.enclosingScope()).getVariableLocally(localVariable.getName());
+		Symbol localVariable_symbol = ((VariableSymbolTable)localVariable.enclosingScope()).getVariable(localVariable.getName());
 		//set type to symbol
 		localVariable_symbol.setType(localVariable_type);
-		
+		localVariable.setNodeType(localVariable_type);
 		return localVariable_type;
 	}
 
@@ -352,17 +371,17 @@ public class SymbolSetter implements Visitor{
 		for (Statement stmt : method.getStatements()){
 			stmt.accept(this);
 		}
+		method.setNodeType(all_pos_types.add_method_type(method));
 	}
 
 	private void formal_list_visit(Method method)
 			throws SemanticError {
 		//visit all the arguments
-		
 		for (Formal arg : method.getFormals()){
 			//get argument type
 			Type arg_type = (Type) arg.accept(this);
 			//get argument symbol
-			Symbol arg_symbol =  ((MethodSymbolTable)arg.enclosingScope()).getVariableLocally(arg.getName());
+			Symbol arg_symbol =  ((MethodSymbolTable)arg.enclosingScope()).getVariable(arg.getName());
 			//set type to symbol
 			arg_symbol.setType(arg_type);
 		}

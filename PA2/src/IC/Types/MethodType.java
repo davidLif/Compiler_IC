@@ -110,9 +110,12 @@ public class MethodType extends Type{
 		return true;
 	}
 	
-	public Type getReturnType()
-	{
-		return this.returnType;
+	public Type getReturnType(){
+		return returnType;
+	}
+	
+	public List<Type> getArgstypes(){
+		return arguments;
 	}
 
 }

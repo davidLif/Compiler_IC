@@ -21,6 +21,7 @@ public abstract class ASTNode {
 	 * @param visitor
 	 *            The visitor.
 	 * @return A value propagated by the visitor.
+	 * @throws SemanticError 
 	 */
 	public abstract Object accept(Visitor visitor) throws SemanticError;
 

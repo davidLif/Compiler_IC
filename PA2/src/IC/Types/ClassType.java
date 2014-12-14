@@ -81,6 +81,8 @@ public class ClassType extends Type{
 		
 		if(this.superClassName_list.contains(t))
 			return true;
+		if(this == t)
+			return true;
 		
 		return false;
 	}
