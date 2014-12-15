@@ -5,6 +5,7 @@ import IC.SymTables.Symbols.MethodSymbol;
 import IC.SymTables.Symbols.Symbol;
 import IC.Types.ClassType;
 import IC.Types.MethodType;
+import IC.Types.Type;
 
 
 /**
@@ -88,7 +89,7 @@ public class StatementBlockSymTable extends VariableSymbolTable{
 
 
 	@Override
-	public MethodType getReturnType() {
+	public Type getReturnType() {
 		
 		return ((VariableSymbolTable)this.parentSymbolTable).getReturnType();
 	}

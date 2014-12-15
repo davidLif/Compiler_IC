@@ -163,8 +163,24 @@ public class TypeEvaluator implements Visitor {
 
 	@Override
 	public Type visit(Return returnStatement) throws SemanticError {
-		Type return_stmt_type =  (Type) returnStatement.getValue().accept(this);
-		//TODO-check against $ret
+		Type return_stmt_type;
+		if (returnStatement.getValue() == null){
+			//this case covers "return ;"
+			return_stmt_type =  null;
+		}
+		else{
+			return_stmt_type =  (Type) returnStatement.getValue().accept(this);
+		}
+		
+		Type method_return_type = ((VariableSymbolTable)returnStatement.enclosingScope()).getReturnType();
+		if (return_stmt_type == null){
+			if (!method_return_type.subTypeOf(all_pos_types.type_map_primitive.get(DataTypes.VOID))){
+				throw new SemanticError(returnStatement.getLine(),"method type isn't void - must return a variable");
+			}
+		}
+		else if (!return_stmt_type.subTypeOf(method_return_type)){
+			throw new SemanticError(returnStatement.getLine(),"return statement type isn't a sub Type of method return Type");
+		}
 		return null;
 	}
 
@@ -249,7 +265,7 @@ public class TypeEvaluator implements Visitor {
 		}
 		else {
 			//if no expr was given, this is a variable from this scope
-			var_symbol = ((VariableSymbolTable)location.enclosingScope()).getVariable(location.getName());
+			var_symbol =  location.getDefiningSymbol();
 		}
 		//get type from var symbol 
 		Type var_type = var_symbol.getType();
@@ -330,8 +346,11 @@ public class TypeEvaluator implements Visitor {
 
 	@Override
 	public Type visit(This thisExpression) throws SemanticError {
-		// TODO Auto-generated method stub
-		return null;
+		Type this_type = ((VariableSymbolTable)thisExpression.enclosingScope()).getThisType();
+		if (this_type == null){
+			throw new SemanticError(thisExpression.getLine(),"can't call this in this scope");
+		}
+		return this_type;
 	}
 
 	@Override
@@ -349,18 +368,27 @@ public class TypeEvaluator implements Visitor {
 			throw new SemanticError(newArray.getLine(),"array size should be integer");
 		}
 		//calc array type
-		Type array_type = null;
+		Type array_type;
 		Type basic_type = (Type) newArray.getType().accept(this);
-		if (basic_type instanceof ClassType){
-			array_type = (Type) all_pos_types.type_map_arrays_class.get(((ClassType)basic_type).getName()).get(newArray.getSize());
+		if (!(basic_type instanceof ArrayType)){
+			array_type = getArrayType(basic_type,1);
 		}
-		else if (!(basic_type instanceof ArrayType)){
-			array_type = (Type) all_pos_types.type_map_arrays_primitive.get(basic_type).get(newArray.getSize());
-		}
-		else{
-			throw new SemanticError(newArray.getLine(),"basic type for new array can't be another array");
+		else{//here basic_type instance of ArrayType
+			ArrayType array_base_for_new = (ArrayType) basic_type;
+			array_type = getArrayType(array_base_for_new.getBasicType(),array_base_for_new.getDimensions()+1);
 		}
 		newArray.setNodeType(array_type);
+		return array_type;
+		}
+
+	private Type getArrayType(Type basic_type,int size) {
+		Type array_type = null;
+		if (basic_type instanceof ClassType){
+			array_type = (Type) all_pos_types.type_map_arrays_class.get(((ClassType)basic_type).getName()).get(size);
+		}
+		else{
+			array_type = (Type) all_pos_types.type_map_arrays_primitive.get(basic_type).get(size);
+		}
 		return array_type;
 	}
 

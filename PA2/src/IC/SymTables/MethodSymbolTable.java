@@ -13,6 +13,7 @@ import IC.SymTables.Symbols.ParameterSymbol;
 import IC.SymTables.Symbols.Symbol;
 import IC.Types.ClassType;
 import IC.Types.MethodType;
+import IC.Types.Type;
 
 
 
@@ -163,13 +164,13 @@ public class MethodSymbolTable extends VariableSymbolTable{
 
 
 	@Override
-	public MethodType getReturnType() {
+	public Type getReturnType() {
 		
 		ClassSymbolTable enclosingClass = (ClassSymbolTable)parentSymbolTable;
 		/* get current method symbol */
 		MethodSymbol currMethodSym = enclosingClass.getMethod(this.id, isStatic);
 		
-		return (MethodType) currMethodSym.getType();
+		return ((MethodType) currMethodSym.getType()).getReturnType();
 	}
 	
 

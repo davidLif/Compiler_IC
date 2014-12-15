@@ -15,20 +15,6 @@ public class MethodType extends Type{
 	 * @param returnType - return type of method
 	 */
 	
-	
-	
-	/* Getters functions for the fields. Will be used in semantic check process */
-	public List<Type> getArguments() {
-		return arguments;
-	}
-
-
-	public Type getReturnType() {
-		return returnType;
-	}
-
-
-	
 	public MethodType(List<Type> args, Type returnType)
 	{
 		this.arguments = args;

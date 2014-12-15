@@ -15,6 +15,7 @@ import IC.SymTables.Symbols.Symbol;
 import IC.SymTables.Symbols.LocalVariableSymbol;
 import IC.Types.ClassType;
 import IC.Types.MethodType;
+import IC.Types.Type;
 
 
 /**
@@ -144,6 +145,6 @@ public abstract class VariableSymbolTable  extends SymbolTable{
 	 * @return method type
 	 */
 	
-	public abstract MethodType getReturnType();
+	public abstract Type getReturnType();
 	
 }
