@@ -126,11 +126,20 @@ public class TypeEvaluator implements Visitor {
 	@Override
 	public Type visit(UserType type) throws SemanticError {
 		//should be calculated already -find in one of the maps
-		if (type.getDimension() == 0 && type.getName()!= null){
+		if(all_pos_types.type_map_primitive.get(type.getName())== null){
+			throw new SemanticError(type.getLine(),"no such class was defined");
+		}
+		if (type.getDimension() == 0 ){
 			type.setNodeType(all_pos_types.type_map_primitive.get(type.getName()));
 		}
 		else if (type.getName()!= null){
+			if (all_pos_types.type_map_arrays_primitive.get(all_pos_types.type_map_primitive.get(type.getName())).get(type.getDimension()) != null){
 			type.setNodeType(all_pos_types.type_map_arrays_primitive.get(all_pos_types.type_map_primitive.get(type.getName())).get(type.getDimension()));
+		}
+			else{
+				throw new SemanticError(type.getLine(),"no such class was defined");
+			}
+			
 		}
 		if(type.getNodeType() == null){
 			throw new SemanticError(type.getLine(),"Such type was never defined");
@@ -293,14 +302,8 @@ public class TypeEvaluator implements Visitor {
 			location.setNodeType(array_type.getBasicType());
 			return array_type.getBasicType();
 		}
-		//if Dimensions bigger than 1- get arrayType with Dimension-1
-		if (array_type.getBasicType() instanceof ClassType ){
-			arrayLocationType = (Type) all_pos_types.type_map_arrays_class.get(((ClassType)array_type.getBasicType()).getName()).get(array_type.getDimensions()-1);
-		}
-		else{
-			//must be primitive type
-			arrayLocationType = (Type) all_pos_types.type_map_arrays_primitive.get(array_type.getBasicType()).get(array_type.getDimensions()-1);
-		}
+		//calc array location type and set
+		arrayLocationType =getArrayType(array_type.getBasicType(),array_type.getDimensions()-1);
 		location.setNodeType(arrayLocationType);
 		return arrayLocationType;
 	}
@@ -356,6 +359,10 @@ public class TypeEvaluator implements Visitor {
 	@Override
 	public Type visit(NewClass newClass) throws SemanticError {
 		ClassType class_type = all_pos_types.type_map_class.get(newClass.getName());
+		//check such class exist
+		if(class_type == null){
+			throw new SemanticError(newClass.getLine(),"no shcu class defined as "+newClass.getName());
+		}
 		newClass.setNodeType(class_type);
 		return class_type;
 	}
@@ -376,6 +383,19 @@ public class TypeEvaluator implements Visitor {
 		else{//here basic_type instance of ArrayType
 			ArrayType array_base_for_new = (ArrayType) basic_type;
 			array_type = getArrayType(array_base_for_new.getBasicType(),array_base_for_new.getDimensions()+1);
+			//in case we found a new array type- may be correct
+			if (array_base_for_new.getBasicType() instanceof ClassType){
+				//check class existence and than add
+				if(all_pos_types.type_map_class.get(((ClassType)basic_type).getName()) != null){
+					array_type = all_pos_types.addArrayType_class(((ClassType)basic_type).getName(), array_base_for_new.getDimensions()+1);
+				}
+				else{
+					throw new SemanticError(newArray.getLine(),"no such class as basic type dor array");
+				}
+			}
+			else{
+				array_type = all_pos_types.addArrayType_primitive(array_base_for_new.getBasicType(), array_base_for_new.getDimensions()+1);
+			}
 		}
 		newArray.setNodeType(array_type);
 		return array_type;
@@ -449,10 +469,21 @@ public class TypeEvaluator implements Visitor {
 		Type side_1 = (Type) binaryOp.getFirstOperand().accept(this);
 		Type side_2 = (Type) binaryOp.getSecondOperand().accept(this);
 		Type op_type;
-		if ((side_1.subTypeOf(side_2)) || (side_2.subTypeOf(side_1))){
+		if((side_1 instanceof BoolType) && (side_2 instanceof BoolType)){
 			switch(binaryOp.getOperator()){
 			case LAND: case LOR: case LT:
 			case LTE: case GT: case GTE:
+			case EQUAL: case NEQUAL:
+				{
+					op_type = all_pos_types.type_map_primitive.get(DataTypes.BOOLEAN);
+					break;
+				}
+			default:
+				throw new SemanticError(binaryOp.getLine(),"bad binary logical operation with booleans");
+			}
+		}
+		else if ((side_1.subTypeOf(side_2)) || (side_2.subTypeOf(side_1))){
+			switch(binaryOp.getOperator()){
 			case EQUAL: case NEQUAL:
 				{
 					op_type = all_pos_types.type_map_primitive.get(DataTypes.BOOLEAN);

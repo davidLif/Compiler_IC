@@ -71,33 +71,7 @@ public class TypeTable {
 	// WARNING- this function is used while traveling over the tree- caution is advised.
 	// or should we travel all over the tree and gather them' and then travel normally again?
 	protected ArrayType addArrayType_primitive(DataTypes type,int dimension){
-		
-		//check if array of such primitive type existed before
-		if (type_map_arrays_primitive.get(type_map_primitive.get(type)) == null){
-			//if didn't - add it (and proper map)
-			Map <Integer, ArrayType> dimensionMap = new LinkedHashMap<Integer, ArrayType>();
-			
-			ArrayType newArrayType = new  ArrayType(type_map_primitive.get(type),dimension);
-			dimensionMap.put(dimension, newArrayType);
-			type_map_arrays_primitive.put(type_map_primitive.get(type), dimensionMap);
-			return newArrayType;
-		}
-		else {
-			//if did -check for dimension
-			Map <Integer, ArrayType> dimensionMap = type_map_arrays_primitive.get(type_map_primitive.get(type));
-			
-			if(dimensionMap.get(dimension) != null){
-				//this type all ready exist- return it
-				return (ArrayType) dimensionMap.get(dimension);
-			}
-			else {
-				//if didn't- create
-				ArrayType newArrayType = new  ArrayType(type_map_primitive.get(type),dimension);
-				dimensionMap.put(dimension, newArrayType);
-				return newArrayType;
-			}
-		}
-		
+		return addArrayType_primitive(type_map_primitive.get(type),dimension);
 	}
 	
 	//This function adds new array - only for class type based.
@@ -288,5 +262,33 @@ public class TypeTable {
 			}
 		}
 		return sb.toString() ;
+	}
+
+	public ArrayType addArrayType_primitive(Type basicType, int dimension) {
+		//check if array of such primitive type existed before
+		if (type_map_arrays_primitive.get(basicType) == null){
+			//if didn't - add it (and proper map)
+			Map <Integer, ArrayType> dimensionMap = new LinkedHashMap<Integer, ArrayType>();
+			
+			ArrayType newArrayType = new  ArrayType(basicType,dimension);
+			dimensionMap.put(dimension, newArrayType);
+			type_map_arrays_primitive.put(basicType, dimensionMap);
+			return newArrayType;
+		}
+		else {
+			//if did -check for dimension
+			Map <Integer, ArrayType> dimensionMap = type_map_arrays_primitive.get(basicType);
+			
+			if(dimensionMap.get(dimension) != null){
+				//this type all ready exist- return it
+				return (ArrayType) dimensionMap.get(dimension);
+			}
+			else {
+				//if didn't- create
+				ArrayType newArrayType = new  ArrayType(basicType,dimension);
+				dimensionMap.put(dimension, newArrayType);
+				return newArrayType;
+			}
+		}
 	}
 }
