@@ -4,7 +4,7 @@ public class StringType extends Type{
 
 	@Override
 	protected String getTypeRep() {
-		return "Primitive type: string";
+		return this.getTableId()+": Primitive type: string";
 	}
 	
 	

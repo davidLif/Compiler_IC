@@ -4,7 +4,7 @@ public class BoolType extends Type{
 
 	@Override
 	protected String getTypeRep() {
-		return "Primitive type: boolean";
+		return this.getTableId()+": Primitive type: boolean";
 		
 	}
 	

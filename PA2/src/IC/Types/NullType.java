@@ -5,7 +5,7 @@ public class NullType extends Type{
 	@Override
 	protected String getTypeRep() {
 		
-		return "Primitive type: null";
+		return this.getTableId()+": Primitive type: null";
 	}
 
 	@Override
@@ -13,7 +13,7 @@ public class NullType extends Type{
 	{
 		return "null";
 	}
-	
+
 	@Override
 	public boolean subTypeOf(Type t) {
 		

@@ -4,7 +4,7 @@ import java.util.List;
 
 public class MethodType extends Type{
 
-
+	
 
 	private List<Type> arguments;
 	private Type returnType;
@@ -33,7 +33,7 @@ public class MethodType extends Type{
 	
 	@Override
 	protected String getTypeRep() {
-		return "Method type: " + this.toString();
+		return this.getTableId()+": Method type: " + this.toString();
 	}
 	
 	@Override
@@ -52,14 +52,14 @@ public class MethodType extends Type{
 				// not last
 				sb.append(", ");
 				
-			}
+		}
 		}
 		
 		sb.append(" -> " + returnType.toString());
 		sb.append("}");
 		return sb.toString();
 	}
-	
+
 	/**
 	 * method returns true iff the list of formals to_compare is the same
 	 * @param to_compare
@@ -105,7 +105,7 @@ public class MethodType extends Type{
 		
 		/* formals check */
 		if(!this.formals_compare(other.arguments))
-			return false;
+				return false;
 	
 	
 		return true;

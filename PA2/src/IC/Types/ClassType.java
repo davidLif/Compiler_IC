@@ -65,7 +65,7 @@ public class ClassType extends Type{
 	@Override
 	protected String getTypeRep() {
 		
-		String rep = "Class: " + this.toString();
+		String rep = this.getTableId()+": Class: " + this.toString();
 		if(hasSuper())
 		{
 			rep += String.format(", Superclass ID: %d", this.superClass.getTableId());

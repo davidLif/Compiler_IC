@@ -11,7 +11,7 @@ public class VoidType extends Type{
 	@Override
 	protected String getTypeRep() {
 		
-		return "Primitive type: void";
+		return this.getTableId()+": Primitive type: void";
 	}
 	
 	@Override

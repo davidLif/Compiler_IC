@@ -1,7 +1,7 @@
 package IC.Types;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -12,7 +12,6 @@ import IC.AST.Method;
 import IC.AST.Program;
 import IC.SemanticChecks.SemanticError;
 import IC.SymTables.GlobalSymbolTable;
-import IC.SymTables.SymbolTable;
 
 public class TypeTable {
 
@@ -22,14 +21,14 @@ public class TypeTable {
 	public Map<Type, Map <Integer, ArrayType>> type_map_arrays_primitive;
 	public Map<String, Map <Integer, ArrayType>> type_map_arrays_class;
 	
-
-	
+	//for printing 
+	String prog_location;
 	
 	
 	/**
 	 * how many unique types have we found so far
 	 */
-	private static int typeCounter = 0;
+	private static int typeCounter = 1;
 	
 	/**
 	 * this method allocates a new id for a type, and advances the counter
@@ -42,13 +41,14 @@ public class TypeTable {
 	}
 	
 	/* ASSUMPTION - there are no "recursive type definitions*/
-	public TypeTable(Program prog,Program lib,GlobalSymbolTable symbol_table)
+	public TypeTable(Program prog,GlobalSymbolTable symbol_table,String prog_location)
 	{
-		type_map_class = new HashMap<String, ClassType>();
-		type_map_method = new HashMap<Type, List <MethodType>>();
-		type_map_primitive = new HashMap<DataTypes, Type>();
-		type_map_arrays_primitive = new HashMap<Type, Map <Integer, ArrayType>>();
-		type_map_arrays_class = new HashMap<String, Map <Integer, ArrayType>>();
+		this.prog_location = prog_location;
+		type_map_class = new LinkedHashMap<String, ClassType>();
+		type_map_method = new LinkedHashMap<Type, List <MethodType>>();
+		type_map_primitive = new LinkedHashMap<DataTypes, Type>();
+		type_map_arrays_primitive = new LinkedHashMap<Type, Map <Integer, ArrayType>>();
+		type_map_arrays_class = new LinkedHashMap<String, Map <Integer, ArrayType>>();
 		/* put primitive types to collection */
 		addPrimitiveTypes();
 		
@@ -56,17 +56,14 @@ public class TypeTable {
 		try {
 			prog.accept(test);
 		} catch (SemanticError e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		TypeEvaluator evaluate = new TypeEvaluator(this,symbol_table);
 		try {
 			prog.accept(evaluate);
 		} catch (SemanticError e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//TODO-should add library class and methods here to the Type table.
 		
 	}
 	
@@ -78,7 +75,7 @@ public class TypeTable {
 		//check if array of such primitive type existed before
 		if (type_map_arrays_primitive.get(type_map_primitive.get(type)) == null){
 			//if didn't - add it (and proper map)
-			Map <Integer, ArrayType> dimensionMap = new HashMap<Integer, ArrayType>();
+			Map <Integer, ArrayType> dimensionMap = new LinkedHashMap<Integer, ArrayType>();
 			
 			ArrayType newArrayType = new  ArrayType(type_map_primitive.get(type),dimension);
 			dimensionMap.put(dimension, newArrayType);
@@ -111,7 +108,7 @@ public class TypeTable {
 		//check if array of such class type existed before
 		if (type_map_arrays_class.get(name) == null){
 			//if didn't - add it (and proper map)
-			Map <Integer, ArrayType> dimensionMap = new HashMap<Integer, ArrayType>();
+			Map <Integer, ArrayType> dimensionMap = new LinkedHashMap<Integer, ArrayType>();
 			
 			ArrayType newArrayType = new  ArrayType(type_map_class.get(name),dimension);
 			dimensionMap.put(dimension, newArrayType);
@@ -267,14 +264,29 @@ public class TypeTable {
 	
 	public String toString(){
 		StringBuilder sb = new StringBuilder();
-		sb.append("primitive: " + "\n");
-		sb.append(type_map_primitive.values()+ "\n");
-		sb.append("class: " + "\n");
-		sb.append(type_map_class.values()+ "\n");
-		sb.append("methods: " + "\n");
-		sb.append(type_map_method.values()+ "\n");
+		sb.append("Type Table:");
+		sb.append(prog_location+ "\n");
+		for (Type t : type_map_primitive.values()){
+			sb.append("\t" +t.getTypeRep() + "\n");
+		}
+		for (ClassType t : type_map_class.values()){
+			sb.append("\t" +t.getTypeRep() + "\n");
+		}
+		for (Map<Integer, ArrayType> sub_map :type_map_arrays_primitive.values()){
+			for (ArrayType t : sub_map.values()){
+				sb.append("\t" +t.getTypeRep() + "\n");
+			} 
+		}
+		for (Map<Integer, ArrayType> sub_map :type_map_arrays_class.values()){
+			for (ArrayType t : sub_map.values()){
+				sb.append("\t" +t.getTypeRep() + "\n");
+			} 
+		}
+		for (List<MethodType> t_list : type_map_method.values()){
+			for (MethodType t : t_list){
+				sb.append("\t" +t.getTypeRep() + "\n");
+			}
+		}
 		return sb.toString() ;
 	}
-	
-	//TODO-get_main_methodType
 }

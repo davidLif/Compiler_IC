@@ -7,7 +7,7 @@ public class IntType extends Type{
 	@Override
 	protected String getTypeRep() {
 		
-		return "Primitive type: int";
+		return this.getTableId()+": Primitive type: int";
 	}
 	
 	@Override

@@ -53,7 +53,7 @@ public class ArrayType extends Type{
 	@Override
 	protected String getTypeRep() {
 		
-		return "Array type: " + this.toString();
+		return this.getTableId()+": Array type: " + this.toString();
 	}
 
 
