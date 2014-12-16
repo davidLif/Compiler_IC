@@ -114,6 +114,13 @@ public class methodReturnPaths implements Visitor{
 		
 		for(Method method : methodList)
 		{
+			
+			if(method instanceof LibraryMethod)
+			{
+				// methods contain only definition
+				continue;
+			}
+			
 			/* get the method symbol */
 			MethodSymbol methodSym = ((ClassSymbolTable)method.enclosingScope()).getMethod(method.getName(), method.isStatic());
 			/* get return type */

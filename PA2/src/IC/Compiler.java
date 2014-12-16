@@ -1,4 +1,5 @@
 package IC;
+import IC.AST.ICClass;
 import IC.AST.PrettyPrinter;
 import IC.AST.Program;
 import IC.Parser.*;
@@ -104,6 +105,8 @@ public class Compiler {
 					//PrettyPrinter lib_printer = new PrettyPrinter(library_name);
 					//String str_lib = (String) lib_prog.accept(lib_printer);
 					//System.out.print(str_lib); // line for debugging
+					prog.addLibClass(lib_prog.getClasses().get(0));
+					
 					
 				}
 				

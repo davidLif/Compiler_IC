@@ -1,5 +1,6 @@
 package IC.AST;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import IC.SemanticChecks.SemanticError;
@@ -37,4 +38,13 @@ public class Program extends ASTNode {
 		return classes;
 	}
 
+	
+	public void addLibClass(ICClass library)
+	{
+		List<ICClass> newList = new ArrayList<ICClass>();
+		newList.add(library);
+		newList.addAll(this.classes);
+		classes = newList;
+		
+	}
 }
