@@ -9,8 +9,7 @@ public class ClassType extends Type{
 	/**
 	 * super class type, optional
 	 */
-	private ClassType superClass=null;
-	private List<ClassType> superClassName_list=null;//for easy type evaluation
+	private ClassType superClass  = null; /* direct superclass */
 	
 	/**
 	 * name of the class
@@ -26,19 +25,18 @@ public class ClassType extends Type{
 	{
 		this.className = className;
 		this.superClass = null;
-		this.superClassName_list = new ArrayList<ClassType>();
 	}
 	/**
 	 * 
 	 * @param className - name of class
 	 * @param superClass - ClassType of superclass 
 	 */
-	public ClassType(String className, ClassType superClass,List<ClassType> superClassName_list)
+	public ClassType(String className, ClassType superClass)
 	{
 		
 		this(className);
 		this.superClass = superClass;
-		this.superClassName_list.addAll(superClassName_list);
+		
 	}
 	
 	public boolean hasSuper()
@@ -73,16 +71,24 @@ public class ClassType extends Type{
 		return rep;
 	}
 	
-	public List<ClassType> getSuperClassName_list() {
-		return superClassName_list;
-	}
+	
+	
+
 	@Override
 	public boolean subTypeOf(Type t) {
 		
-		if(this.superClassName_list.contains(t))
-			return true;
 		if(this == t)
 			return true;
+		
+		if(this.superClass == t)
+			return true;
+		
+		if(this.superClass.hasSuper())
+		{
+			/* transitive property */
+			return superClass.getSuper().subTypeOf(t);
+		}
+		
 		
 		return false;
 	}

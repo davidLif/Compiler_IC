@@ -9,8 +9,11 @@ import java.util.List;
 
 import java_cup.runtime.Symbol;
 import IC.SemanticChecks.InitBeforeUse;
+import IC.SemanticChecks.StructuralChecks;
 import IC.SemanticChecks.methodReturnPaths;
 import IC.SymTables.*;
+import IC.Types.SymbolSetter;
+import IC.Types.TypeEvaluator;
 import IC.Types.TypeTable;
 
 /**
@@ -106,30 +109,46 @@ public class Compiler {
 				
 				/* otherwise, everything went smooth, print the program's AST */
 				System.out.println(String.format("Parsed %s successfully!", args[0]));
-				//System.out.println(str_prog);
 				
+				
+				/* create global symbol table */
 				SymbolTableBuilder symTableBuilder = new SymbolTableBuilder();
+				GlobalSymbolTable globalSymbolTable = (GlobalSymbolTable) symTableBuilder.createGlobalSymbolTable(prog, args[0]);
 				
-				GlobalSymbolTable tbl = (GlobalSymbolTable) symTableBuilder.createGlobalSymbolTable(prog, args[0]);
+
+				/* create type table */
+				TypeTable typeTable = new TypeTable(args[0]);
+				
+				/* initialize the symbols' types and fill the type table */
+				SymbolSetter typeSetter = new SymbolSetter(prog, typeTable, globalSymbolTable );
+				typeSetter.setSymbolTypes();
+				
+				/* finish checking scope rules and proper inheritance */
+				IC.SemanticChecks.InheritanceCheck.check(prog, globalSymbolTable);
 				
 				
-				//GlobalSymbolTable tbl_lib = symTableBuilder.createGlobalSymbolTable(lib_prog, args[1]);
+				/* check that program structure is valid */
+				StructuralChecks structChecks = new StructuralChecks();
+				structChecks.check(prog);
 				
-				TypeTable test1 = new TypeTable(prog,tbl,args[0]);
+				/* perform typing checks */
+				TypeEvaluator evaluate = new TypeEvaluator(typeTable, globalSymbolTable);
+				prog.accept(evaluate);
 				
-				IC.SemanticChecks.InheritanceCheck.check(prog, tbl);
 				
-				/* init before use check */
+				/* check that variables are initialized before use */
 				InitBeforeUse initBeforeUseTest = new InitBeforeUse(prog);
 				initBeforeUseTest.check();
 				
 				/* all paths return value */
-				methodReturnPaths methodPaths = new methodReturnPaths(prog, test1);
+				methodReturnPaths methodPaths = new methodReturnPaths(prog, typeTable);
 				methodPaths.check();
 				
-				tbl.printTable();
+				/* print the symbol tables */
+				globalSymbolTable.printTable();
 				
-				System.out.println(test1);
+				/* print the type tables */
+				System.out.println(typeTable);
 				
 				
 				

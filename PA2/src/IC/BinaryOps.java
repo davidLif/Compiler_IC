@@ -61,4 +61,9 @@ public enum BinaryOps {
 			return true;
 		return false;
 	}
+	
+	public String toString()
+	{
+		return this.description;
+	}
 }

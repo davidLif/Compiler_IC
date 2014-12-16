@@ -19,6 +19,11 @@ public abstract class Type {
 		return this.table_id;
 	}
 	
+	@Override
+	public int hashCode()
+	{
+		return ((Integer)table_id).hashCode();
+	}
 
 	
 	
