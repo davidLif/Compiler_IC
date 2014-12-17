@@ -1,0 +1,30 @@
+class A
+{
+	
+	int func;
+	static C func () { }
+	
+}
+
+class B extends A
+{
+	
+	
+	
+	
+}
+class C extends B{ 
+
+	
+	int func;
+
+}
+
+/* 
+	shadowing is not allowed
+	
+	OUTPUT: 
+semantic error at line 19: identifer of field func already defined in a superclass
+
+
+*/

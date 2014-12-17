@@ -1,0 +1,29 @@
+class A
+{
+	A func(int a )
+	{
+	
+	}
+	
+}
+
+class B extends A
+{
+
+	
+	static C func( int a)
+	{
+		
+	}
+	
+	B func(string a) { } 
+	
+}
+class C { }
+
+/* 
+	different argument type
+	OUTPUT: 
+	semantic error at line 19: method func invalid overriding
+
+*/

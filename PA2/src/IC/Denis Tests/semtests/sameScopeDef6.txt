@@ -1,0 +1,18 @@
+class A /* checks single definition in each scope */
+{
+	
+	
+	string method2 (int test)
+	{
+		
+		
+		int test; 
+		
+	}
+}
+class B extends A
+{
+
+}
+
+/* output: semantic error at line 9: variable with same id, test, was already defined in current scope: method2 */

@@ -1,0 +1,25 @@
+class A /* checks single definition in each scope */
+{
+	static boolean test() { int test; }
+	int test;
+	string method2 (int test)
+	{
+		
+		
+		
+		{
+			int test;
+			{
+				int test;
+			}
+			
+		}
+		
+	}
+}
+class B extends A
+{
+
+}
+
+/* output: valid output */

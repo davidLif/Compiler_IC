@@ -1,0 +1,28 @@
+class A
+{
+	
+	int func (A a) { }
+	
+}
+
+class B extends A
+{
+	int func (B b) { }
+	
+	
+	
+}
+class C extends B{ 
+
+	
+
+}
+
+/* 
+	counts as overloading, which is not supported
+	
+	
+	OUTPUT: 
+	semantic error at line 10: method func invalid overriding
+
+*/

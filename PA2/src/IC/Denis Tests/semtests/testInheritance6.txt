@@ -1,0 +1,92 @@
+class A
+{
+	A func(int a )
+	{
+	
+	}
+	static A foo()
+	{
+	
+	}
+	
+}
+
+class B extends A
+{
+
+	
+	static C func( int a)
+	{
+		/* new method */
+	}
+	
+	static B foo()
+	{
+		/* overrides static foo in A*/
+	}
+	
+	C func(int a) {  /* overrides virtual func in A */ } 
+	
+}
+class C extends A{ 
+
+	
+	A func (int a)
+	{
+		/* overrides virtual func in A */
+	
+	}
+}
+
+/* 
+	valid output
+	
+	
+	OUTPUT: 
+		valid output
+		
+Parsed D:\semtests\testInheritance6.txt successfully!
+Global Symbol Table: D:\semtests\testInheritance6.txt
+	Class : A
+	Class : B
+	Class : C
+Children tables: A
+
+Class Symbol Table: A
+	Static method: foo { -> A}
+	Virtual method: func {int -> A}
+Children tables: func, foo, B, C
+
+Method Symbol Table: func
+	Parameter: int a
+
+Method Symbol Table: foo
+
+Class Symbol Table: B
+	Static method: func {int -> C}
+	Static method: foo { -> B}
+	Virtual method: func {int -> C}
+Children tables: func, foo, func
+
+Method Symbol Table: func
+	Parameter: int a
+
+Method Symbol Table: foo
+
+Method Symbol Table: func
+	Parameter: int a
+
+Class Symbol Table: C
+	Virtual method: func {int -> A}
+Children tables: func
+
+Method Symbol Table: func
+	Parameter: int a
+primitive: 
+[null, boolean, void, int, string]
+class: 
+[A, B, C]
+methods: 
+[[{ -> B}], [{int -> C}], [{int -> A}, { -> A}]]
+
+*/

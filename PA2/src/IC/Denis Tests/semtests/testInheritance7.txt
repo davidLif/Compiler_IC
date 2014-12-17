@@ -1,0 +1,48 @@
+class A
+{
+	A func(int a )
+	{
+	
+	}
+	static A foo()
+	{
+	
+	}
+	
+}
+
+class B extends A
+{
+
+	
+	static C func( int a)
+	{
+		/* new method */
+	}
+	
+	static B foo()
+	{
+		/* overrides static foo in A*/
+	}
+	
+	C func(int a) {  /* overrides virtual func in A */ } 
+	
+}
+class C extends B{ 
+
+	
+	A func (int a)
+	{
+		
+	
+	}
+}
+
+/* 
+	method func in class C doesnt ovveride same method in B correctly
+	
+	
+	OUTPUT: 
+	semantic error at line 34: method func invalid overriding
+
+*/

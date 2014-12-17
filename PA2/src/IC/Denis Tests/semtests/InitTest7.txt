@@ -1,0 +1,30 @@
+class A 
+{
+
+	int k;
+	void func(int a, boolean b, boolean d)
+	{
+		a = 5;
+		int index;
+		{
+			int index;
+			index = 4;
+		}
+		int[][] arr = new int[k];
+		boolean c = false;
+		{
+		   foo(k);
+		   arr[2] = arr[index];
+		   
+		}
+		boolean k;
+		
+		
+	}
+	int foo(int k)
+	{
+		return 0;
+	}
+}
+
+/* output: semantic error at line 17: local variable index used before was initialized */

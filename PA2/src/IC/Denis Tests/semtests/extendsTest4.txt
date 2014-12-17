@@ -1,0 +1,20 @@
+class C { } 
+
+class A extends C
+{
+	
+}
+class B extends C
+{
+
+}
+class D extends E { }
+
+
+	
+
+/* output: 
+
+semantic error at line 11: class D extends E, a class that was yet to be defined
+
+*/

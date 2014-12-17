@@ -1,0 +1,11 @@
+class A /* checks single definition in each scope */
+{
+	int k;
+	
+}
+class A extends B
+{
+
+}
+
+/* output: semantic error at line 6: class A was already defined  */

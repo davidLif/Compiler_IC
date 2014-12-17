@@ -1,0 +1,22 @@
+class Shachar
+{
+	/* INHERITENCE CHECKS */
+	static void main( string[] args)
+	{
+		A david = new A();
+		B denis = new B();
+		
+		A r = test(david);
+		
+	}
+	
+	A test ( B in)
+	{
+		return new A();
+	
+	}
+
+	
+
+}
+

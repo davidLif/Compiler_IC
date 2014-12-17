@@ -1,0 +1,11 @@
+class A extends A
+{
+	
+}
+class B
+{
+
+}
+	
+
+/* output: semantic error at line 1: class A cannot extends itself */

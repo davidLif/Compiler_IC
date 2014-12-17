@@ -1,0 +1,33 @@
+class C { } 
+
+class A extends C
+{
+	
+}
+class B extends C
+{
+
+}
+class D extends A { }
+	
+
+/* output: 
+
+Global Symbol Table: D:\test.txt
+	Class : C
+	Class : A
+	Class : B
+	Class : D
+Children tables: C
+
+Class Symbol Table: C
+Children tables: A, B
+
+Class Symbol Table: A
+Children tables: D
+
+Class Symbol Table: D
+
+Class Symbol Table: B
+
+*/
