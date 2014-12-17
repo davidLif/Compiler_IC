@@ -8,7 +8,7 @@ class Shachar
 
 		B denis = new B();
 
-		boolean s = (denis = y);
+		boolean s = (denis == y);
 
 		if ( s)
 		{
@@ -20,10 +20,9 @@ class Shachar
 		}
 
 
-
+		int e = 3;
 		if ( s)
 		{
-			int e = 3;
 		}
 		
 
@@ -52,7 +51,6 @@ class Shachar
 
 	}
 
-	return;
 
 }
 
