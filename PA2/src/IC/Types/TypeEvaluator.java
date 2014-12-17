@@ -357,22 +357,15 @@ public class TypeEvaluator implements Visitor {
 		}
 		else
 		{
-			// look for the method in current class scope
-			ClassType locationType = ((VariableSymbolTable)call.enclosingScope()).getThisType();
-			
-			//get class name
-			String class_name = ((ClassType)locationType).getName();
-			
-			//get class symbol table
-			ClassSymbolTable class_symbolTable = get_class_table(class_name);
 			
 			
-			//get virtual method  symbol
-			methodSym = class_symbolTable.getMethod(call.getName(), false);
+			//get method symbol
+			methodSym = ((VariableSymbolTable)call.enclosingScope()).getMethod(call.getName());
 			
 			if(methodSym == null)
 			{
-				throw new SemanticError(call.getLine(), "class " +class_symbolTable.getId() + " (or its superclasses) does not contain virtual method " + call.getName());
+				String error = String.format("method %s could not be resolved in current scope", call.getName());
+				throw new SemanticError(call.getLine(), error);
 			}
 			
 		}

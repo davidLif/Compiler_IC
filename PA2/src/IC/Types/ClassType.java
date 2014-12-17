@@ -94,8 +94,18 @@ public class ClassType extends Type{
 			}
 		}
 		
+
 		return false;
 	}
 	
+	/**
+	 * this method sets the super class of current class type
+	 * @param superClass
+	 */
+	
+	public void setSuperClassType(ClassType superClass)
+	{
+		this.superClass = superClass;
+	}
 
 }

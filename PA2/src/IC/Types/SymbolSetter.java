@@ -84,6 +84,26 @@ public class SymbolSetter implements Visitor{
 	public void setSymbolTypes() throws SemanticError
 	{
 		prog.accept(this);
+		
+		/* after we found all the class types, link class types to their parent types*/
+		
+		for (ICClass program_class : prog.getClasses()){
+
+			// get class symbol out of GlobalSymbolTable
+			String name = program_class.getName();
+			
+			// get class type
+			ClassType class_type = typeTable.getClassType(name);
+			
+			if(program_class.hasSuperClass())
+			{
+				ClassType superClassType =  typeTable.getClassType(program_class.getSuperClassName());
+				class_type.setSuperClassType(superClassType);
+			}
+			
+		}
+		
+		
 	}
 
 	@Override

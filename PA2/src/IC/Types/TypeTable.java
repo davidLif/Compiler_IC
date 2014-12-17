@@ -173,7 +173,7 @@ public class TypeTable {
 	 * @param name of class
 	 * @return class type or null if does not exist
 	 */
-	public Type getClassType(String name)  {
+	public ClassType getClassType(String name)  {
 		
 		/* need to check first that this is a valid class */
 		
@@ -455,7 +455,7 @@ public class TypeTable {
 			
 			//add new type of array if needed.
 			
-			for (int i=1;i < type.getDimension();i++){
+			for (int i=1; i < type.getDimension();i++){
 				 addArrayType_class(type.getName(), i);
 			}
 			return addArrayType_class(type.getName(), type.getDimension());
