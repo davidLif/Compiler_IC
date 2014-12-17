@@ -147,6 +147,20 @@ public class InitBeforeUse implements PropagatingVisitor<Set<LocalVariableSymbol
 		{
 			/* we're setting the value of a variable location */
 			VariableLocation varLoc = (VariableLocation)loc;
+			
+			
+			if(varLoc.isExternal())
+			{
+				/* if the var is a field in some class, no need to specify that it was initialized
+				 * fields are automatically initalized on the heap
+				 * simply visit the location to check that we didnt use vars before init
+				 */
+				
+				varLoc.getLocation().accept(this, definedSymbols);
+				return null;
+				
+			}
+			
 			Symbol definingSymbol = varLoc.getDefiningSymbol();
 			
 			/* we must check that the defining symbol is really a local variable */
