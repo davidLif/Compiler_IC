@@ -87,7 +87,7 @@ public class ClassType extends Type{
 			if( this.superClass == t)
 				return true;
 		
-		if(this.superClass != null && this.superClass.hasSuper())
+			if(this.superClass.hasSuper())
 			{
 				/* transitive property */
 				return superClass.getSuper().subTypeOf(t);
