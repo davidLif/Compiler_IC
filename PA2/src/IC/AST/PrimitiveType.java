@@ -41,4 +41,15 @@ public class PrimitiveType extends Type {
 	public DataTypes getDataTypes(){
 		return type;
 	}
+	
+	@Override
+	public String toString()
+	{
+		String res = type.getDescription();
+		for(int i = 0; i < this.getDimension() ; ++ i)
+		{
+			res += "[]";
+		}
+		return res;
+	}
 }

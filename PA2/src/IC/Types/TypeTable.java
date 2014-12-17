@@ -61,6 +61,10 @@ public class TypeTable {
 	 */
 	private static int typeCounter = 1;
 	
+	
+	
+	private GlobalSymbolTable globSymTable;
+	
 	/**
 	 * this method allocates a new id for a type, and advances the counter
 	 * @return type id
@@ -69,6 +73,7 @@ public class TypeTable {
 	{
 		++TypeTable.typeCounter ;
 		return TypeTable.typeCounter - 1;
+		
 	}
 	
 
@@ -82,11 +87,23 @@ public class TypeTable {
 		type_map_arrays_primitive = new LinkedHashMap<Type, Map <Integer, ArrayType>>();
 		type_map_arrays_class = new LinkedHashMap<String, Map <Integer, ArrayType>>();
 		
+		this.globSymTable = null;
+		
 		/* put primitive types to collection */
 		addPrimitiveTypes();
 	
 	
 		
+	}
+	
+	
+	/**
+	 * set the programs global symbol table, used to check if a class exists in the program or not
+	 * @param symTable
+	 */
+	public void SetSymbolTable(GlobalSymbolTable symTable)
+	{
+		this.globSymTable = symTable; 
 	}
 	
 	/**
@@ -142,6 +159,7 @@ public class TypeTable {
 	public Type getClassType(ICClass iC_class)  {
 		
 		ClassType userClassType = new ClassType(iC_class.getName());
+		/* this check is important, since we may actually found it before! */
 		if(!type_map_class.containsKey(iC_class.getName()))
 			type_map_class.put(iC_class.getName(), userClassType);
 		
@@ -157,10 +175,23 @@ public class TypeTable {
 	 */
 	public Type getClassType(String name)  {
 		
-		return type_map_class.get(name);
+		/* need to check first that this is a valid class */
 		
+		if(this.globSymTable.getClassSymbol(name) == null)
+			return null;
+		
+		/* check if class map already contains the class type , if so return it */
+		if(this.type_map_class.containsKey(name))
+			return this.type_map_class.get(name);
+		
+		/* doesn't exist yet, create it */
+		ClassType userClassType = new ClassType(name);
+		type_map_class.put(name, userClassType);
+		return userClassType;
 		
 	}
+	
+
 	
 	
 	/**
@@ -396,18 +427,32 @@ public class TypeTable {
 	private Type getUserType(UserType type) throws SemanticError
 	{
 	
-		// check if class type exists
-		if(type_map_class.get(type.getName()) == null)
+		
+		
+		// check if class  exists
+		if(this.globSymTable.getClassSymbol(type.getName()) == null)
+		{
+			// such class was not defined in the entire program
 			throw new SemanticError(type.getLine(), "class " + type.getName() + " is not defined");
-				
+		}
+		
+		if(!this.type_map_class.containsKey(type.getName()))
+		{
+			// need to add the class type first
+			// first time we see this class type
+			ClassType userClassType = new ClassType(type.getName());
+			type_map_class.put(type.getName(), userClassType);
+		}
+		
 		
 		if (type.getDimension() == 0){
 			
-			// when first visiting program, we created all class possible types
+			return this.type_map_class.get(type.getName());
 			
-			return type_map_class.get(type.getName());
+			
 		}
 		else{
+			
 			//add new type of array if needed.
 			
 			for (int i=1;i < type.getDimension();i++){

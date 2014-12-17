@@ -2,24 +2,18 @@ package IC.SemanticChecks;
 import java.util.List;
 
 import IC.AST.*;
-import IC.SymTables.ClassSymbolTable;
-import IC.SymTables.Symbols.MethodSymbol;
+
 
 import IC.SemanticChecks.SemanticError;
-import IC.Types.ArrayType;
-import IC.Types.MethodType;
-import IC.Types.StringType;
-import IC.Types.Type;
-import IC.Types.VoidType;
+
 
 
 /**
  * 
  * This class checks the following structural checks:
  * 
- * 		1. exactly one main method is found with the correct signature
- * 		2. break, continue used only inside loops
- * 		3. this keyword used only inside virtual methods
+ * 		1. break, continue used only inside loops
+ * 		2. this keyword used only inside virtual methods
  *
  */
 
@@ -134,9 +128,9 @@ public class StructuralChecks implements  Visitor  {
 			throws SemanticError {
 			
 			
+		assignment.getVariable().accept(this); /* also visit the location expression, may contain this*/
 		assignment.getAssignment().accept(this);
 		
-		assignment.getVariable().accept(this); /* also visit the location expression, may contain this*/
 		
 		return null;
 	}
@@ -197,6 +191,7 @@ public class StructuralChecks implements  Visitor  {
 	@Override
 	public Object visit(Break breakStatement)
 			throws SemanticError {
+		
 		if( inside_loop == false)
 		{
 			String err_msg = "break can only be used when inside a while statement";
@@ -212,7 +207,7 @@ public class StructuralChecks implements  Visitor  {
 	public Object visit(Continue continueStatement)
 			throws SemanticError {
 		
-		if( inside_loop == false)
+		if( inside_loop == false )
 		{
 			String err_msg = "break can only be used when inside a while statement";
 			throw new SemanticError(continueStatement.getLine(), err_msg);
@@ -238,6 +233,8 @@ public class StructuralChecks implements  Visitor  {
 	@Override
 	public Object visit(LocalVariable localVariable)
 			throws SemanticError {
+		
+		
 			
 		if(localVariable.hasInitValue())
 		{
@@ -306,7 +303,7 @@ public class StructuralChecks implements  Visitor  {
 		if( inside_static_function == true)
 		{
 			String err_msg = "this keyword can only be used inside a virtual method";
-			throw new SemanticError(thisExpression .getLine(), err_msg);
+			throw new SemanticError(thisExpression.getLine(), err_msg);
 		}
 		
 		

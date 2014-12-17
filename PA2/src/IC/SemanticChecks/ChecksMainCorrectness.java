@@ -1,16 +1,14 @@
 package IC.SemanticChecks;
 import java.util.List;
 
+import IC.DataTypes;
 import IC.AST.*;
-import IC.SymTables.ClassSymbolTable;
-import IC.SymTables.Symbols.MethodSymbol;
+
 
 import IC.SemanticChecks.SemanticError;
-import IC.Types.ArrayType;
-import IC.Types.MethodType;
-import IC.Types.StringType;
-import IC.Types.Type;
-import IC.Types.VoidType;
+
+import IC.Types.TypeTable;
+;
 
 
 /**
@@ -18,27 +16,42 @@ import IC.Types.VoidType;
  * This class checks the following structural checks:
  * 
  * 		1. exactly one main method is found with the correct signature
- * 		2. break, continue used only inside loops
- * 		3. this keyword used only inside virtual methods
- *
+ * 
+ * This class also adds the types:
+ 		string[]
+ 		{ string[] -> void }
+ 		in that order to the type table
+
  */
 
 public class ChecksMainCorrectness implements  Visitor  {
 
 	
-	boolean found_main = false;
+	private boolean found_main;
+	private TypeTable typeTable;
+	private Program prog;
+	private int lineOfDef;  /* line where we found main method */
 	
-	public void check(Program program) throws SemanticError
+	
+	public ChecksMainCorrectness(Program program, TypeTable typeTable)
 	{
-		 program.accept(this);	
+		this.prog = program;
+		this.typeTable = typeTable;
+		this.found_main = false;
+	}
+	
+	
+	public void check() throws SemanticError
+	{
+		 this.prog.accept(this);	
 		 
 		 /* checking that the class has exactly one main function. Since we don't allow more than one 
-		  * main, if found_min == false ten no main exists.
+		  * main, if found_min == false then no main exists.
 		  */
 		 if ( found_main == false)
 		 {
-				String err_msg = "No main function exists.";
-				throw new SemanticError(program.getLine(), err_msg);
+				String err_msg = "No main method found";
+				throw new SemanticError(prog.getLine(), err_msg);
 		
 		 }
 	}
@@ -85,20 +98,18 @@ public class ChecksMainCorrectness implements  Visitor  {
 		
 	
 		
-		/* checking that it's not a main function */
-		if ( method.getName().equals("main") && found_main == true) 
+		/* checking that it's not a method named 'main' */
+		if ( method.getName().equals("main") && found_main ) 
 		{	
-			String err_msg = "Found more than one main function";
+			String err_msg = "Only one method named 'main' can be defined (and it should be a static method)";
+			throw new SemanticError(method.getLine(), err_msg);
+		}
+		else if( method.getName().equals("main"))
+		{
+			String err_msg = "main method should be defined as a static method, not a virtual method";
 			throw new SemanticError(method.getLine(), err_msg);
 		}
 		
-		List<Statement> stList = method.getStatements();
-		
-		for (Statement stm: stList)
-		{
-			/* statements may use this keyword */
-			stm.accept(this);
-		}
 		
 		return null;
 		
@@ -111,50 +122,88 @@ public class ChecksMainCorrectness implements  Visitor  {
 			throws SemanticError {
 
 		String methodName = method.getName();
-		List<Statement> stList = method.getStatements();
+		
 		
 		if ( methodName.equals("main"))
 		{
 			
 			
-			if(found_main == true) /* we have already seen a main function */
+			if(found_main ) /* we have already seen a main function */
 			{
-				String err_msg = "Found more than one main functions";
+				String err_msg = "A main method was already defined before in the program, at line: " + this.lineOfDef;
 				throw new SemanticError(method.getLine(), err_msg);
 			}
 			
 			/* checking that it's in a correct form of a main function */
 	
-			ClassSymbolTable scope = (ClassSymbolTable) method.enclosingScope();  
-			MethodSymbol SymbolTable =  scope.getMethod("main", true );
-			MethodType methodType = (MethodType) SymbolTable.getType();
-			List<Type> arguments = methodType.getArgstypes();
-			
-			
-			if ( ! (methodType.getReturnType() instanceof VoidType) ) /* the return type is not a void */
+			boolean error = false;
+			IC.AST.Type methodReturnType = method.getType();
+			if(methodReturnType instanceof PrimitiveType)
 			{
-				String err_msg = "main method invalid return type, must return void";
-				throw new SemanticError(method.getLine(), err_msg);
+				/* check that void return type */
+				PrimitiveType retPrimitiveType = (PrimitiveType)methodReturnType;
+				if(retPrimitiveType.getDataTypes() != DataTypes.VOID)
+				{
+					// invalid return type
+					error = true;
+					
+				}
 			}
-		
-			if( !( (arguments.size() == 1) && (arguments.get(0) instanceof ArrayType) /* params are string [] */
-					&&   ((ArrayType) arguments.get(0)).getBasicType() instanceof StringType   
-					&&    ((ArrayType) arguments.get(0)).getDimensions() == 1 ) )
+			else
 			{
-				String err_msg = "main method invalid argument list, should only accept one argument of type string[]";
-				throw new SemanticError(method.getLine(), err_msg);
+				// invalid return type
+				error = true;
+				
 			}
 			
+			if(error)
+			{
+				String err = String.format("invalid main return type, should be void");
+				throw new SemanticError(method.getLine(), err);
+				
+			}
+			
+			List<Formal> formals = method.getFormals();
+			
+			if(formals.size() != 1)
+			{
+				String err = String.format("main should receive only one argument of type string[], instead receives %d arguments", formals.size());
+				throw new SemanticError(method.getLine(), err);
+			}
+			
+			IC.AST.Type formalType = formals.get(0).getType();
+			if(formalType instanceof UserType)
+			{
+				error = true;
+			}
+			else {
+				
+				PrimitiveType primitiveFormal = (PrimitiveType)formalType;
+				if(primitiveFormal.getDataTypes() != DataTypes.STRING || primitiveFormal.getDimension() != 1)
+					error = true;
+				
+			}
+			
+			
+			if(error)
+			{
+				String err = String.format("main should receive only one argument of type string[], instead receives argument of type %s", formalType);
+				throw new SemanticError(method.getLine(), err);
+			}
 			
 			found_main = true;
+			this.lineOfDef = method.getLine();
+			
+			
+			/* add the types */
+			/* first add string[] */
+			typeTable.getType(formalType);
+			/* add method type */
+			typeTable.getMethodType(method);
 			 
 		}
 		
-		for (Statement stm: stList)
-		{
-			stm.accept(this);
-		}
-		
+	
 		return null;
 	}
 
@@ -193,10 +242,7 @@ public class ChecksMainCorrectness implements  Visitor  {
 	public Object visit(Assignment assignment)
 			throws SemanticError {
 			
-			
-		assignment.getAssignment().accept(this);
-		
-		assignment.getVariable().accept(this); /* also visit the location expression, may contain this*/
+	
 		
 		return null;
 	}
@@ -205,7 +251,7 @@ public class ChecksMainCorrectness implements  Visitor  {
 	public Object visit(CallStatement callStatement)
 			throws SemanticError {
 		
-		callStatement.getCall().accept(this);
+	
 		return null;
 	}
 
@@ -213,8 +259,7 @@ public class ChecksMainCorrectness implements  Visitor  {
 	public Object visit(Return returnStatement)
 			throws SemanticError {
 		
-		if(returnStatement.hasValue()) /* return value is optional */
-			returnStatement.getValue().accept(this);
+	
 		return null;
 	}
 
@@ -222,10 +267,7 @@ public class ChecksMainCorrectness implements  Visitor  {
 	public Object visit(If ifStatement) throws SemanticError {
 		
 		
-		ifStatement.getCondition().accept(this);
-		ifStatement.getOperation().accept(this);
-		if(ifStatement.hasElse()) /* else is optional, may contain null */
-			ifStatement.getElseOperation().accept(this);
+	
 
 		return null;
 	}
@@ -234,14 +276,7 @@ public class ChecksMainCorrectness implements  Visitor  {
 	public Object visit(While whileStatement)
 			throws SemanticError {
 			
-		/* visit the condition */
-		whileStatement.getCondition().accept(this); 
-		
-		/* we are in a while loop - thus the visit of a break and continue statements is valid */
-		Statement st = whileStatement.getOperation();
-		
-
-		st.accept(this);
+	
 		return null;
 	}
 

@@ -17,8 +17,12 @@ public class NullType extends Type{
 	@Override
 	public boolean subTypeOf(Type t) {
 		
-		// subtype of everything
-		return true;
+		// subtype of all reference types (array type, string type, class type)
+		
+		if(t instanceof ClassType || t instanceof ArrayType || t instanceof StringType)
+			return true;
+		
+		return false;
 	}
 
 	

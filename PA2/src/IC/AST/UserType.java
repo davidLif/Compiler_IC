@@ -37,4 +37,14 @@ public class UserType extends Type {
 		return v.visit(this, context);
 	}
 
+	@Override
+	public String toString()
+	{
+		String res = name;
+		for (int i = 0; i < this.getDimension() ; ++i)
+		{
+			res += "[]";
+		}
+		return res;
+	}
 }

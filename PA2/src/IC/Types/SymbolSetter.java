@@ -5,6 +5,7 @@ import IC.AST.Assignment;
 import IC.AST.Break;
 import IC.AST.CallStatement;
 import IC.AST.Continue;
+import IC.AST.Expression;
 import IC.AST.ExpressionBlock;
 import IC.AST.Field;
 import IC.AST.Formal;
@@ -50,7 +51,16 @@ import IC.SymTables.Symbols.Symbol;
 
 
 
-
+/**
+ * 
+ * 
+ * 
+ * This class visits the AST tree and locates new types, adds them to the type table and sets the types of the symbols in the symbol table
+ * The following semantic checks will be carried out :
+ * 
+ * - Usage of an invalid type, for example a UserType of a class that was not define
+ *
+ */
 
 
 public class SymbolSetter implements Visitor{
@@ -63,7 +73,12 @@ public class SymbolSetter implements Visitor{
 		typeTable = table;
 		this.globalSymbolTable = globalSymbolTable;
 		this.prog = prog;
+		
+		/* link symbol table to type table, used for checking whether a class exists*/
+		typeTable.SetSymbolTable(globalSymbolTable);
 	}
+	
+	
 	
 	
 	public void setSymbolTypes() throws SemanticError
@@ -80,16 +95,17 @@ public class SymbolSetter implements Visitor{
 
 			//get class symbol out of GlobalSymbolTable
 			ClassSymbol class_symbol = globalSymbolTable.getClassSymbol(program_class.getName());
+			
 			//calc class type
 			Type class_type = typeTable.getClassType(program_class);
+			
 			//set class type
 			class_symbol.setType(class_type);
-		}
-		
-		//travel into classes
-		for (ICClass program_class : program.getClasses()){
+			
+			// visit class
 			program_class.accept(this);
 		}
+		
 		return null;
 	}
 
@@ -172,7 +188,7 @@ public class SymbolSetter implements Visitor{
 	@Override
 	public Type visit(PrimitiveType type) throws SemanticError {
 		
-		IC.Types.Type nodeType= typeTable.getType(type); /* get type object from type table */
+		IC.Types.Type nodeType = typeTable.getType(type); /* get type object from type table */
 		type.setNodeType(nodeType);
 		return nodeType;
 	}
@@ -190,22 +206,40 @@ public class SymbolSetter implements Visitor{
 	@Override
 	public Type visit(Assignment assignment) throws SemanticError {
 		
+		// statements dont hold a type
+		
+		// visit left hand side
+		assignment.getVariable().accept(this);
+		// visit right hand side
+		assignment.getVariable().accept(this);
+		
 		return null;
 	}
 
 	@Override
 	public Type visit(CallStatement callStatement) throws SemanticError {
 		
+		callStatement.getCall().accept(this);
+		
 		return null;
 	}
 
 	@Override
 	public Type visit(Return returnStatement) throws SemanticError {
+		
+		if(returnStatement.hasValue())
+		{
+			returnStatement.getValue().accept(this);
+		}
+		
 		return null;
 	}
 
 	@Override
 	public Type visit(If ifStatement) throws SemanticError {
+		
+		// visit condition
+		ifStatement.getCondition().accept(this);
 		
 		//visit into if block. 
 		ifStatement.getOperation().accept(this);
@@ -249,18 +283,36 @@ public class SymbolSetter implements Visitor{
 
 	@Override
 	public Type visit(LocalVariable localVariable) throws SemanticError {
+		
+		/********* visit type **********/
+		
 		//get localVariable type
 		Type localVariable_type = (Type) localVariable.getType().accept(this);
+		
 		//get localVariable symbol
 		Symbol localVariable_symbol = ((VariableSymbolTable)localVariable.enclosingScope()).getVariableLocally(localVariable.getName());
-		//set type to symbol
+		
+		//set type to symbol and ast node
 		localVariable_symbol.setType(localVariable_type);
 		localVariable.setNodeType(localVariable_type);
+		
+		/************  *************/
+		if(localVariable.hasInitValue())
+		{
+			localVariable.getInitValue().accept(this);
+		}
+		
+		
 		return localVariable_type;
 	}
 
 	@Override
 	public Type visit(VariableLocation location) throws SemanticError {
+		
+		if(location.isExternal())
+		{
+			location.getLocation().accept(this);
+		}
 		
 		return null;
 	}
@@ -268,17 +320,44 @@ public class SymbolSetter implements Visitor{
 	@Override
 	public Type visit(ArrayLocation location) throws SemanticError {
 		
+		location.getArray().accept(this);
+		location.getIndex().accept(this);
+		
 		return null;
 	}
 
 	@Override
 	public Type visit(StaticCall call) throws SemanticError {
 		
+		String className = call.getClassName();
+		if(typeTable.getClassType(className) == null)
+		{
+			String err = String.format("Class %s was not defined in the program", className);
+			throw new SemanticError(call.getLine(), err);
+		}
+		
+		/* visit arguments */
+		for( Expression expr : call.getArguments())
+		{
+			expr.accept(this);
+		}
+		
 		return null;
 	}
 
 	@Override
 	public Type visit(VirtualCall call) throws SemanticError {
+		
+		if(call.isExternal())
+		{
+			call.getLocation().accept(this);
+		}
+		/* visit arguments */
+		for( Expression expr : call.getArguments())
+		{
+			expr.accept(this);
+		}
+		
 		
 		return null;
 	}
@@ -292,48 +371,90 @@ public class SymbolSetter implements Visitor{
 	@Override
 	public Type visit(NewClass newClass) throws SemanticError {
 		
+		if(typeTable.getClassType(newClass.getName()) == null)
+		{
+			throw new SemanticError(newClass.getLine(),"class "+ newClass.getName() + " was not defined");
+		}
+		/* set node type to be class type */
+		newClass.setNodeType(typeTable.getClassType(newClass.getName()));
+		
 		return null;
 	}
 
 	@Override
 	public Type visit(NewArray newArray) throws SemanticError {
 		
-		return null;
+		/* new array may introduce a new type we have yet to see */
+		
+		Type array_type; /* created array type */
+		Type basic_type = (Type) newArray.getType().accept(this);
+		
+		if(basic_type instanceof ArrayType)
+		{
+			// basic type is already an array type, need to add one more dimension
+			ArrayType prev_array_type = (ArrayType) basic_type;
+			array_type = typeTable.getArrayType(prev_array_type.getBasicType(), prev_array_type.getDimensions() + 1);
+		}
+		else
+		{
+			// basic type is primitive or class type, return array type
+			array_type = typeTable.getArrayType(basic_type, 1);
+		}
+		
+		newArray.setNodeType(array_type);
+		
+		/* visit size */
+		
+		newArray.getSize().accept(this);
+		
+		return array_type;
 	}
 
 	@Override
 	public Type visit(Length length) throws SemanticError {
+		
+		length.getArray().accept(this);
+		
 		return null;
 	}
 
 	@Override
 	public Type visit(MathBinaryOp binaryOp) throws SemanticError {
+		
+		binaryOp.getFirstOperand().accept(this);
+		binaryOp.getSecondOperand().accept(this);
 		return null;
 	}
 
 	@Override
 	public Type visit(LogicalBinaryOp binaryOp) throws SemanticError {
+		binaryOp.getFirstOperand().accept(this);
+		binaryOp.getSecondOperand().accept(this);
 		return null;
 	}
 
 	@Override
 	public Type visit(MathUnaryOp unaryOp) throws SemanticError {
+		unaryOp.getOperand().accept(this);
 		return null;
 	}
 
 	@Override
 	public Type visit(LogicalUnaryOp unaryOp) throws SemanticError {
+		unaryOp.getOperand().accept(this);
 		return null;
 	}
 
 	@Override
 	public Type visit(Literal literal) throws SemanticError {
+		/* does not introduce a new type */
 		return null;
 	}
 
 	@Override
 	public Type visit(ExpressionBlock expressionBlock) throws SemanticError {
 		
+		expressionBlock.getExpression().accept(this);
 		
 		return null;
 	}
@@ -342,7 +463,6 @@ public class SymbolSetter implements Visitor{
 	private void method_visit(Method method) throws SemanticError {
 		
 
-		
 		formal_list_visit(method);
 		
 		//visit all statements

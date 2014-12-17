@@ -3,11 +3,9 @@ import IC.AST.ICClass;
 import IC.AST.PrettyPrinter;
 import IC.AST.Program;
 import IC.Parser.*;
-
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.List;
-
 
 
 import java_cup.runtime.Symbol;
@@ -105,9 +103,7 @@ public class Compiler {
 					}
 					
 					lib_prog = (Program)lib_root.value;
-					//PrettyPrinter lib_printer = new PrettyPrinter(library_name);
-					//String str_lib = (String) lib_prog.accept(lib_printer);
-					//System.out.print(str_lib); // line for debugging
+					
 					prog.addLibClass(lib_prog.getClasses().get(0));
 					
 					
@@ -117,13 +113,18 @@ public class Compiler {
 				System.out.println(String.format("Parsed %s successfully!", args[0]));
 				
 				
+				/* create type table */
+				TypeTable typeTable = new TypeTable(args[0]);
+				
+				
+				/* check main and add main method types */
+				ChecksMainCorrectness mainChecker = new ChecksMainCorrectness(prog, typeTable);
+				mainChecker.check();
+				
 				/* create global symbol table */
 				SymbolTableBuilder symTableBuilder = new SymbolTableBuilder();
 				GlobalSymbolTable globalSymbolTable = (GlobalSymbolTable) symTableBuilder.createGlobalSymbolTable(prog, args[0]);
 				
-
-				/* create type table */
-				TypeTable typeTable = new TypeTable(args[0]);
 				
 				/* initialize the symbols' types and fill the type table */
 				SymbolSetter typeSetter = new SymbolSetter(prog, typeTable, globalSymbolTable );
@@ -131,12 +132,6 @@ public class Compiler {
 				
 				/* finish checking scope rules and proper inheritance */
 				IC.SemanticChecks.InheritanceCheck.check(prog, globalSymbolTable);
-				
-						
-				/* check that restrictions on the main fucntion */
-				ChecksMainCorrectness mainChecker = new ChecksMainCorrectness();
-				mainChecker.check(prog);
-				
 				
 				
 				/* check that program structure is valid */

@@ -131,7 +131,8 @@ public class TypeEvaluator implements Visitor {
 		
 		//compare the sides types
 		if (!right_side_type.subTypeOf(left_side_type)){
-			throw new SemanticError(assignment.getLine(),"rigth hand side of assignment is not sub type of left hand side");
+			String err = String.format("type of right hand side of assignment %s is not sub type of left hand side %s", right_side_type, left_side_type);
+			throw new SemanticError(assignment.getLine(), err);
 		}
 		
 		return null;
@@ -164,8 +165,15 @@ public class TypeEvaluator implements Visitor {
 				throw new SemanticError(returnStatement.getLine(),"method return type isn't void - return command must return a value of type " + method_return_type);
 			}
 		}
+		else if (method_return_type instanceof VoidType && return_stmt_type != null)
+		{
+			String err = String.format("method return type is void, can not return a value");
+			throw new SemanticError(returnStatement.getLine(), err);
+		}
 		else if (!return_stmt_type.subTypeOf(method_return_type)){
-			throw new SemanticError(returnStatement.getLine()," return statement type isn't a subtype of method return Type");
+			String err = String.format("returned value's type (%s) is not a subtype of method's return type (%s)", return_stmt_type, method_return_type);
+			throw new SemanticError(returnStatement.getLine(), err);
+			
 		}
 		
 		return null;
@@ -225,7 +233,9 @@ public class TypeEvaluator implements Visitor {
 		if (localVariable.hasInitValue()){
 			Type init_type = (Type) localVariable.getInitValue().accept(this);
 			if (!init_type.subTypeOf(localVariable.getNodeType())){
-				throw new SemanticError(localVariable.getLine(), "init value type is not a subtype of declaration type");
+				
+				String err = String.format("init value type (%s) is not a subtype of declaration type (%s)", init_type, localVariable.getNodeType());
+				throw new SemanticError(localVariable.getLine(), err);
 			}
 			
 		}
@@ -258,7 +268,8 @@ public class TypeEvaluator implements Visitor {
 				
 			}
 			else {
-				throw new SemanticError(location.getLine(),"type of location (prefix before .) is not a class type");
+				String err = String.format("type of location (prefix before .) is not a class type (but rather %s)", location_type);
+				throw new SemanticError(location.getLine(),err);
 			}
 		}
 		else {
@@ -276,17 +287,17 @@ public class TypeEvaluator implements Visitor {
 		//check index to be integer
 		Type index_type = (Type) location.getIndex().accept(this);
 		if (index_type != typeTable.getPrimitiveType(DataTypes.INT)){
-			throw new SemanticError(location.getLine(),"index to array is not an integer");
+			throw new SemanticError(location.getLine(),"index of array is not an integer, but rather of type " + index_type);
 		}
 		
-		//check array expression to really be an array
-		Type expr_type = (Type) location.getArray().accept(this);
-		if (!(expr_type instanceof ArrayType)){
-			throw new SemanticError(location.getLine(),"left expression type is not of array type");
+		Type array_type = (Type) location.getArray().accept(this);
+		if(!(array_type instanceof ArrayType))
+		{
+			String err = String.format("location of array is not of array type, but rather of type %s", array_type);
+			throw new SemanticError(location.getLine(), err);
 		}
 		
-		ArrayType array_type = (ArrayType)expr_type;
-		location.setNodeType( typeTable.getArrayTypeItemType(array_type));
+		location.setNodeType(typeTable.getArrayTypeItemType((ArrayType)array_type));
 		
 		return location.getNodeType();
 		
@@ -294,15 +305,10 @@ public class TypeEvaluator implements Visitor {
 
 	@Override
 	public Type visit(StaticCall call) throws SemanticError {
-		//get class symbol table
+		//get class symbol table, class exists as determined in previous phase
 		ClassSymbolTable classSymbolTable = get_class_table(call.getClassName());
 		
-		if(classSymbolTable == null)
-		{
-			throw new SemanticError(call.getLine(), "class " + call.getClassName() + " was not defined");
-		}
-		
-		//get method symbol
+		//get static method symbol
 		MethodSymbol method_symbol = classSymbolTable.getMethod(call.getName(), true);
 		
 		if(method_symbol == null)
@@ -329,7 +335,7 @@ public class TypeEvaluator implements Visitor {
 		{
 			Type locationType = (Type) call.getLocation().accept(this);
 			if (!(locationType instanceof ClassType )){
-				throw new SemanticError(call.getLine(),"location type is not of class type");
+				throw new SemanticError(call.getLine(), "location type is not of class type, but rather of type " + locationType);
 			}
 			//get class name
 			String class_name = ((ClassType)locationType).getName();
@@ -339,12 +345,13 @@ public class TypeEvaluator implements Visitor {
 			
 			/* note: class_symbolTable is not null , class must be defined since it has a type*/
 			
-			//get static method symbol
-			methodSym  = class_symbolTable.getMethod(call.getName(), true);
+			//get virtual method symbol
+			
+			methodSym  = class_symbolTable.getMethod(call.getName(), false);
 			
 			if(methodSym == null)
 			{
-				throw new SemanticError(call.getLine(), "class " +class_symbolTable.getId() + " (or its superclasses) does not contain static method " + call.getName());
+				throw new SemanticError(call.getLine(), "class " +class_symbolTable.getId() + " (or its superclasses) does not contain virtual method " + call.getName());
 			}
 				
 		}
@@ -384,50 +391,29 @@ public class TypeEvaluator implements Visitor {
 	@Override
 	public Type visit(This thisExpression) throws SemanticError {
 		
-		return ((VariableSymbolTable)thisExpression.enclosingScope()).getThisType();
-		
+		thisExpression.setNodeType(((VariableSymbolTable)thisExpression.enclosingScope()).getThisType());
+		return thisExpression.getNodeType();
 	}
 
 	@Override
 	public Type visit(NewClass newClass) throws SemanticError {
 		
-		if(typeTable.getClassType(newClass.getName()) == null)
-		{
-			throw new SemanticError(newClass.getLine(),"class "+ newClass.getName() + " was not defined");
-		}
-		ClassType class_type = (ClassType) typeTable.getClassType(newClass.getName());
+		/* class should exist, determined in previous phase */
 		
-		newClass.setNodeType(class_type);
-		return class_type;
+		return newClass.getNodeType();
 	}
 
 	@Override
 	public Type visit(NewArray newArray) throws SemanticError {
+		
 		//check size to be int
 		Type size_type = (Type) newArray.getSize().accept(this);
 		if (!(size_type instanceof IntType)){
-			throw new SemanticError(newArray.getLine(),"array size should be of type integer");
+			throw new SemanticError(newArray.getLine(),"array size should be of type integer, currently it is of type " + size_type);
 		}
 		
-		//calc array type
-		Type array_type;
-		
-		Type basic_type = (Type) newArray.getType().accept(this);
-		
-		if(basic_type instanceof ArrayType)
-		{
-			// basic type is already an array type, need to add one more dimension
-			ArrayType prev_array_type = (ArrayType) basic_type;
-			array_type = typeTable.getArrayType(prev_array_type.getBasicType(), prev_array_type.getDimensions() + 1);
-		}
-		else
-		{
-			// basic type is primitive or class type, return array type
-			array_type = typeTable.getArrayType(basic_type, 1);
-		}
-		
-		newArray.setNodeType(array_type);
-		return array_type;
+		// new array type was set in previous phase
+		return newArray.getNodeType();
 	}
 
 	
@@ -437,7 +423,7 @@ public class TypeEvaluator implements Visitor {
 		//check expr to be array type
 		Type expr_type = (Type) length.getArray().accept(this);
 		if (!(expr_type instanceof ArrayType)){
-			throw new SemanticError(length.getLine(),"length operator can only be used on expression of array type");
+			throw new SemanticError(length.getLine(),"length operator can only be used on expression of array type, instead found " + expr_type);
 		}
 		
 		length.setNodeType(typeTable.getIntType());
@@ -456,23 +442,25 @@ public class TypeEvaluator implements Visitor {
 				op_type = typeTable.getStringType();
 			}
 			else{
-				throw new SemanticError(binaryOp.getLine(),"invalid operator used on two string operands");
+				throw new SemanticError(binaryOp.getLine(),"invalid operator: " + binaryOp.getOperator() + " , used on two string operands");
 			}
 		}
 		else if ((side_1 instanceof IntType) && (side_2 instanceof IntType)){
 			
-			return typeTable.getIntType();
+			op_type =  typeTable.getIntType();
 		}
 		else{
-			String err = String.format("invalid operand types: %s %s used with binary operator: %s", side_1, side_2, binaryOp.getOperator());
+			String err = String.format("invalid operand types: %s %s used with binary math operator: %s", side_1, side_2, binaryOp.getOperator());
 			throw new SemanticError(binaryOp.getLine(), err);
 		}
+		
 		binaryOp.setNodeType(op_type);
 		return op_type;
 	}
 
 	@Override
 	public Type visit(LogicalBinaryOp binaryOp) throws SemanticError {
+		
 		Type side_1 = (Type) binaryOp.getFirstOperand().accept(this);
 		Type side_2 = (Type) binaryOp.getSecondOperand().accept(this);
 		Type op_type = null;
@@ -489,7 +477,7 @@ public class TypeEvaluator implements Visitor {
 			}
 			else
 			{
-				String err = String.format("invalid comparsion, lhs is not sub type of rhs or vice versa");
+				String err = String.format("invalid comparsion, lhs: %s is not sub type of rhs: %s or vice versa", side_1, side_2);
 				throw new SemanticError(binaryOp.getLine(), err);
 			}
 		}
@@ -501,7 +489,7 @@ public class TypeEvaluator implements Visitor {
 			}
 			else
 			{
-				String err = String.format("both operands must be of type integer when using %s operator", binaryOp.getOperator());
+				String err = String.format("both operands must be of type integer when using %s operator, instead, lhs: %s, rhs: %s", binaryOp.getOperator(), side_1, side_2);
 				throw new SemanticError(binaryOp.getLine(), err);
 			}
 		}
@@ -513,7 +501,7 @@ public class TypeEvaluator implements Visitor {
 			}
 			else
 			{
-				String err = String.format("both operands must be of type boolean when using %s operator", binaryOp.getOperator());
+				String err = String.format("both operands must be of type boolean when using %s operator, instead, lhs: %s, rhs: %s", binaryOp.getOperator(), side_1, side_2);
 				throw new SemanticError(binaryOp.getLine(), err);
 			}
 		}
@@ -533,7 +521,7 @@ public class TypeEvaluator implements Visitor {
 			return unaryOp.getNodeType();
 		}
 		else{
-			throw new SemanticError(unaryOp.getLine(),"unary minus used on non integer operand");
+			throw new SemanticError(unaryOp.getLine(),"unary minus used on non integer operand, operand of type " + expr_type + " was given");
 		}
 	}
 
@@ -545,7 +533,7 @@ public class TypeEvaluator implements Visitor {
 			return unaryOp.getNodeType();
 		}
 		else{
-			throw new SemanticError(unaryOp.getLine(),"! operator used on non boolean operand");
+			throw new SemanticError(unaryOp.getLine(),"! operator used on non boolean operand, operand of type " + expr_type + " was given");
 		}
 	}
 
@@ -625,11 +613,11 @@ public class TypeEvaluator implements Visitor {
 		
 		//check that all the arguments are correct
 		if (argumentsTypes.size() != method_type.getArgstypes().size()){
-			throw new SemanticError(call.getLine(),"incorrect numbers of arguments for"+call.getName()+"call");
+			throw new SemanticError(call.getLine(),"incorrect number of arguments for"+call.getName()+"call, should be " + method_type.getArgstypes().size());
 		}
 		for (int i=0; i< argumentsTypes.size(); i++){
 			if (!argumentsTypes.get(i).subTypeOf(method_type.getArgstypes().get(i))){
-				throw new SemanticError(call.getLine(),"incorrect argument type for argument number "+i+ " in "+call.getName()+"call, not subtype of " + method_type.getArgstypes().get(i));
+				throw new SemanticError(call.getLine(),"incorrect argument type for argument number "+i+ " in call of "+call.getName()+", arg type is not a subtype of " + method_type.getArgstypes().get(i));
 			}
 		}
 	}
