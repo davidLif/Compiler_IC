@@ -1,0 +1,44 @@
+class Shachar
+{
+	static void main( string[] args)
+	{
+		int david = new A();
+	
+	}
+
+}
+
+
+class A
+{
+	int x;
+	static void foo(int x)
+	{
+
+	}
+	int foo2()
+	{
+		int y = x;
+		return 1;
+
+	}
+
+}
+
+class B extends A
+{
+
+	static void foo(int x)
+	{
+
+	}
+	int foo2()
+	{
+		int y = x;
+		return 1;
+
+	}
+
+
+
+}
