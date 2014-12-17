@@ -480,6 +480,7 @@ public class TypeEvaluator implements Visitor {
 				String err = String.format("invalid comparsion, lhs: %s is not sub type of rhs: %s or vice versa", side_1, side_2);
 				throw new SemanticError(binaryOp.getLine(), err);
 			}
+			break;
 		}
 		case LT: case LTE : case GT : case GTE:
 		{
@@ -492,6 +493,7 @@ public class TypeEvaluator implements Visitor {
 				String err = String.format("both operands must be of type integer when using %s operator, instead, lhs: %s, rhs: %s", binaryOp.getOperator(), side_1, side_2);
 				throw new SemanticError(binaryOp.getLine(), err);
 			}
+			break;
 		}
 		case LAND: case LOR :
 		{
@@ -504,6 +506,7 @@ public class TypeEvaluator implements Visitor {
 				String err = String.format("both operands must be of type boolean when using %s operator, instead, lhs: %s, rhs: %s", binaryOp.getOperator(), side_1, side_2);
 				throw new SemanticError(binaryOp.getLine(), err);
 			}
+			break;
 		}
 		default: 
 			// can't happen
