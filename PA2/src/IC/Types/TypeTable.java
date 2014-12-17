@@ -528,4 +528,6 @@ public class TypeTable {
 			return this.addArrayType_primitive(primitiveType, dimensions);
 		}
 	}
+	
+	
 }

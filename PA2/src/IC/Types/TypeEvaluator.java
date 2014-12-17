@@ -620,7 +620,7 @@ public class TypeEvaluator implements Visitor {
 		}
 		for (int i=0; i< argumentsTypes.size(); i++){
 			if (!argumentsTypes.get(i).subTypeOf(method_type.getArgstypes().get(i))){
-				throw new SemanticError(call.getLine(),"incorrect argument type for argument number "+i+ " in call of "+call.getName()+", arg type is not a subtype of " + method_type.getArgstypes().get(i));
+				throw new SemanticError(call.getLine(),"incorrect argument type for argument number "+i+ " in call of "+call.getName()+", arg type " + argumentsTypes.get(i) + " is not a subtype of " + method_type.getArgstypes().get(i));
 			}
 		}
 	}
