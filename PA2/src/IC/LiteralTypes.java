@@ -38,7 +38,7 @@ public enum LiteralTypes {
 	},
 	TRUE(true, "Boolean literal"),
 	FALSE(false, "Boolean literal"),
-	NULL(null, "Literal");
+	NULL(null, " Null literal");
 	
 	private Object value;
 	
