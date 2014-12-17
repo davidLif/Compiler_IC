@@ -209,7 +209,7 @@ public class StructuralChecks implements  Visitor  {
 		
 		if( inside_loop == false )
 		{
-			String err_msg = "break can only be used when inside a while statement";
+			String err_msg = "continue can only be used when inside a while statement";
 			throw new SemanticError(continueStatement.getLine(), err_msg);
 		}
 		
