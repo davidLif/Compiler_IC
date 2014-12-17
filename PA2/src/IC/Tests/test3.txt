@@ -1,0 +1,35 @@
+class Shachar
+{
+	static void main( string[] args)
+	{
+		boolean b = true;
+		boolean f = false;
+		int x = 7;
+		int y = 10;
+		string shachar = "shachar";
+		string denistheKing = "denis";
+		int z = x*y;
+		string team = shachar + denistheKing;
+		//boolean g = x<y; 
+		//g = x<=y;
+		//g = x>=y;
+		//g = x==y;
+
+		int s = -x;
+		boolean r = b&&f;
+		 r = b||f;
+		r = !f;
+
+		int[] array = new int[10];
+		//boolean xs = array[4];
+		int xs = array[11110];
+
+		string[] gg  = new string[z];
+
+		int le = array.length;
+
+		//int sssss = null;
+
+		
+	}
+}
