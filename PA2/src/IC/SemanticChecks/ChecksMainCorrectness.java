@@ -15,21 +15,32 @@ import IC.Types.VoidType;
 
 /**
  * 
- * TODO: write purpose of this file
- * run tests
+ * This class checks the following structural checks:
+ * 
+ * 		1. exactly one main method is found with the correct signature
+ * 		2. break, continue used only inside loops
+ * 		3. this keyword used only inside virtual methods
  *
  */
 
-public class SemanticChecksModul implements  Visitor  {
+public class ChecksMainCorrectness implements  Visitor  {
 
 	
-	boolean inside_loop = false;
-	boolean inside_static_function = false;
 	boolean found_main = false;
 	
 	public void check(Program program) throws SemanticError
 	{
 		 program.accept(this);	
+		 
+		 /* checking that the class has exactly one main function. Since we don't allow more than one 
+		  * main, if found_min == false ten no main exists.
+		  */
+		 if ( found_main == false)
+		 {
+				String err_msg = "No main function exists.";
+				throw new SemanticError(program.getLine(), err_msg);
+		
+		 }
 	}
 	
 	
@@ -117,7 +128,7 @@ public class SemanticChecksModul implements  Visitor  {
 			ClassSymbolTable scope = (ClassSymbolTable) method.enclosingScope();  
 			MethodSymbol SymbolTable =  scope.getMethod("main", true );
 			MethodType methodType = (MethodType) SymbolTable.getType();
-			List<Type> arguments = methodType.getArguments();
+			List<Type> arguments = methodType.getArgstypes();
 			
 			
 			if ( ! (methodType.getReturnType() instanceof VoidType) ) /* the return type is not a void */
@@ -139,12 +150,10 @@ public class SemanticChecksModul implements  Visitor  {
 			 
 		}
 		
-		inside_static_function = true; /* mark that this cannot appear as an expression inside this method */
 		for (Statement stm: stList)
 		{
 			stm.accept(this);
 		}
-		inside_static_function = false;
 		
 		return null;
 	}
@@ -153,7 +162,12 @@ public class SemanticChecksModul implements  Visitor  {
 	public Object visit(LibraryMethod method)
 			throws SemanticError {
 		
-		/* not sure exactly what to do here .. is the libabry allowed to have a method with name main ? */
+		/* library method cannot contain a method named main, according to the forum */
+		if(method.getName().equals("main"))
+		{
+			String err_msg = "Library class cannot contain a method named 'main'";
+			throw new SemanticError(method.getLine(), err_msg);
+		}
 		
 		
 		return null;
@@ -226,29 +240,14 @@ public class SemanticChecksModul implements  Visitor  {
 		/* we are in a while loop - thus the visit of a break and continue statements is valid */
 		Statement st = whileStatement.getOperation();
 		
-		if(inside_loop == true) /* we are already inside a loop */
-		{
-			st.accept(this);
-		}
-		else
-		{
-			inside_loop = true;
-			st.accept(this);
-			inside_loop = false;
-		}
-		
+
+		st.accept(this);
 		return null;
 	}
 
 	@Override
 	public Object visit(Break breakStatement)
 			throws SemanticError {
-		if( inside_loop == false)
-		{
-			String err_msg = "break can only be used when inside a while statement";
-			throw new SemanticError(breakStatement.getLine(), err_msg);
-		}
-
 
 		return null;
 		
@@ -258,12 +257,6 @@ public class SemanticChecksModul implements  Visitor  {
 	public Object visit(Continue continueStatement)
 			throws SemanticError {
 		
-		if( inside_loop == false)
-		{
-			String err_msg = "break can only be used when inside a while statement";
-			throw new SemanticError(continueStatement.getLine(), err_msg);
-		}
-		
 		
 		return null;
 	}
@@ -271,12 +264,7 @@ public class SemanticChecksModul implements  Visitor  {
 	@Override
 	public Object visit(StatementsBlock statementsBlock)
 			throws SemanticError {
-		 List<Statement> stList = statementsBlock.getStatements();
 		 
-		 for ( Statement st: stList)
-		 {
-			 st.accept(this);
-		 }
 		 
 		 return null;
 	}
@@ -285,23 +273,12 @@ public class SemanticChecksModul implements  Visitor  {
 	public Object visit(LocalVariable localVariable)
 			throws SemanticError {
 			
-		if(localVariable.hasInitValue())
-		{
-			// may have initial expression
-			localVariable.getInitValue().accept(this);
-		}
 		return null;
 	}
 
 	@Override
 	public Object visit(VariableLocation location)
 			throws SemanticError {
-		
-		if(location.isExternal())
-		{
-			/* may have location: expr.a for example */
-			location.getLocation().accept(this);
-		}
 		
 		return null;
 	}
@@ -310,19 +287,13 @@ public class SemanticChecksModul implements  Visitor  {
 	public Object visit(ArrayLocation location)
 			throws SemanticError {
 		
-		location.getArray().accept(this);
-		location.getIndex().accept(this);
 		return null;
 	}
 
 	@Override
 	public Object visit(StaticCall call) throws SemanticError {
 		
-		 List<Expression> args = call.getArguments();
-		 for (Expression arg: args)
-		 {
-			 arg.accept(this);
-		 }
+
 		
 		
 		return null;
@@ -331,17 +302,7 @@ public class SemanticChecksModul implements  Visitor  {
 	@Override
 	public Object visit(VirtualCall call) throws SemanticError {
 		
-		 if(call.isExternal())
-		 {
-			 /* might have location:  expr.func() */
-			 call.getLocation().accept(this);
-		 }
-		
-		 List<Expression> arg = call.getArguments();
-		 for (Expression a: arg)
-		 {
-			 a.accept(this);
-		 }
+
 		return null;
 	}
 
@@ -349,12 +310,7 @@ public class SemanticChecksModul implements  Visitor  {
 	public Object visit(This thisExpression)
 			throws SemanticError {
 		
-		if( inside_static_function == true)
-		{
-			String err_msg = "this keyword can only be used inside a virtual method";
-			throw new SemanticError(thisExpression .getLine(), err_msg);
-		}
-		
+
 		
 		return null;
 		
@@ -372,7 +328,6 @@ public class SemanticChecksModul implements  Visitor  {
 	public Object visit(NewArray newArray)
 			throws SemanticError {
 		
-		newArray.getSize().accept(this);
 		
 		return null;
 	}
@@ -380,7 +335,6 @@ public class SemanticChecksModul implements  Visitor  {
 	@Override
 	public Object visit(Length length) throws SemanticError {
 		
-		length.getArray().accept(this);
 		
 		return null;
 	}
@@ -389,8 +343,6 @@ public class SemanticChecksModul implements  Visitor  {
 	public Object visit(MathBinaryOp binaryOp)
 			throws SemanticError {
 		
-		binaryOp.getFirstOperand().accept(this);
-		binaryOp.getSecondOperand().accept(this);
 	
 		return null;
 	}
@@ -398,8 +350,6 @@ public class SemanticChecksModul implements  Visitor  {
 	@Override
 	public Object visit(LogicalBinaryOp binaryOp)
 			throws SemanticError {
-		binaryOp.getFirstOperand().accept(this);
-		binaryOp.getSecondOperand().accept(this);
 		
 		return null;
 	}
@@ -408,15 +358,12 @@ public class SemanticChecksModul implements  Visitor  {
 	public Object visit(MathUnaryOp unaryOp)
 			throws SemanticError {
 		
-		unaryOp.getOperand().accept(this);
 		return null;
 	}
 
 	@Override
 	public Object visit(LogicalUnaryOp unaryOp)
 			throws SemanticError {
-		
-		unaryOp.getOperand().accept(this);
 		
 		return null;
 	}
@@ -430,8 +377,6 @@ public class SemanticChecksModul implements  Visitor  {
 	@Override
 	public Object visit(ExpressionBlock expressionBlock)
 			throws SemanticError {
-		
-		expressionBlock.getExpression().accept(this);
 		
 		
 		return null;

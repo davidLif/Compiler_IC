@@ -28,11 +28,11 @@ public class StructuralChecks implements  Visitor  {
 	
 	boolean inside_loop = false;
 	boolean inside_static_function = false;
-	boolean found_main = false;
 	
 	public void check(Program program) throws SemanticError
 	{
 		 program.accept(this);	
+
 	}
 	
 	
@@ -75,15 +75,6 @@ public class StructuralChecks implements  Visitor  {
 	public Object visit(VirtualMethod method)
 			throws SemanticError {
 		
-	
-		
-		/* checking that it's not a main function */
-		if ( method.getName().equals("main") && found_main == true) 
-		{	
-			String err_msg = "Found more than one main function";
-			throw new SemanticError(method.getLine(), err_msg);
-		}
-		
 		List<Statement> stList = method.getStatements();
 		
 		for (Statement stm: stList)
@@ -102,45 +93,8 @@ public class StructuralChecks implements  Visitor  {
 	public Object visit(StaticMethod method)
 			throws SemanticError {
 
-		String methodName = method.getName();
 		List<Statement> stList = method.getStatements();
-		
-		if ( methodName.equals("main"))
-		{
-			
-			
-			if(found_main == true) /* we have already seen a main function */
-			{
-				String err_msg = "Found more than one main functions";
-				throw new SemanticError(method.getLine(), err_msg);
-			}
-			
-			/* checking that it's in a correct form of a main function */
 	
-			ClassSymbolTable scope = (ClassSymbolTable) method.enclosingScope();  
-			MethodSymbol SymbolTable =  scope.getMethod("main", true );
-			MethodType methodType = (MethodType) SymbolTable.getType();
-			List<Type> arguments = methodType.getArgstypes();
-			
-			
-			if ( ! (methodType.getReturnType() instanceof VoidType) ) /* the return type is not a void */
-			{
-				String err_msg = "main method invalid return type, must return void";
-				throw new SemanticError(method.getLine(), err_msg);
-			}
-		
-			if( !( (arguments.size() == 1) && (arguments.get(0) instanceof ArrayType) /* params are string [] */
-					&&   ((ArrayType) arguments.get(0)).getBasicType() instanceof StringType   
-					&&    ((ArrayType) arguments.get(0)).getDimensions() == 1 ) )
-			{
-				String err_msg = "main method invalid argument list, should only accept one argument of type string[]";
-				throw new SemanticError(method.getLine(), err_msg);
-			}
-			
-			
-			found_main = true;
-			 
-		}
 		
 		inside_static_function = true; /* mark that this cannot appear as an expression inside this method */
 		for (Statement stm: stList)
@@ -155,15 +109,7 @@ public class StructuralChecks implements  Visitor  {
 	@Override
 	public Object visit(LibraryMethod method)
 			throws SemanticError {
-		
-		/* library method cannot contain a method named main, according to the forum */
-		if(method.getName().equals("main"))
-		{
-			String err_msg = "Library class cannot contain a method named 'main'";
-			throw new SemanticError(method.getLine(), err_msg);
-		}
-		
-		
+	
 		return null;
 	}
 

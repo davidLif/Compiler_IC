@@ -3,12 +3,15 @@ import IC.AST.ICClass;
 import IC.AST.PrettyPrinter;
 import IC.AST.Program;
 import IC.Parser.*;
+
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.List;
 
 
+
 import java_cup.runtime.Symbol;
+import IC.SemanticChecks.ChecksMainCorrectness;
 import IC.SemanticChecks.InitBeforeUse;
 import IC.SemanticChecks.StructuralChecks;
 import IC.SemanticChecks.methodReturnPaths;
@@ -128,6 +131,12 @@ public class Compiler {
 				
 				/* finish checking scope rules and proper inheritance */
 				IC.SemanticChecks.InheritanceCheck.check(prog, globalSymbolTable);
+				
+						
+				/* check that restrictions on the main fucntion */
+				ChecksMainCorrectness mainChecker = new ChecksMainCorrectness();
+				mainChecker.check(prog);
+				
 				
 				
 				/* check that program structure is valid */
