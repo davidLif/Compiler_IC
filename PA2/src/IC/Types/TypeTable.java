@@ -315,7 +315,7 @@ public class TypeTable {
 	
 	public String toString(){
 		StringBuilder sb = new StringBuilder();
-		sb.append("\nType Table:");
+		sb.append("\nType Table: ");
 		sb.append(prog_location+ "\n");
 		for (Type t : type_map_primitive.values()){
 			sb.append("\t" +t.getTypeRep() + "\n");

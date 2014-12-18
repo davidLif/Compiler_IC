@@ -105,7 +105,7 @@ public class Compiler {
 					}
 					
 					lib_prog = (Program)lib_root.value;
-					System.out.println(String.format("Parsed %s successfully!\n", library_name));
+					System.out.println(String.format("Parsed %s successfully!", library_name));
 					
 					
 				}
@@ -130,7 +130,7 @@ public class Compiler {
 				}
 				
 				/* otherwise, everything went smooth, print success message */
-				System.out.println(String.format("Parsed %s successfully!\n", args[0]));
+				System.out.println(String.format("Parsed %s successfully!", args[0]));
 				
 				
 				/* create type table */
