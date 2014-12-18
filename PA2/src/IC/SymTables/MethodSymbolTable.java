@@ -146,7 +146,19 @@ public class MethodSymbolTable extends VariableSymbolTable{
 	public MethodSymbol getMethod(String name)
 	{
 		ClassSymbolTable enclosingClass = (ClassSymbolTable)parentSymbolTable;
-		return enclosingClass.getMethod(name, isStatic);
+		
+		if(isStatic) /* look only for a static method */
+			return enclosingClass.getMethod(name, isStatic);
+		
+		/* otherwise, look for the static method first */
+		MethodSymbol staticMethod = enclosingClass.getMethod(name, true);
+		if(staticMethod == null)
+		{
+			/* static not found, try to find a virtual */
+			MethodSymbol virtualMethod = enclosingClass.getMethod(name, false);
+			return virtualMethod;
+		}
+		return staticMethod;
 	}
 
 

@@ -484,13 +484,13 @@ public class SymbolSetter implements Visitor{
 		
 
 		formal_list_visit(method);
-		method.setNodeType(typeTable.getMethodType(method));
+		
 		//visit all statements
 		for (Statement stmt : method.getStatements()){
 			stmt.accept(this);
 		}
 		
-		
+		method.setNodeType(typeTable.getMethodType(method));
 	}
 
 	private void formal_list_visit(Method method)

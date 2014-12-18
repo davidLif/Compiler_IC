@@ -80,6 +80,9 @@ public class Compiler {
 				// otherwise, print the progarm's AST tree
 				Program prog = (Program)root.value;
 			
+				PrettyPrinter prog_printer = new PrettyPrinter(args[0]);
+				String str_prog = (String) prog.accept(prog_printer);
+				
 				
 				
 				// now parse the optional library file 
@@ -111,9 +114,12 @@ public class Compiler {
 				
 				
 				/* create type table */
-				TypeTable typeTable = new TypeTable(args[0],prog);
+				TypeTable typeTable = new TypeTable(args[0]);
 				
 				
+				/* check main and add main method types */
+				ChecksMainCorrectness mainChecker = new ChecksMainCorrectness(prog, typeTable);
+				mainChecker.check();
 				
 				/* create global symbol table */
 				SymbolTableBuilder symTableBuilder = new SymbolTableBuilder();
@@ -136,9 +142,6 @@ public class Compiler {
 				TypeEvaluator evaluate = new TypeEvaluator(typeTable, globalSymbolTable);
 				prog.accept(evaluate);
 				
-				/* check main and add main method types */
-				ChecksMainCorrectness mainChecker = new ChecksMainCorrectness(prog, typeTable);
-				mainChecker.check();
 				
 				/* check that variables are initialized before use */
 				InitBeforeUse initBeforeUseTest = new InitBeforeUse(prog);
@@ -156,9 +159,6 @@ public class Compiler {
 				
 				
 				
-				PrettyPrinter prog_printer = new PrettyPrinter(args[0]);
-				String str_prog = (String) prog.accept(prog_printer);
-				System.out.print(str_prog);
 				
 				
 			} 
