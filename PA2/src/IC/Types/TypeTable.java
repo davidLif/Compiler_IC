@@ -158,10 +158,12 @@ public class TypeTable {
 	 */
 	public Type getClassType(ICClass iC_class)  {
 		
-		ClassType userClassType = new ClassType(iC_class.getName());
 		/* this check is important, since we may actually found it before! */
-		if(!type_map_class.containsKey(iC_class.getName()))
+		if(!type_map_class.containsKey(iC_class.getName())){
+			ClassType userClassType = new ClassType(iC_class.getName());
 			type_map_class.put(iC_class.getName(), userClassType);
+			
+		}
 		
 		return type_map_class.get(iC_class.getName());
 		
