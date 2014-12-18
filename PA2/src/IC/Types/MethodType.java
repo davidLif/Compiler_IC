@@ -120,6 +120,7 @@ public class MethodType extends Type{
 		return arguments;
 	}
 
+	
 	public int compareTo(MethodType comparemethod) {
 		return this.getTableId() - comparemethod.getTableId();
 }
@@ -131,5 +132,3 @@ public class MethodType extends Type{
 		}
 	};
 }
-
-
