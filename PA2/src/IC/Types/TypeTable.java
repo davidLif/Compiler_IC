@@ -1,6 +1,7 @@
 package IC.Types;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,7 +78,7 @@ public class TypeTable {
 	}
 	
 
-	public TypeTable(String prog_location) throws SemanticError
+	public TypeTable(String prog_location,Program prog) throws SemanticError
 	{
 		this.prog_location = prog_location;
 		
@@ -91,12 +92,39 @@ public class TypeTable {
 		
 		/* put primitive types to collection */
 		addPrimitiveTypes();
+		addMainType(prog);
 	
 	
 		
 	}
 	
 	
+	private void addMainType(Program prog) throws SemanticError {
+		//if there is a "main" error' we don't care about it now - we will find it later
+		Method main_node = getMainNode(prog);
+		if (main_node == null){
+			return;
+		}
+		getMethodType(main_node);
+	}
+
+
+	private Method getMainNode(Program prog) {
+		
+		for(ICClass curr_class : prog.getClasses())
+		{
+			for(Method method : curr_class.getMethods())
+			{
+				if (method.getName().equals("main")){
+					return method;
+				}
+			}
+			
+		}
+		return null;
+	}
+
+
 	/**
 	 * set the programs global symbol table, used to check if a class exists in the program or not
 	 * @param symTable
@@ -332,10 +360,16 @@ public class TypeTable {
 				sb.append("\t" +t.getTypeRep() + "\n");
 			} 
 		}
+		//in order to print correctly, must sort by id
+		List<MethodType> printing_list =new ArrayList<MethodType>();
 		for (List<MethodType> t_list : type_map_method.values()){
 			for (MethodType t : t_list){
-				sb.append("\t" +t.getTypeRep() + "\n");
+				printing_list.add(t);
 			}
+			}
+		Collections.sort(printing_list,MethodType.Comparator_methods);
+		for (MethodType t : printing_list){
+			sb.append("\t" +t.getTypeRep() + "\n");
 		}
 		return sb.toString() ;
 	}

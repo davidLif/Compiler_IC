@@ -111,12 +111,9 @@ public class Compiler {
 				
 				
 				/* create type table */
-				TypeTable typeTable = new TypeTable(args[0]);
+				TypeTable typeTable = new TypeTable(args[0],prog);
 				
 				
-				/* check main and add main method types */
-				ChecksMainCorrectness mainChecker = new ChecksMainCorrectness(prog, typeTable);
-				mainChecker.check();
 				
 				/* create global symbol table */
 				SymbolTableBuilder symTableBuilder = new SymbolTableBuilder();
@@ -139,6 +136,9 @@ public class Compiler {
 				TypeEvaluator evaluate = new TypeEvaluator(typeTable, globalSymbolTable);
 				prog.accept(evaluate);
 				
+				/* check main and add main method types */
+				ChecksMainCorrectness mainChecker = new ChecksMainCorrectness(prog, typeTable);
+				mainChecker.check();
 				
 				/* check that variables are initialized before use */
 				InitBeforeUse initBeforeUseTest = new InitBeforeUse(prog);

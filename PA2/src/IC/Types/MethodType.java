@@ -1,5 +1,6 @@
 package IC.Types;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class MethodType extends Type{
@@ -119,4 +120,16 @@ public class MethodType extends Type{
 		return arguments;
 	}
 
+	public int compareTo(MethodType comparemethod) {
+		return this.getTableId() - comparemethod.getTableId();
 }
+	
+	public static Comparator<MethodType> Comparator_methods  = new Comparator<MethodType>() {
+
+		public int compare(MethodType meth_1, MethodType meth_2) {
+			return meth_1.compareTo(meth_2);
+		}
+	};
+}
+
+
