@@ -31,35 +31,52 @@ public class Compiler {
 
 	/* list of syntax errors that occured during parsing */
 	private static List<SyntaxError> syntax_errors = null; 
+	
+	
 
 	public static void main(String[] args) {
 	   
 	    /* check given arguments */
-		if(args.length == 0 || args.length > 2)
+		
+		if(args.length == 0 || args.length > 4)
 		{
 			System.err.println("Invalid number of arguments");
 			return;
 			
 		}
 		
+		/* program flags */
 		String library_name = null;
-		if(args.length == 2)
+		boolean dumpSymTable = false;
+		boolean printAST = false;
+		
+		for(int i = 1 ; i < args.length; ++i)
 		{
+		
+		
 			// argument was provided
-			String temp = args[1];
+			String temp = args[i];
 			if(temp.substring(0, 2).equals("-L"))
 			{
-				// correct argument
+				// library argument was provided
 				library_name = temp.substring(2);
+			}
+			else if(temp.equals("-print-ast"))
+			{
+				printAST = true;
+			}
+			else if(temp.equals("-dump-symtab"))
+			{
+				dumpSymTable = true;
 			}
 			else
 			{
-				System.err.println("Invalid second argument, should be: -L<library-filename>");
+				System.err.println("invalid argument: " + temp);
 				return;
 			}
+		
+		
 		}
-		
-		
 		
 		try {
 			// parse the program first
@@ -69,25 +86,10 @@ public class Compiler {
 			
 			try {
 				
-				Symbol root = prog_parser.parse();
+				/* parse the lib file first */
 				
-				if(syntax_errors != null)
-				{
-					// parsing, recovered successfully, however errors ocurred.
-					throw syntax_errors.get(0);
-				}
-				
-				// otherwise, print the progarm's AST tree
-				Program prog = (Program)root.value;
-			
-				PrettyPrinter prog_printer = new PrettyPrinter(args[0]);
-				String str_prog = (String) prog.accept(prog_printer);
-				
-				
-				
-				// now parse the optional library file 
 				LibParser lib_parser = null;
-				Program lib_prog=null;
+				Program lib_prog=      null;
 				if(library_name != null)
 				{
 					FileReader libFile = new FileReader(library_name);
@@ -103,13 +105,31 @@ public class Compiler {
 					}
 					
 					lib_prog = (Program)lib_root.value;
-					
-					prog.addLibClass(lib_prog.getClasses().get(0));
+					System.out.println(String.format("Parsed %s successfully!", library_name));
 					
 					
 				}
 				
-				/* otherwise, everything went smooth, print the program's AST */
+				/* parse the program */
+				
+				Symbol root = prog_parser.parse();
+				
+				if(syntax_errors != null)
+				{
+					// parsing, recovered successfully, however errors ocurred.
+					throw syntax_errors.get(0);
+				}
+				
+				// otherwise, save the progarm's AST tree
+				Program prog = (Program)root.value;
+				
+				if(library_name != null)
+				{
+					/* add library class to AST */
+					prog.addLibClass(lib_prog.getClasses().get(0));
+				}
+				
+				/* otherwise, everything went smooth, print success message */
 				System.out.println(String.format("Parsed %s successfully!", args[0]));
 				
 				
@@ -151,13 +171,33 @@ public class Compiler {
 				methodReturnPaths methodPaths = new methodReturnPaths(prog, typeTable);
 				methodPaths.check();
 				
-				/* print the symbol tables */
-				globalSymbolTable.printTable();
 				
-				/* print the type tables */
-				System.out.println(typeTable);
+				if(dumpSymTable)
+				{
+					/* print the symbol tables */
+					globalSymbolTable.printTable();
 				
+					/* print the type tables */
+					System.out.println(typeTable);
+				}
 				
+				if(printAST)
+				{
+					/* if we want to print the AST, we gotta skip the library class first */
+					if(library_name != null)
+					{
+						prog.removeLibClass();
+					}
+					PrettyPrinter prog_printer = new PrettyPrinter(args[0]);
+					String str_prog = (String) prog.accept(prog_printer);
+					System.out.println(str_prog);
+					
+					/* add lib class back */
+					if(library_name != null)
+					{
+						prog.addLibClass(lib_prog.getClasses().get(0));
+					}
+				}
 				
 				
 				

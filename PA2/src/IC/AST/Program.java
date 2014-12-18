@@ -47,4 +47,9 @@ public class Program extends ASTNode {
 		classes = newList;
 		
 	}
+	
+	public void removeLibClass()
+	{
+		this.classes.remove(0);
+	}
 }

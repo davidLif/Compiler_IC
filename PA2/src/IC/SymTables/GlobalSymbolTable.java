@@ -77,7 +77,7 @@ public class GlobalSymbolTable extends SymbolTable{
 	@Override
 	public void printTable() {
 		
-		System.out.println(String.format("Global Symbol Table: %s", this.id));
+		System.out.println(String.format("\nGlobal Symbol Table: %s", this.id));
 		
 		/* print body */
 		
