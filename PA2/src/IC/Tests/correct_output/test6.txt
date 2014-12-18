@@ -1,0 +1,2 @@
+Parsed C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\test6.txt successfully!
+semantic error at line 7: invalid operand types: string int used with binary math operator: addition

@@ -1,0 +1,2 @@
+Parsed C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\test2.txt successfully!
+semantic error at line 5: init value type (boolean) is not a subtype of declaration type (int)

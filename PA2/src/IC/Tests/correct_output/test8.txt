@@ -1,0 +1,88 @@
+Parsed C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\test8.txt successfully!
+Global Symbol Table: C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\test8.txt
+	Class : Shachar
+	Class : A
+	Class : B
+Children tables: Shachar, A
+
+Class Symbol Table: Shachar
+	Static method: main {string[] -> void}
+Children tables: main
+
+Method Symbol Table: main
+	Parameter: string[] args
+	Local variable: boolean x
+	Local variable: int y
+	Local variable: int z
+
+Class Symbol Table: A
+	Field: int x
+	Static method: foo {int -> void}
+	Virtual method: foo2 { -> int}
+Children tables: foo, foo2, B
+
+Method Symbol Table: foo
+	Parameter: int x
+
+Method Symbol Table: foo2
+	Local variable: int y
+
+Class Symbol Table: B
+	Static method: foo {int -> void}
+	Virtual method: foo2 { -> int}
+Children tables: foo, foo2
+
+Method Symbol Table: foo
+	Parameter: int x
+
+Method Symbol Table: foo2
+	Local variable: int y
+
+Type Table:C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\test8.txt
+	1: Primitive type: int
+	2: Primitive type: boolean
+	3: Primitive type: null
+	4: Primitive type: string
+	5: Primitive type: void
+	8: Class: Shachar
+	9: Class: A
+	12: Class: B, Superclass ID: 9
+	6: Array type: string[]
+	7: Method type: {string[] -> void}
+	10: Method type: {int -> void}
+	11: Method type: { -> int}
+
+
+Abstract Syntax Tree: C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\test8.txt
+
+1: Declaration of class: Shachar, Type: Shachar, Symbol table: Global
+    3: Declaration of static method: main, Type: {string[] -> void}, Symbol table: Shachar
+        3: Parameter: args, Type: string[], Symbol table: main
+        5: Declaration of local variable: x, Type: boolean, Symbol table: main
+        7: Declaration of local variable: y, with initial value, Type: int, Symbol table: main
+            7: Integer literal: 6, Type: int, Symbol table: main
+        8: Declaration of local variable: z, with initial value, Type: int, Symbol table: main
+            8: Integer literal: 5, Type: int, Symbol table: main
+        9: Assignment statement, Symbol table: main
+            9: Reference to variable: x, Type: boolean, Symbol table: main
+            9: Parenthesized expression, Type: boolean, Symbol table: main
+              9: Logical binary operation: less than, Type: boolean, Symbol table: main
+                  9: Reference to variable: y, Type: int, Symbol table: main
+                  9: Reference to variable: z, Type: int, Symbol table: main
+15: Declaration of class: A, Type: A, Symbol table: Global
+    17: Declaration of field: x, Type: int, Symbol table: A
+    18: Declaration of static method: foo, Type: {int -> void}, Symbol table: A
+        18: Parameter: x, Type: int, Symbol table: foo
+    22: Declaration of virtual method: foo2, Type: { -> int}, Symbol table: A
+        24: Declaration of local variable: y, with initial value, Type: int, Symbol table: foo2
+            24: Reference to variable: x, Type: int, Symbol table: foo2
+        25: Return statement, with return value, Symbol table: foo2
+          25: Integer literal: 1, Type: int, Symbol table: foo2
+31: Declaration of class: B, subclass of A, Type: B, Symbol table: A
+    34: Declaration of static method: foo, Type: {int -> void}, Symbol table: B
+        34: Parameter: x, Type: int, Symbol table: foo
+    38: Declaration of virtual method: foo2, Type: { -> int}, Symbol table: B
+        40: Declaration of local variable: y, with initial value, Type: int, Symbol table: foo2
+            40: Reference to variable: x, Type: int, Symbol table: foo2
+        41: Return statement, with return value, Symbol table: foo2
+          41: Integer literal: 1, Type: int, Symbol table: foo2
