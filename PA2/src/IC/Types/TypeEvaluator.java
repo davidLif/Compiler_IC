@@ -609,7 +609,7 @@ public class TypeEvaluator implements Visitor {
 		
 		//check that all the arguments are correct
 		if (argumentsTypes.size() != method_type.getArgstypes().size()){
-			throw new SemanticError(call.getLine(),"incorrect number of arguments for"+call.getName()+"call, should be " + method_type.getArgstypes().size());
+			throw new SemanticError(call.getLine(),"incorrect number of arguments for "+call.getName()+" call, should be " + method_type.getArgstypes().size());
 		}
 		for (int i=0; i< argumentsTypes.size(); i++){
 			if (!argumentsTypes.get(i).subTypeOf(method_type.getArgstypes().get(i))){

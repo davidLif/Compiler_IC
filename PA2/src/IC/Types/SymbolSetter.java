@@ -231,7 +231,8 @@ public class SymbolSetter implements Visitor{
 		// visit left hand side
 		assignment.getVariable().accept(this);
 		// visit right hand side
-		assignment.getVariable().accept(this);
+		
+		assignment.getAssignment().accept(this);
 		
 		return null;
 	}
@@ -483,6 +484,7 @@ public class SymbolSetter implements Visitor{
 	private void method_visit(Method method) throws SemanticError {
 		
 
+		method.getType().accept(this);
 		formal_list_visit(method);
 		
 		method.setNodeType(typeTable.getMethodType(method));
