@@ -195,7 +195,9 @@ public class PrettyPrinter implements Visitor {
 		output.append(", Symbol table: " + returnStatement.enclosingScope().getId());
 		if (returnStatement.hasValue()) {
 			++depth;
+			++depth;
 			output.append(returnStatement.getValue().accept(this));
+			--depth;
 			--depth;
 		}
 		return output.toString();
@@ -292,7 +294,9 @@ public class PrettyPrinter implements Visitor {
 		print_Type_and_Scope(output, location.getNodeType(), location.enclosingScope());
 		if (location.isExternal()) {
 			++depth;
+			++depth;
 			output.append(location.getLocation().accept(this));
+			--depth;
 			--depth;
 		}
 		return output.toString();
@@ -379,7 +383,9 @@ public class PrettyPrinter implements Visitor {
 		output.append("Reference to array length");
 		print_Type_and_Scope(output, length.getNodeType(), length.enclosingScope());
 		++depth;
+		++depth;
 		output.append(length.getArray().accept(this));
+		--depth;
 		--depth;
 		return output.toString();
 	}
@@ -420,7 +426,9 @@ public class PrettyPrinter implements Visitor {
 				+ unaryOp.getOperator().getDescription());
 		print_Type_and_Scope(output, unaryOp.getNodeType(), unaryOp.enclosingScope());
 		++depth;
+		++depth;
 		output.append(unaryOp.getOperand().accept(this));
+		--depth;
 		--depth;
 		return output.toString();
 	}
@@ -432,9 +440,9 @@ public class PrettyPrinter implements Visitor {
 		output.append("Logical unary operation: "
 				+ unaryOp.getOperator().getDescription());
 		print_Type_and_Scope(output, unaryOp.getNodeType(), unaryOp.enclosingScope());
-		++depth;
+		depth +=2;
 		output.append(unaryOp.getOperand().accept(this));
-		--depth;
+		depth -=2;
 		return output.toString();
 	}
 
@@ -454,9 +462,9 @@ public class PrettyPrinter implements Visitor {
 		indent(output, expressionBlock);
 		output.append("Parenthesized expression");
 		print_Type_and_Scope(output, expressionBlock.getNodeType(), expressionBlock.enclosingScope());
-		++depth;
+		depth +=2;
 		output.append(expressionBlock.getExpression().accept(this));
-		--depth;
+		depth -=2;
 		return output.toString();
 	}
 }
