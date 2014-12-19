@@ -1,0 +1,25 @@
+class A
+{
+	A func(int a )
+	{
+		return new A();
+	}
+	
+}
+
+class B extends A
+{
+	static void main(string[]a)
+	{
+	}
+	
+	C func( int a) /* C not subtype of A */
+	{
+		return null;
+	}
+	
+}
+class C { }
+
+
+

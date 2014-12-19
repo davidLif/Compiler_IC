@@ -1,0 +1,2 @@
+Parsed C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\testInheritance10.txt successfully!
+semantic error at line 18: method func shadows a field with same id defined in a superclass

@@ -1,0 +1,58 @@
+Parsed D:\ICTests\testInheritance3.txt successfully!
+
+Global Symbol Table: D:\ICTests\testInheritance3.txt
+	Class : A
+	Class : B
+	Class : C
+Children tables: A, C
+
+Class Symbol Table: A
+	Virtual method: func {int -> A}
+Children tables: func, B
+
+Method Symbol Table: func
+	Parameter: int a
+
+Class Symbol Table: B
+	Static method: func {int -> C}
+Children tables: func
+
+Method Symbol Table: func
+	Parameter: int a
+
+Class Symbol Table: C
+	Static method: main {string[] -> void}
+Children tables: main
+
+Method Symbol Table: main
+	Parameter: string[] a
+
+Type Table: D:\ICTests\testInheritance3.txt
+	1: Primitive type: int
+	2: Primitive type: boolean
+	3: Primitive type: null
+	4: Primitive type: string
+	5: Primitive type: void
+	8: Class: A
+	10: Class: B, Superclass ID: 8
+	11: Class: C
+	6: Array type: string[]
+	7: Method type: {string[] -> void}
+	9: Method type: {int -> A}
+	12: Method type: {int -> C}
+
+Abstract Syntax Tree: D:\ICTests\testInheritance3.txt
+
+1: Declaration of class: A, Type: A, Symbol table: Global
+    3: Declaration of virtual method: func, Type: {int -> A}, Symbol table: A
+        3: Parameter: a, Type: int, Symbol table: func
+        5: Return statement, with return value, Symbol table: func
+            5: Null literal: null, Type: null, Symbol table: func
+10: Declaration of class: B, subclass of A, Type: B, Symbol table: A
+    14: Declaration of static method: func, Type: {int -> C}, Symbol table: B
+        14: Parameter: a, Type: int, Symbol table: func
+        16: Return statement, with return value, Symbol table: func
+            16: Instantiation of class: C, Type: C, Symbol table: func
+20: Declaration of class: C, Type: C, Symbol table: Global
+    22: Declaration of static method: main, Type: {string[] -> void}, Symbol table: C
+        22: Parameter: a, Type: string[], Symbol table: main

@@ -1,0 +1,75 @@
+class A
+{
+	
+	A[] test;
+	static void main(string []arg)
+	{
+	
+		
+	}
+	
+	static boolean goo (boolean b)
+	{
+		return false;
+	}
+	
+	A test2(A a)
+	{
+		return null;
+	}
+	
+	static void moreTests()
+	{
+	}
+	
+}
+
+class B extends A
+{
+
+	C[] c; 
+	
+	B test2(A a)
+	{
+		return null;
+	}
+	
+	void foo ()
+	
+	{
+		/* should find static main in A */
+		main(null);
+		/* should find static goo in A */
+		goo(true);
+		
+		
+		foo();
+		this.goo();
+		(new B()).goo();
+		A.goo(false);
+		
+		/* not error */
+		B call = test2(null);
+		A call2 = test2(null);
+		
+		/* valid arg */
+		test2(new B());
+		
+		/* invalid return arg from call */
+		boolean a = A.main(new string[4]);
+		
+	}
+	
+	void goo()
+	{
+	
+	}
+	
+
+}
+class C extends A
+{
+
+}
+
+

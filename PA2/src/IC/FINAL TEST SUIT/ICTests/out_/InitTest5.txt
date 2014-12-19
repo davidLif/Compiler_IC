@@ -1,0 +1,2 @@
+Parsed C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\InitTest5.txt successfully!
+semantic error at line 12: type of right hand side of assignment int is not sub type of left hand side int[]

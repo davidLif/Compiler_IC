@@ -1,0 +1,33 @@
+class A
+{
+	
+	int func;
+	static C func () { return null;}
+	
+}
+
+class B extends A
+{
+	
+	
+	
+	
+}
+class C extends B{ 
+
+	int func (A a) { return 1;}
+	
+	static void main(string[]a)
+	{
+	}
+
+}
+
+/* 
+	shadowing is not allowed
+	
+	OUTPUT: 
+	semantic error at line 18: method func shadows a field with same id defined in a superclass
+
+
+*/

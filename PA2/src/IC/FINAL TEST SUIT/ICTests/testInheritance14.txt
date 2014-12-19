@@ -1,0 +1,31 @@
+class A
+{
+	
+	
+	int func(boolean test, A[][] test2) {  return 1;}
+	
+}
+
+class B extends A
+{
+	
+	
+	
+	
+}
+class C extends B{ 
+
+	
+	int func(boolean a, A[][][] test3) { /* invalid arg type*/return 1; }
+	
+	static void main (string[]args)
+	{
+	}
+
+}
+
+/* 
+
+
+
+*/

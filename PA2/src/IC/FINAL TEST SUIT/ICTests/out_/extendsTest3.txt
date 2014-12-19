@@ -1,0 +1,45 @@
+Parsed C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\extendsTest3.txt successfully!
+
+Global Symbol Table: C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\extendsTest3.txt
+	Class : C
+	Class : A
+	Class : B
+	Class : D
+Children tables: C
+
+Class Symbol Table: C
+Children tables: A, B
+
+Class Symbol Table: A
+Children tables: D
+
+Class Symbol Table: D
+	Static method: main {string[] -> void}
+Children tables: main
+
+Method Symbol Table: main
+	Parameter: string[] a
+
+Class Symbol Table: B
+
+Type Table: C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\extendsTest3.txt
+	1: Primitive type: int
+	2: Primitive type: boolean
+	3: Primitive type: null
+	4: Primitive type: string
+	5: Primitive type: void
+	8: Class: C
+	9: Class: A, Superclass ID: 8
+	10: Class: B, Superclass ID: 8
+	11: Class: D, Superclass ID: 9
+	6: Array type: string[]
+	7: Method type: {string[] -> void}
+
+Abstract Syntax Tree: C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\extendsTest3.txt
+
+1: Declaration of class: C, Type: C, Symbol table: Global
+3: Declaration of class: A, subclass of C, Type: A, Symbol table: C
+7: Declaration of class: B, subclass of C, Type: B, Symbol table: C
+11: Declaration of class: D, subclass of A, Type: D, Symbol table: A
+    13: Declaration of static method: main, Type: {string[] -> void}, Symbol table: D
+        13: Parameter: a, Type: string[], Symbol table: main

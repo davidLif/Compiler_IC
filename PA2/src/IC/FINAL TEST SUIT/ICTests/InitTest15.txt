@@ -1,0 +1,19 @@
+class A 
+{
+
+	int k;
+	void func(int a, boolean b, boolean d)
+	{
+		int k ;
+		if(true)
+			k = 2;
+		
+		int l = k;
+		
+	}
+	
+	static void main(string[]a)
+	{
+	}
+	
+}

@@ -1,0 +1,61 @@
+Parsed D:\ICTests\InitTest17.txt successfully!
+
+Global Symbol Table: D:\ICTests\InitTest17.txt
+	Class : A
+Children tables: A
+
+Class Symbol Table: A
+	Field: int k
+	Static method: main {string[] -> void}
+	Virtual method: func {int, boolean, boolean -> void}
+Children tables: func, main
+
+Method Symbol Table: func
+	Parameter: int a
+	Parameter: boolean b
+	Parameter: boolean d
+	Local variable: int k
+	Local variable: int g
+Children tables: statement block in func, statement block in func
+
+Statement Block Symbol Table ( located in func )
+
+Statement Block Symbol Table ( located in func )
+
+Method Symbol Table: main
+	Parameter: string[] a
+
+Type Table: D:\ICTests\InitTest17.txt
+	1: Primitive type: int
+	2: Primitive type: boolean
+	3: Primitive type: null
+	4: Primitive type: string
+	5: Primitive type: void
+	8: Class: A
+	6: Array type: string[]
+	7: Method type: {string[] -> void}
+	9: Method type: {int, boolean, boolean -> void}
+
+Abstract Syntax Tree: D:\ICTests\InitTest17.txt
+
+1: Declaration of class: A, Type: A, Symbol table: Global
+    4: Declaration of field: k, Type: int, Symbol table: A
+    5: Declaration of virtual method: func, Type: {int, boolean, boolean -> void}, Symbol table: A
+        5: Parameter: a, Type: int, Symbol table: func
+        5: Parameter: b, Type: boolean, Symbol table: func
+        5: Parameter: d, Type: boolean, Symbol table: func
+        7: Declaration of local variable: k, Type: int, Symbol table: func
+        8: If statement, with Else operation, Symbol table: func
+            8: Boolean literal: true, Type: boolean, Symbol table: func
+            9: Block of statements, Symbol table: func
+                10: Assignment statement, Symbol table: statement block in func
+                    10: Reference to variable: k, Type: int, Symbol table: statement block in func
+                    10: Integer literal: 2, Type: int, Symbol table: statement block in func
+            13: Block of statements, Symbol table: func
+                14: Assignment statement, Symbol table: statement block in func
+                    14: Reference to variable: k, Type: int, Symbol table: statement block in func
+                    14: Integer literal: 4, Type: int, Symbol table: statement block in func
+        17: Declaration of local variable: g, with initial value, Type: int, Symbol table: func
+            17: Reference to variable: k, Type: int, Symbol table: func
+    21: Declaration of static method: main, Type: {string[] -> void}, Symbol table: A
+        21: Parameter: a, Type: string[], Symbol table: main

@@ -1,0 +1,2 @@
+Parsed D:\ICTests\testInheritance2.txt successfully!
+semantic error at line 16: method func invalid overriding

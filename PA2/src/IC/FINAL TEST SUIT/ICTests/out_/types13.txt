@@ -1,0 +1,2 @@
+Parsed D:\ICTests\types13.txt successfully!
+semantic error at line 60: incorrect number of arguments for moreTests call, should be 0

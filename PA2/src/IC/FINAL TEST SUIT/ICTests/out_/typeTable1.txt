@@ -1,0 +1,100 @@
+Parsed D:\ICTests\typeTable1.txt successfully!
+
+Global Symbol Table: D:\ICTests\typeTable1.txt
+	Class : A
+	Class : B
+	Class : C
+	Class : D
+	Class : G
+Children tables: A, C
+
+Class Symbol Table: A
+	Virtual method: foo {B[][][], int[][][], boolean[][], B, C -> A[]}
+Children tables: foo, B
+
+Method Symbol Table: foo
+	Parameter: B[][][] a
+	Parameter: int[][][] k
+	Parameter: boolean[][] d
+	Parameter: B o
+	Parameter: C l
+	Local variable: C c
+	Local variable: C c2
+Children tables: statement block in foo
+
+Statement Block Symbol Table ( located in foo )
+	Local variable: D[][] some
+
+Class Symbol Table: B
+	Static method: main {string[] -> void}
+Children tables: main
+
+Method Symbol Table: main
+	Parameter: string[] arg
+
+Class Symbol Table: C
+Children tables: D
+
+Class Symbol Table: D
+Children tables: G
+
+Class Symbol Table: G
+
+Type Table: D:\ICTests\typeTable1.txt
+	1: Primitive type: int
+	2: Primitive type: boolean
+	3: Primitive type: null
+	4: Primitive type: string
+	5: Primitive type: void
+	8: Class: A
+	10: Class: B, Superclass ID: 8
+	19: Class: C
+	21: Class: D, Superclass ID: 19
+	25: Class: G, Superclass ID: 21
+	6: Array type: string[]
+	14: Array type: int[]
+	15: Array type: int[][]
+	16: Array type: int[][][]
+	17: Array type: boolean[]
+	18: Array type: boolean[][]
+	9: Array type: A[]
+	11: Array type: B[]
+	12: Array type: B[][]
+	13: Array type: B[][][]
+	22: Array type: D[]
+	23: Array type: D[][]
+	24: Array type: D[][][]
+	7: Method type: {string[] -> void}
+	20: Method type: {B[][][], int[][][], boolean[][], B, C -> A[]}
+
+Abstract Syntax Tree: D:\ICTests\typeTable1.txt
+
+1: Declaration of class: A, Type: A, Symbol table: Global
+    4: Declaration of virtual method: foo, Type: {B[][][], int[][][], boolean[][], B, C -> A[]}, Symbol table: A
+        4: Parameter: a, Type: B[][][], Symbol table: foo
+        4: Parameter: k, Type: int[][][], Symbol table: foo
+        4: Parameter: d, Type: boolean[][], Symbol table: foo
+        4: Parameter: o, Type: B, Symbol table: foo
+        4: Parameter: l, Type: C, Symbol table: foo
+        6: Declaration of local variable: c, with initial value, Type: C, Symbol table: foo
+            6: Instantiation of class: C, Type: C, Symbol table: foo
+        7: Declaration of local variable: c2, with initial value, Type: C, Symbol table: foo
+            7: Instantiation of class: D, Type: D, Symbol table: foo
+        9: While statement, Symbol table: foo
+            9: Boolean literal: true, Type: boolean, Symbol table: foo
+            10: Block of statements, Symbol table: foo
+                11: Declaration of local variable: some, with initial value, Type: D[][], Symbol table: statement block in foo
+                    11: Reference to array, Type: D[][], Symbol table: statement block in foo
+                        11: Parenthesized expression, Type: D[][][], Symbol table: statement block in foo
+                            11: Array allocation, Type: D[][][], Symbol table: statement block in foo
+                                11: Integer literal: 4, Type: int, Symbol table: statement block in foo
+                        11: Integer literal: 5, Type: int, Symbol table: statement block in foo
+        14: Return statement, with return value, Symbol table: foo
+            14: Array allocation, Type: A[], Symbol table: foo
+                14: Integer literal: 5, Type: int, Symbol table: foo
+22: Declaration of class: B, subclass of A, Type: B, Symbol table: A
+    26: Declaration of static method: main, Type: {string[] -> void}, Symbol table: B
+        26: Parameter: arg, Type: string[], Symbol table: main
+32: Declaration of class: C, Type: C, Symbol table: Global
+37: Declaration of class: D, subclass of C, Type: D, Symbol table: C
+41: Declaration of class: G, subclass of D, Type: G, Symbol table: D

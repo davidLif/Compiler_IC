@@ -1,0 +1,33 @@
+class A
+{
+	
+	
+	static void main(string []arg)
+	{
+		return ;
+	}
+	
+}
+
+class B extends A
+{
+	
+	
+	
+	
+}
+class C extends B{ 
+
+	
+	static void main(string []arg)
+	{
+		return ;
+	}
+
+}
+
+/* 
+
+	multiple entry points
+
+*/

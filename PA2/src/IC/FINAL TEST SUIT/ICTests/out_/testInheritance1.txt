@@ -1,0 +1,52 @@
+Parsed C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\testInheritance1.txt successfully!
+
+Global Symbol Table: C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\testInheritance1.txt
+	Class : A
+	Class : B
+Children tables: A
+
+Class Symbol Table: A
+	Virtual method: k {int -> A}
+Children tables: k, B
+
+Method Symbol Table: k
+	Parameter: int a
+
+Class Symbol Table: B
+	Static method: main {string[] -> void}
+	Virtual method: k {int -> B}
+Children tables: k, main
+
+Method Symbol Table: k
+	Parameter: int a
+
+Method Symbol Table: main
+	Parameter: string[] a
+
+Type Table: C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\testInheritance1.txt
+	1: Primitive type: int
+	2: Primitive type: boolean
+	3: Primitive type: null
+	4: Primitive type: string
+	5: Primitive type: void
+	8: Class: A
+	10: Class: B, Superclass ID: 8
+	6: Array type: string[]
+	7: Method type: {string[] -> void}
+	9: Method type: {int -> A}
+	11: Method type: {int -> B}
+
+Abstract Syntax Tree: C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\testInheritance1.txt
+
+1: Declaration of class: A, Type: A, Symbol table: Global
+    3: Declaration of virtual method: k, Type: {int -> A}, Symbol table: A
+        3: Parameter: a, Type: int, Symbol table: k
+        5: Return statement, with return value, Symbol table: k
+            5: Instantiation of class: A, Type: A, Symbol table: k
+10: Declaration of class: B, subclass of A, Type: B, Symbol table: A
+    14: Declaration of virtual method: k, Type: {int -> B}, Symbol table: B
+        14: Parameter: a, Type: int, Symbol table: k
+        16: Return statement, with return value, Symbol table: k
+            16: Instantiation of class: B, Type: B, Symbol table: k
+    18: Declaration of static method: main, Type: {string[] -> void}, Symbol table: B
+        18: Parameter: a, Type: string[], Symbol table: main

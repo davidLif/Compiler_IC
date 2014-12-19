@@ -1,0 +1,24 @@
+class A
+{
+	A k(int a )
+	{
+		return new A();
+	}
+	
+}
+
+class B extends A
+{
+
+	
+	B k( int a)
+	{
+		return new B();
+	}
+	static void main(string[]a)
+	{
+	}
+	
+}
+
+/* valid inheritance */

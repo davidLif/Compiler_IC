@@ -1,0 +1,2 @@
+Parsed C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\extendsTest4.txt successfully!
+semantic error at line 13: class D extends E, a class that was yet to be defined

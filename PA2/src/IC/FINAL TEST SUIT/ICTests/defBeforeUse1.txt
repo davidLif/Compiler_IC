@@ -1,0 +1,24 @@
+class A /* checks single definition in each scope */
+{
+	static boolean test() { int test; }
+	int test;
+	string method2 (int test2)
+	{
+		test2 = 5;
+		test = 5;
+		k = 4;
+		
+		
+		
+	}
+	
+	static void main(string[]a)
+	{
+	}
+}
+class B extends A
+{
+
+}
+
+/* semantic error at line 9: k could not be resolved to a variable */

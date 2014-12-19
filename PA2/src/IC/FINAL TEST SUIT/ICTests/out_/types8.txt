@@ -1,0 +1,2 @@
+Parsed D:\ICTests\types8.txt successfully!
+semantic error at line 29: type of right hand side of assignment A[] is not sub type of left hand side A

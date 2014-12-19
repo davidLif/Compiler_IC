@@ -1,0 +1,30 @@
+class A
+{
+	
+	
+	
+	
+}
+
+class B extends A
+{
+	
+	
+	
+	
+}
+class C extends B{ 
+
+	
+	static void main(string[]arg, int a)
+	{
+		return ;
+	}
+
+}
+
+/* 
+
+	main invalid num of args
+
+*/

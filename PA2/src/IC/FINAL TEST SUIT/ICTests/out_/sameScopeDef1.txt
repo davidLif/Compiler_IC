@@ -1,0 +1,2 @@
+Parsed C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\sameScopeDef1.txt successfully!
+semantic error at line 6: class A was already defined 

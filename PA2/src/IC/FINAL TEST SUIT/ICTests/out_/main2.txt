@@ -1,0 +1,2 @@
+Parsed C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\main2.txt successfully!
+semantic error at line 19: main method should be defined as a static method, not a virtual method

@@ -1,0 +1,2 @@
+Parsed C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\testInheritance9.txt successfully!
+semantic error at line 20: identifer of field func already defined in a superclass

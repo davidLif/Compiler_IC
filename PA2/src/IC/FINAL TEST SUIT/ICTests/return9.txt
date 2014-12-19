@@ -1,0 +1,64 @@
+class A 
+{
+
+	/* first method should be valid */
+	void func()
+	{
+		int k = 5;
+		
+		if(true)
+		{
+			k = 6;
+		}
+		else
+		{
+			while(false)
+			{
+				k = 10;
+			}
+			return;
+		}
+	}
+	
+	
+	A foo()
+	{
+		{
+			int x = 5;
+		}
+		if(true)
+			return null;
+		else
+			int x = 5;
+		while(true)
+		{
+			boolean k;
+		}
+		
+		/* the following block returns a value in all paths */
+		{
+		
+			{
+				if(true)
+					return null;
+				else
+					{ return null; }
+			}
+		}
+	
+	}
+	
+	static A foo()
+	{
+		if(true)
+			return new A();
+	}
+	
+	static void main(string[]a)
+	{
+	}
+	
+	
+}
+
+/* output: semantic error at line 51: not all paths in method foo return a value */

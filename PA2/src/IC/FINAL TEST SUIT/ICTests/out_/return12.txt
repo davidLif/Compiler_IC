@@ -1,0 +1,40 @@
+Parsed C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\return12.txt successfully!
+
+Global Symbol Table: C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\return12.txt
+	Class : A
+Children tables: A
+
+Class Symbol Table: A
+	Static method: main {string[] -> void}
+Children tables: main
+
+Method Symbol Table: main
+	Parameter: string[] a
+	Local variable: int x
+Children tables: statement block in main
+
+Statement Block Symbol Table ( located in main )
+
+Type Table: C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\return12.txt
+	1: Primitive type: int
+	2: Primitive type: boolean
+	3: Primitive type: null
+	4: Primitive type: string
+	5: Primitive type: void
+	8: Class: A
+	6: Array type: string[]
+	7: Method type: {string[] -> void}
+
+Abstract Syntax Tree: C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\return12.txt
+
+1: Declaration of class: A, Type: A, Symbol table: Global
+    4: Declaration of static method: main, Type: {string[] -> void}, Symbol table: A
+        4: Parameter: a, Type: string[], Symbol table: main
+        6: While statement, Symbol table: main
+            6: Logical binary operation: less than, Type: boolean, Symbol table: main
+                6: Integer literal: 1, Type: int, Symbol table: main
+                6: Integer literal: 2, Type: int, Symbol table: main
+            7: Block of statements, Symbol table: main
+        10: Return statement, Symbol table: main
+        12: Declaration of local variable: x, with initial value, Type: int, Symbol table: main
+            12: Integer literal: 5, Type: int, Symbol table: main

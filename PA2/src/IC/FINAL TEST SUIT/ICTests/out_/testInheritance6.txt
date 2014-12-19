@@ -1,0 +1,88 @@
+Parsed C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\testInheritance6.txt successfully!
+
+Global Symbol Table: C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\testInheritance6.txt
+	Class : A
+	Class : B
+	Class : C
+Children tables: A
+
+Class Symbol Table: A
+	Static method: foo { -> A}
+	Virtual method: func {int -> A}
+Children tables: func, foo, B, C
+
+Method Symbol Table: func
+	Parameter: int a
+
+Method Symbol Table: foo
+
+Class Symbol Table: B
+	Static method: func {int -> C}
+	Static method: foo { -> B}
+	Virtual method: func {int -> C}
+Children tables: func, foo, func
+
+Method Symbol Table: func
+	Parameter: int a
+
+Method Symbol Table: foo
+
+Method Symbol Table: func
+	Parameter: int a
+
+Class Symbol Table: C
+	Static method: main {string[] -> void}
+	Virtual method: func {int -> A}
+Children tables: func, main
+
+Method Symbol Table: func
+	Parameter: int a
+
+Method Symbol Table: main
+	Parameter: string[] a
+
+Type Table: C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\testInheritance6.txt
+	1: Primitive type: int
+	2: Primitive type: boolean
+	3: Primitive type: null
+	4: Primitive type: string
+	5: Primitive type: void
+	8: Class: A
+	11: Class: B, Superclass ID: 8
+	12: Class: C, Superclass ID: 8
+	6: Array type: string[]
+	7: Method type: {string[] -> void}
+	9: Method type: {int -> A}
+	10: Method type: { -> A}
+	13: Method type: {int -> C}
+	14: Method type: { -> B}
+
+Abstract Syntax Tree: C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\testInheritance6.txt
+
+1: Declaration of class: A, Type: A, Symbol table: Global
+    3: Declaration of virtual method: func, Type: {int -> A}, Symbol table: A
+        3: Parameter: a, Type: int, Symbol table: func
+        5: Return statement, with return value, Symbol table: func
+            5: Null literal: null, Type: null, Symbol table: func
+    7: Declaration of static method: foo, Type: { -> A}, Symbol table: A
+        9: Return statement, with return value, Symbol table: foo
+            9: Null literal: null, Type: null, Symbol table: foo
+14: Declaration of class: B, subclass of A, Type: B, Symbol table: A
+    18: Declaration of static method: func, Type: {int -> C}, Symbol table: B
+        18: Parameter: a, Type: int, Symbol table: func
+        20: Return statement, with return value, Symbol table: func
+            20: Null literal: null, Type: null, Symbol table: func
+    23: Declaration of static method: foo, Type: { -> B}, Symbol table: B
+        25: Return statement, with return value, Symbol table: foo
+            25: Null literal: null, Type: null, Symbol table: foo
+    28: Declaration of virtual method: func, Type: {int -> C}, Symbol table: B
+        28: Parameter: a, Type: int, Symbol table: func
+        28: Return statement, with return value, Symbol table: func
+            28: Null literal: null, Type: null, Symbol table: func
+31: Declaration of class: C, subclass of A, Type: C, Symbol table: A
+    34: Declaration of virtual method: func, Type: {int -> A}, Symbol table: C
+        34: Parameter: a, Type: int, Symbol table: func
+        36: Return statement, with return value, Symbol table: func
+            36: Null literal: null, Type: null, Symbol table: func
+    39: Declaration of static method: main, Type: {string[] -> void}, Symbol table: C
+        39: Parameter: a, Type: string[], Symbol table: main

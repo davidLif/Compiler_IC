@@ -1,0 +1,40 @@
+class A
+{
+	
+	A[] test;
+	static void main(string []arg)
+	{
+	
+		
+	}
+	
+	
+	
+}
+
+class B extends A
+{
+
+	C[] c; 
+	void foo ()
+	
+	{
+	  /* field access */
+	  C[] d = c;
+	  C c = this.c[2];
+	  A a = this.c[2];
+	  a = this.test[2];
+	  a = test[2];
+	  /* error */
+	  a = test;
+	}
+	
+
+}
+class C extends A
+{
+
+}
+
+
+

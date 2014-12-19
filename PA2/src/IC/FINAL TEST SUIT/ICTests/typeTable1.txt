@@ -1,0 +1,50 @@
+class A
+{
+	
+	A[] foo(B[][][]a, int[][][]k, boolean[][] d, B o, C l)
+	{
+		C c = new C();
+		C c2 = new D(); /* type introcuted through new */
+		
+		while(true)
+		{
+			D[][] some = (new D[][][4])[5]; /* introduces D[], D[][] first, then D[][][] */
+		}
+		
+		return new A[5];
+		
+	}
+	
+	
+	
+}
+
+class B extends A
+{
+
+	
+	static void main(string []arg)
+	{
+		
+	}
+
+}
+class C 
+{
+
+
+}
+class D extends C
+{
+
+}
+class G extends D
+{
+
+}
+
+/* 
+
+	should be valid
+
+*/

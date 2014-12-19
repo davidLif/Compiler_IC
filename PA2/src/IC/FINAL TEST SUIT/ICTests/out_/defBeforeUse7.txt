@@ -1,0 +1,162 @@
+Parsed D:\ICTests\defBeforeUse7.txt successfully!
+
+Global Symbol Table: D:\ICTests\defBeforeUse7.txt
+	Class : A
+	Class : B
+Children tables: A
+
+Class Symbol Table: A
+	Field: int test
+	Static method: test { -> boolean}
+	Static method: method2 {boolean -> string}
+	Virtual method: method3 {int, boolean -> void}
+Children tables: test, method2, method3, B
+
+Method Symbol Table: test
+	Local variable: int test
+
+Method Symbol Table: method2
+	Parameter: boolean test2
+	Local variable: boolean test4
+Children tables: statement block in method2, statement block in method2
+
+Statement Block Symbol Table ( located in method2 )
+	Local variable: boolean test1
+
+Statement Block Symbol Table ( located in method2 )
+
+Method Symbol Table: method3
+	Parameter: int test1
+	Parameter: boolean test2
+Children tables: statement block in method3
+
+Statement Block Symbol Table ( located in method3 )
+Children tables: statement block in statement block in method3
+
+Statement Block Symbol Table ( located in statement block in method3 )
+
+Class Symbol Table: B
+	Static method: myMethod {int[][][][] -> void}
+	Static method: main {string[] -> void}
+	Virtual method: myMethod {int[][][][] -> void}
+Children tables: myMethod, myMethod, main
+
+Method Symbol Table: myMethod
+	Parameter: int[][][][] a
+Children tables: statement block in myMethod, statement block in myMethod
+
+Statement Block Symbol Table ( located in myMethod )
+Children tables: statement block in statement block in myMethod, statement block in statement block in myMethod
+
+Statement Block Symbol Table ( located in statement block in myMethod )
+
+Statement Block Symbol Table ( located in statement block in myMethod )
+	Local variable: int k
+Children tables: statement block in statement block in statement block in myMethod
+
+Statement Block Symbol Table ( located in statement block in statement block in myMethod )
+
+Statement Block Symbol Table ( located in myMethod )
+
+Method Symbol Table: myMethod
+	Parameter: int[][][][] a
+	Local variable: int test
+
+Method Symbol Table: main
+	Parameter: string[] a
+
+Type Table: D:\ICTests\defBeforeUse7.txt
+	1: Primitive type: int
+	2: Primitive type: boolean
+	3: Primitive type: null
+	4: Primitive type: string
+	5: Primitive type: void
+	8: Class: A
+	12: Class: B, Superclass ID: 8
+	6: Array type: string[]
+	13: Array type: int[]
+	14: Array type: int[][]
+	15: Array type: int[][][]
+	16: Array type: int[][][][]
+	7: Method type: {string[] -> void}
+	9: Method type: { -> boolean}
+	10: Method type: {boolean -> string}
+	11: Method type: {int, boolean -> void}
+	17: Method type: {int[][][][] -> void}
+
+Abstract Syntax Tree: D:\ICTests\defBeforeUse7.txt
+
+1: Declaration of class: A, Type: A, Symbol table: Global
+    4: Declaration of field: test, Type: int, Symbol table: A
+    3: Declaration of static method: test, Type: { -> boolean}, Symbol table: A
+        3: Declaration of local variable: test, Type: int, Symbol table: test
+        3: Return statement, with return value, Symbol table: test
+            3: Boolean literal: true, Type: boolean, Symbol table: test
+    5: Declaration of static method: method2, Type: {boolean -> string}, Symbol table: A
+        5: Parameter: test2, Type: boolean, Symbol table: method2
+        8: Block of statements, Symbol table: method2
+            9: Assignment statement, Symbol table: statement block in method2
+                9: Reference to variable: test2, Type: boolean, Symbol table: statement block in method2
+                9: Boolean literal: true, Type: boolean, Symbol table: statement block in method2
+            10: Declaration of local variable: test1, with initial value, Type: boolean, Symbol table: statement block in method2
+                10: Boolean literal: true, Type: boolean, Symbol table: statement block in method2
+        13: Declaration of local variable: test4, Type: boolean, Symbol table: method2
+        15: Block of statements, Symbol table: method2
+            16: Assignment statement, Symbol table: statement block in method2
+                16: Reference to variable: test4, Type: boolean, Symbol table: statement block in method2
+                16: Boolean literal: true, Type: boolean, Symbol table: statement block in method2
+        21: Return statement, with return value, Symbol table: method2
+            21: String literal: "lol", Type: string, Symbol table: method2
+    26: Declaration of virtual method: method3, Type: {int, boolean -> void}, Symbol table: A
+        26: Parameter: test1, Type: int, Symbol table: method3
+        26: Parameter: test2, Type: boolean, Symbol table: method3
+        28: Assignment statement, Symbol table: method3
+            28: Reference to variable: test, Type: int, Symbol table: method3
+            28: Integer literal: 4, Type: int, Symbol table: method3
+        29: Assignment statement, Symbol table: method3
+            29: Reference to variable: test1, Type: int, Symbol table: method3
+            29: Integer literal: 1, Type: int, Symbol table: method3
+        31: Block of statements, Symbol table: method3
+            32: Assignment statement, Symbol table: statement block in method3
+                32: Reference to variable: test1, Type: int, Symbol table: statement block in method3
+                32: Integer literal: 1, Type: int, Symbol table: statement block in method3
+            33: Block of statements, Symbol table: statement block in method3
+                34: Assignment statement, Symbol table: statement block in statement block in method3
+                    34: Reference to variable: test, Type: int, Symbol table: statement block in statement block in method3
+                    34: Integer literal: 5, Type: int, Symbol table: statement block in statement block in method3
+                35: Assignment statement, Symbol table: statement block in statement block in method3
+                    35: Reference to variable: test2, Type: boolean, Symbol table: statement block in statement block in method3
+                    35: Boolean literal: false, Type: boolean, Symbol table: statement block in statement block in method3
+41: Declaration of class: B, subclass of A, Type: B, Symbol table: A
+    43: Declaration of virtual method: myMethod, Type: {int[][][][] -> void}, Symbol table: B
+        43: Parameter: a, Type: int[][][][], Symbol table: myMethod
+        45: Assignment statement, Symbol table: myMethod
+            45: Reference to variable: a, Type: int[][][][], Symbol table: myMethod
+            45: Null literal: null, Type: null, Symbol table: myMethod
+        46: Assignment statement, Symbol table: myMethod
+            46: Reference to variable: test, Type: int, Symbol table: myMethod
+            46: Integer literal: 4, Type: int, Symbol table: myMethod
+        47: Block of statements, Symbol table: myMethod
+            48: Assignment statement, Symbol table: statement block in myMethod
+                48: Reference to variable: test, Type: int, Symbol table: statement block in myMethod
+                48: Integer literal: 4, Type: int, Symbol table: statement block in myMethod
+            49: Block of statements, Symbol table: statement block in myMethod
+                50: Assignment statement, Symbol table: statement block in statement block in myMethod
+                    50: Reference to variable: a, Type: int[][][][], Symbol table: statement block in statement block in myMethod
+                    50: Null literal: null, Type: null, Symbol table: statement block in statement block in myMethod
+            52: Block of statements, Symbol table: statement block in myMethod
+                53: Declaration of local variable: k, Type: int, Symbol table: statement block in statement block in myMethod
+                54: Block of statements, Symbol table: statement block in statement block in myMethod
+                    55: Assignment statement, Symbol table: statement block in statement block in statement block in myMethod
+                        55: Reference to variable: k, Type: int, Symbol table: statement block in statement block in statement block in myMethod
+                        55: Integer literal: 4, Type: int, Symbol table: statement block in statement block in statement block in myMethod
+        60: Block of statements, Symbol table: myMethod
+            61: Assignment statement, Symbol table: statement block in myMethod
+                61: Reference to variable: test, Type: int, Symbol table: statement block in myMethod
+                61: Integer literal: 4, Type: int, Symbol table: statement block in myMethod
+    64: Declaration of static method: myMethod, Type: {int[][][][] -> void}, Symbol table: B
+        64: Parameter: a, Type: int[][][][], Symbol table: myMethod
+        66: Declaration of local variable: test, with initial value, Type: int, Symbol table: myMethod
+            66: Integer literal: 4, Type: int, Symbol table: myMethod
+    69: Declaration of static method: main, Type: {string[] -> void}, Symbol table: B
+        69: Parameter: a, Type: string[], Symbol table: main

@@ -1,0 +1,2 @@
+Parsed D:\ICTests\types14.txt successfully!
+semantic error at line 73: method test2 could not be resolved in current scope

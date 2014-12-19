@@ -1,0 +1,81 @@
+Parsed D:\ICTests\structural4.txt successfully!
+
+Global Symbol Table: D:\ICTests\structural4.txt
+	Class : A
+	Class : B
+Children tables: A
+
+Class Symbol Table: A
+	Static method: main {string[] -> void}
+	Virtual method: foo { -> void}
+Children tables: main, foo, B
+
+Method Symbol Table: main
+	Parameter: string[] arg
+Children tables: statement block in main
+
+Statement Block Symbol Table ( located in main )
+Children tables: statement block in statement block in main
+
+Statement Block Symbol Table ( located in statement block in main )
+Children tables: statement block in statement block in statement block in main, statement block in statement block in statement block in main, statement block in statement block in statement block in main
+
+Statement Block Symbol Table ( located in statement block in statement block in main )
+
+Statement Block Symbol Table ( located in statement block in statement block in main )
+
+Statement Block Symbol Table ( located in statement block in statement block in main )
+
+Method Symbol Table: foo
+
+Class Symbol Table: B
+	Virtual method: goo { -> void}
+Children tables: goo
+
+Method Symbol Table: goo
+
+Type Table: D:\ICTests\structural4.txt
+	1: Primitive type: int
+	2: Primitive type: boolean
+	3: Primitive type: null
+	4: Primitive type: string
+	5: Primitive type: void
+	8: Class: A
+	10: Class: B, Superclass ID: 8
+	6: Array type: string[]
+	7: Method type: {string[] -> void}
+	9: Method type: { -> void}
+
+Abstract Syntax Tree: D:\ICTests\structural4.txt
+
+1: Declaration of class: A, Type: A, Symbol table: Global
+    5: Declaration of static method: main, Type: {string[] -> void}, Symbol table: A
+        5: Parameter: arg, Type: string[], Symbol table: main
+        7: Block of statements, Symbol table: main
+            8: While statement, Symbol table: statement block in main
+                8: Boolean literal: true, Type: boolean, Symbol table: statement block in main
+                9: Block of statements, Symbol table: statement block in main
+                    10: Break statement, Symbol table: statement block in statement block in main
+                    11: Continue statement, Symbol table: statement block in statement block in main
+                    13: If statement, with Else operation, Symbol table: statement block in statement block in main
+                        13: Boolean literal: true, Type: boolean, Symbol table: statement block in statement block in main
+                        14: Block of statements, Symbol table: statement block in statement block in main
+                            15: Continue statement, Symbol table: statement block in statement block in statement block in main
+                        20: Block of statements, Symbol table: statement block in statement block in main
+                            21: Break statement, Symbol table: statement block in statement block in statement block in main
+                    23: While statement, Symbol table: statement block in statement block in main
+                        23: Boolean literal: true, Type: boolean, Symbol table: statement block in statement block in main
+                        24: Break statement, Symbol table: statement block in statement block in main
+                    25: If statement, Symbol table: statement block in statement block in main
+                        25: Boolean literal: true, Type: boolean, Symbol table: statement block in statement block in main
+                        26: Block of statements, Symbol table: statement block in statement block in main
+                            27: Return statement, Symbol table: statement block in statement block in statement block in main
+    33: Declaration of virtual method: foo, Type: { -> void}, Symbol table: A
+        36: Method call statement, Type: null, Symbol table: foo
+          36: Call to virtual method: foo, in external scope, Type: void, Symbol table: foo
+              36: Reference to 'this' instance, Type: A, Symbol table: foo
+40: Declaration of class: B, subclass of A, Type: B, Symbol table: A
+    43: Declaration of virtual method: goo, Type: { -> void}, Symbol table: B
+        45: Method call statement, Type: null, Symbol table: goo
+          45: Call to virtual method: foo, in external scope, Type: void, Symbol table: goo
+              45: Reference to 'this' instance, Type: B, Symbol table: goo

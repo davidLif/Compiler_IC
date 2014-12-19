@@ -1,0 +1,64 @@
+class A 
+{
+
+	int k;
+	void func(int a, boolean b, boolean d)
+	{
+		foo(a, a);
+		int index = 3;
+		{
+			int index;
+			index = 4;
+			
+		}
+		
+		int[][] arr = new int[][k];
+		int[]g = arr[foo(a, index)];
+		
+		
+		boolean c = false;
+		{
+		   foo(k,k);
+		   
+		   
+		}
+		boolean k;
+		{
+			{
+				if(b)
+				{	
+					foo(index, index); // valid
+					
+				}
+				else
+				{
+					if(d)
+					{
+					
+					}
+					else
+					{
+						while(k)
+						{
+							// invalid
+						}
+					}
+				}
+			}
+		}
+		
+		
+	}
+	int foo(int b, int k)
+	{
+		b = 3; k = b; k = k ;
+		return 0;
+	}
+	
+	static void main(string[]a)
+	{
+	}
+	
+}
+
+/* output: semantic error at line 41: local variable k used before was initialized */

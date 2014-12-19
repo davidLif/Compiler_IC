@@ -1,0 +1,2 @@
+Parsed D:\ICTests\InitTest11.txt successfully!
+semantic error at line 41: local variable k may be used before initialized

@@ -1,0 +1,2 @@
+Parsed D:\ICTests\InitTest8.txt successfully!
+semantic error at line 15: local variable index may be used before initialized

@@ -1,0 +1,2 @@
+Parsed C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\return2.txt successfully!
+semantic error at line 24: not all paths in method foo return a value

@@ -1,0 +1,22 @@
+class C { } 
+
+class A extends C
+{
+	static void main(string[]a)
+	{
+	}
+}
+class B extends C
+{
+
+}
+class D extends E { }
+
+
+	
+
+/* output: 
+
+semantic error at line 13: class D extends E, a class that was yet to be defined
+
+*/

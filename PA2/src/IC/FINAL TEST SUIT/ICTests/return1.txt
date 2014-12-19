@@ -1,0 +1,42 @@
+class A 
+{
+
+	/* first method should be valid */
+	void func()
+	{
+		int k = 5;
+		
+		if(true)
+		{
+			k = 6;
+		}
+		else
+		{
+			while(false)
+			{
+				k = 10;
+			}
+			return;
+		}
+	}
+	
+	
+	A foo()
+	{
+		
+	
+	}
+	
+	static A foo()
+	{
+		return new A();
+	}
+	
+	static void main(string[]a)
+	{
+	}
+	
+	
+}
+
+/* output: semantic error at line 24: method foo does not return a value */

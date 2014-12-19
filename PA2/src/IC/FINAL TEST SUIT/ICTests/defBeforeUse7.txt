@@ -1,0 +1,74 @@
+class A 
+{
+	static boolean test() { int test; return true;}
+	int test;
+	static string method2 (boolean test2)
+	{
+		
+		{
+			test2 = true;
+			boolean test1 = true;
+		}
+		
+		boolean test4;
+		
+		{
+			test4 = true;
+			
+
+		}
+		
+		return "lol";
+		
+
+	}
+	
+	void method3 ( int test1, boolean test2)
+	{
+		test = 4;
+		test1 = 1;
+		
+		{
+			test1 = 1;
+			{
+				test = 5;
+				test2 = false;
+			}
+		}
+		
+	}
+}
+class B extends A
+{
+	void myMethod( int[][][][] a)
+	{
+		a = null;
+		test = 4;
+		{
+			test = 4;
+			{
+				a = null;
+			}
+			{ 
+				int k;
+				{
+					k = 4;
+				}
+			}
+		}
+		
+		{
+			test = 4;
+		}
+	}
+	static void myMethod(int[][][][]a)
+	{
+		int test = 4;
+	}
+	
+	static void main(string[]a)
+	{
+	}
+}
+
+/* output: valid */

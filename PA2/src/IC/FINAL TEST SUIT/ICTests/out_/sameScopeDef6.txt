@@ -1,0 +1,2 @@
+Parsed C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\sameScopeDef6.txt successfully!
+semantic error at line 9: variable with same id, test, was already defined in current scope: method2

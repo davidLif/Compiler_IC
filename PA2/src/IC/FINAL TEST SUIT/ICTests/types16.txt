@@ -1,0 +1,31 @@
+class A
+{
+	
+	
+	static void main(string []arg)
+	{
+		return ;
+		
+	}
+	
+	
+	
+}
+
+class B extends A
+{
+	C func()
+	{
+		return new C();
+		
+		/* error */
+		return new A();
+	}
+	
+}
+class C extends A
+{
+
+}
+
+

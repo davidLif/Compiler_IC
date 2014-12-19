@@ -1,0 +1,20 @@
+class A 
+{
+
+	static void main(string[]a)
+	{
+		while (1 < 2)
+		{
+		}
+		
+		return ;
+		
+		int x = 5;
+	}
+	
+	
+	
+	
+}
+
+/* output: valid*/

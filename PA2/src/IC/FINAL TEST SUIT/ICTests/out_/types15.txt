@@ -1,0 +1,2 @@
+Parsed C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\types15.txt successfully!
+semantic error at line 7: method return type is void, can not return a value

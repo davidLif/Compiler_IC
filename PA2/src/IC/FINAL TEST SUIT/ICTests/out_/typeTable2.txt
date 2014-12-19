@@ -1,0 +1,2 @@
+Parsed D:\ICTests\typeTable2.txt successfully!
+semantic error at line 11: class H was not defined

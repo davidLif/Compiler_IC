@@ -1,0 +1,127 @@
+Parsed C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\return7.txt successfully!
+
+Global Symbol Table: C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\return7.txt
+	Class : A
+Children tables: A
+
+Class Symbol Table: A
+	Static method: foo { -> A}
+	Static method: main {string[] -> void}
+	Virtual method: func { -> void}
+	Virtual method: foo { -> A}
+Children tables: func, foo, foo, main
+
+Method Symbol Table: func
+	Local variable: int k
+Children tables: statement block in func, statement block in func
+
+Statement Block Symbol Table ( located in func )
+
+Statement Block Symbol Table ( located in func )
+Children tables: statement block in statement block in func
+
+Statement Block Symbol Table ( located in statement block in func )
+
+Method Symbol Table: foo
+Children tables: statement block in foo, statement block in foo, statement block in foo
+
+Statement Block Symbol Table ( located in foo )
+	Local variable: int k
+
+Statement Block Symbol Table ( located in foo )
+Children tables: statement block in statement block in foo, statement block in statement block in foo
+
+Statement Block Symbol Table ( located in statement block in foo )
+Children tables: statement block in statement block in statement block in foo
+
+Statement Block Symbol Table ( located in statement block in statement block in foo )
+	Local variable: boolean g
+
+Statement Block Symbol Table ( located in statement block in foo )
+Children tables: statement block in statement block in statement block in foo, statement block in statement block in statement block in foo
+
+Statement Block Symbol Table ( located in statement block in statement block in foo )
+
+Statement Block Symbol Table ( located in statement block in statement block in foo )
+Children tables: statement block in statement block in statement block in statement block in foo
+
+Statement Block Symbol Table ( located in statement block in statement block in statement block in foo )
+
+Statement Block Symbol Table ( located in foo )
+	Local variable: int x
+
+Method Symbol Table: foo
+
+Method Symbol Table: main
+	Parameter: string[] a
+
+Type Table: C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\return7.txt
+	1: Primitive type: int
+	2: Primitive type: boolean
+	3: Primitive type: null
+	4: Primitive type: string
+	5: Primitive type: void
+	8: Class: A
+	6: Array type: string[]
+	7: Method type: {string[] -> void}
+	9: Method type: { -> void}
+	10: Method type: { -> A}
+
+Abstract Syntax Tree: C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\return7.txt
+
+1: Declaration of class: A, Type: A, Symbol table: Global
+    5: Declaration of virtual method: func, Type: { -> void}, Symbol table: A
+        7: Declaration of local variable: k, with initial value, Type: int, Symbol table: func
+            7: Integer literal: 5, Type: int, Symbol table: func
+        9: If statement, with Else operation, Symbol table: func
+            9: Boolean literal: true, Type: boolean, Symbol table: func
+            10: Block of statements, Symbol table: func
+                11: Assignment statement, Symbol table: statement block in func
+                    11: Reference to variable: k, Type: int, Symbol table: statement block in func
+                    11: Integer literal: 6, Type: int, Symbol table: statement block in func
+            14: Block of statements, Symbol table: func
+                15: While statement, Symbol table: statement block in func
+                    15: Boolean literal: false, Type: boolean, Symbol table: statement block in func
+                    16: Block of statements, Symbol table: statement block in func
+                        17: Assignment statement, Symbol table: statement block in statement block in func
+                            17: Reference to variable: k, Type: int, Symbol table: statement block in statement block in func
+                            17: Integer literal: 10, Type: int, Symbol table: statement block in statement block in func
+                19: Return statement, Symbol table: statement block in func
+    24: Declaration of virtual method: foo, Type: { -> A}, Symbol table: A
+        26: While statement, Symbol table: foo
+            26: Boolean literal: true, Type: boolean, Symbol table: foo
+            27: Block of statements, Symbol table: foo
+                28: Declaration of local variable: k, with initial value, Type: int, Symbol table: statement block in foo
+                    28: Integer literal: 2, Type: int, Symbol table: statement block in foo
+        31: Block of statements, Symbol table: foo
+            33: If statement, with Else operation, Symbol table: statement block in foo
+                33: Boolean literal: true, Type: boolean, Symbol table: statement block in foo
+                34: Block of statements, Symbol table: statement block in foo
+                    35: Block of statements, Symbol table: statement block in statement block in foo
+                        36: Declaration of local variable: g, with initial value, Type: boolean, Symbol table: statement block in statement block in statement block in foo
+                            36: Boolean literal: true, Type: boolean, Symbol table: statement block in statement block in statement block in foo
+                        37: Return statement, with return value, Symbol table: statement block in statement block in statement block in foo
+                            37: Instantiation of class: A, Type: A, Symbol table: statement block in statement block in statement block in foo
+                41: Block of statements, Symbol table: statement block in foo
+                    42: While statement, Symbol table: statement block in statement block in foo
+                        42: Boolean literal: true, Type: boolean, Symbol table: statement block in statement block in foo
+                        42: Block of statements, Symbol table: statement block in statement block in foo
+                    44: If statement, with Else operation, Symbol table: statement block in statement block in foo
+                        44: Boolean literal: true, Type: boolean, Symbol table: statement block in statement block in foo
+                        45: Block of statements, Symbol table: statement block in statement block in foo
+                            46: Block of statements, Symbol table: statement block in statement block in statement block in foo
+                                47: Return statement, with return value, Symbol table: statement block in statement block in statement block in statement block in foo
+                                    47: Null literal: null, Type: null, Symbol table: statement block in statement block in statement block in statement block in foo
+                        52: Return statement, with return value, Symbol table: statement block in statement block in foo
+                            52: Null literal: null, Type: null, Symbol table: statement block in statement block in foo
+        55: If statement, with Else operation, Symbol table: foo
+            55: Boolean literal: true, Type: boolean, Symbol table: foo
+            56: Return statement, with return value, Symbol table: foo
+                56: Null literal: null, Type: null, Symbol table: foo
+            58: Block of statements, Symbol table: foo
+                59: Declaration of local variable: x, Type: int, Symbol table: statement block in foo
+    64: Declaration of static method: foo, Type: { -> A}, Symbol table: A
+        66: Return statement, with return value, Symbol table: foo
+            66: Instantiation of class: A, Type: A, Symbol table: foo
+    69: Declaration of static method: main, Type: {string[] -> void}, Symbol table: A
+        69: Parameter: a, Type: string[], Symbol table: main

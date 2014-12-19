@@ -1,0 +1,44 @@
+class A
+{
+	A func(int a )
+	{
+	return null;
+	}
+	static A foo()
+	{
+	return null;
+	}
+	
+}
+
+class B extends A
+{
+
+	
+	static C func( int a)
+	{
+		/* new method */return null;
+	}
+	
+	static B foo()
+	{
+		/* overrides static foo in A*/return null;
+	}
+	
+	C func(int a) {  /* overrides virtual func in A */ return null;} 
+	
+}
+class C extends A{ 
+
+	
+	A func (int a)
+	{
+		/* overrides virtual func in A */return null;
+	
+	}
+	static void main(string[]a)
+	{
+	}
+}
+
+

@@ -1,0 +1,50 @@
+class A
+{
+	
+	
+	static void main(string []arg)
+	{
+	
+		/* type checks */
+		boolean t = true;
+		boolean f = false;
+		int k = 4353;
+		int j = -43432;
+		int l = (k % j) + k - j / j * k;
+		
+		/* string concat */
+		string s1 = "check";
+		string s2 = "me";
+		s2 = s1 + s2;
+		
+		/* comparsions */
+		A b = new B();
+		A c = new C();
+		boolean m1 = b == b;
+		boolean m2 = c == c;
+		boolean m3 = b == c;
+		C d = new C();
+		B h = new B();
+		
+		/* error */
+		boolean a = 5;
+	}
+	
+	
+	
+}
+
+class B extends A
+{
+
+	
+	
+
+}
+class C extends A
+{
+
+}
+
+
+

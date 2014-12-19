@@ -1,0 +1,34 @@
+class A
+{
+	A func(int a )
+	{
+		return null;
+	}
+	
+}
+
+class B extends A
+{
+
+	
+	static C func( int a)
+	{
+		return new C();
+	}
+	
+}
+class C { 
+
+static void main(string[]a)
+	{
+	}
+	
+
+}
+
+/* 
+	different scope, no conflict
+	OUTPUT: 
+	valid output
+
+*/

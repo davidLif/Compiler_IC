@@ -1,0 +1,22 @@
+class C { } 
+
+class A extends C
+{
+	
+}
+class B extends C
+{
+
+}
+class D extends A { 
+
+static void main(string[]a)
+	{
+	}
+
+}
+	
+
+/* output: should be valid
+
+*/

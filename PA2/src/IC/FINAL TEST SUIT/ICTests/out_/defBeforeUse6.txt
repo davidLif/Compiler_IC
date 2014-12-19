@@ -1,0 +1,2 @@
+Parsed C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\defBeforeUse6.txt successfully!
+semantic error at line 59: test could not be resolved to a variable

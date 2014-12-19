@@ -1,0 +1,2 @@
+Parsed D:\ICTests\types10.txt successfully!
+semantic error at line 43: init value type (A) is not a subtype of declaration type (B)

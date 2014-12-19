@@ -1,0 +1,2 @@
+Parsed D:\ICTests\InitTest14.txt successfully!
+semantic error at line 17: local variable arr may be used before initialized

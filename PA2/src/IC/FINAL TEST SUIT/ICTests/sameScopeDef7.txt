@@ -1,0 +1,33 @@
+class A /* checks single definition in each scope */
+{
+	static boolean test() { int test = 5; return true; }
+	int test;
+	string method2 (int test)
+	{
+		
+		
+		{
+			int test;
+			{
+				int test;
+			}
+			
+		}
+		
+		return "hello";
+	}
+}
+class B extends A
+{
+	string method2(int a)
+	{
+		return null;
+	}
+	
+	static void main(string[]a)
+	{
+	}
+	
+}
+
+/* output: valid output */

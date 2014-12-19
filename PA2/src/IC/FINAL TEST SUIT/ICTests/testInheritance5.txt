@@ -1,0 +1,54 @@
+class A
+{
+	A func(int a )
+	{
+		return null;
+	}
+	static A foo()
+	{
+		return null;
+	}
+	
+}
+
+class B extends A
+{
+
+	
+	static C func( int a)
+	{
+		return null;
+	}
+	
+	static B foo()
+	{
+		return null;
+	}
+	
+	//B func(string a) { } 
+	
+}
+class C extends A{ 
+
+	static C foo ()
+	{return null;
+	}
+	A func (int a, int b)
+	{return null;
+	}
+	
+	static void main(string[]a)
+	{
+	}
+	
+}
+
+/* 
+	valid static overriding
+	invalid number of args in virtual A
+	
+	
+	OUTPUT: 
+	semantic error at line 36: method func invalid overriding
+
+*/

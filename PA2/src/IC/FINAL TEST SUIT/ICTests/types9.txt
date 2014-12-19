@@ -1,0 +1,50 @@
+class A
+{
+	
+	A[] test;
+	static void main(string []arg)
+	{
+	
+		
+	}
+	
+	static boolean goo (boolean b)
+	{
+		return false;
+	}
+	
+	
+	
+}
+
+class B extends A
+{
+
+	C[] c; 
+	void foo ()
+	
+	{
+		/* should find static main in A */
+		main(null);
+		/* should find static goo in A */
+		goo(true);
+		
+		/* error */
+		goo();
+		
+	}
+	
+	void goo()
+	{
+	
+	}
+	
+
+}
+class C extends A
+{
+
+}
+
+
+

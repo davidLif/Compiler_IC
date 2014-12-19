@@ -1,0 +1,30 @@
+class A 
+{
+	static boolean test() { int test; }
+	int test;
+	static string method2 (int test2)
+	{
+		
+		{
+			test2 = true;
+			boolean test1 = true;
+		}
+		
+		boolean test4;
+		
+		{
+			test4 = true;
+			test1 = true;
+
+		}
+
+	}
+}
+class B extends A
+{
+	static void main(string[]a)
+	{
+	}
+}
+
+/* output: semantic error at line 17: test1 could not be resolved to a variable */

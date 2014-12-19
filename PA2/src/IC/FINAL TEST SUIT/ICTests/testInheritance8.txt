@@ -1,0 +1,31 @@
+class A
+{
+	
+	int func (A a) { return 0;}
+	
+}
+
+class B extends A
+{
+	int func (B b) {return 1; }
+	
+	
+	
+}
+class C extends B{ 
+
+	static void main(string[]a)
+	{
+	}
+	
+
+}
+
+/* 
+	counts as overloading, which is not supported
+	
+	
+	OUTPUT: 
+	semantic error at line 10: method func invalid overriding
+
+*/

@@ -1,0 +1,2 @@
+Parsed C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\main7.txt successfully!
+semantic error at line 22: Only one method named 'main' can be defined (and it should be a static method)

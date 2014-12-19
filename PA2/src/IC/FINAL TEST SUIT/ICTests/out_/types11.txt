@@ -1,0 +1,2 @@
+Parsed D:\ICTests\types11.txt successfully!
+semantic error at line 52: incorrect argument type for argument number 0 in call of test2, arg type int is not a subtype of A

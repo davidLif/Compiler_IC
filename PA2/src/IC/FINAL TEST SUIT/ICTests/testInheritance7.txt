@@ -1,0 +1,53 @@
+class A
+{
+	A func(int a )
+	{
+	return null;
+	}
+	static A foo()
+	{
+	return null;
+	}
+	
+}
+
+class B extends A
+{
+
+	
+	static C func( int a)
+	{
+		/* new method */return null;
+	}
+	
+	static B foo()
+	{
+		/* overrides static foo in A*/return null;
+	}
+	
+	C func(int a) {  /* overrides virtual func in A */ return null;} 
+	
+}
+class C extends B{ 
+
+	
+	A func (int a) /* A is not subtype of C */
+	{
+		return null;
+	
+	}
+	
+	static void main(string[]a)
+	{
+	}
+	
+}
+
+/* 
+	method func in class C doesnt ovveride same method in B correctly
+	
+	
+	OUTPUT: 
+	semantic error at line 34: method func invalid overriding
+
+*/

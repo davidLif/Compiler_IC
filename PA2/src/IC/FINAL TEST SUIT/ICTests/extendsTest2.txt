@@ -1,0 +1,13 @@
+class A extends A
+{
+	
+}
+class B
+{
+	static void main(string[]a)
+	{
+	}
+}
+	
+
+/* output: semantic error at line 1: class A cannot extends itself */

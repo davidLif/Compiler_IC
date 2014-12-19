@@ -1,0 +1,64 @@
+Parsed C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\testInheritance12.txt successfully!
+
+Global Symbol Table: C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\testInheritance12.txt
+	Class : A
+	Class : B
+	Class : C
+Children tables: A
+
+Class Symbol Table: A
+	Virtual method: func {boolean, A[][] -> int}
+Children tables: func, B
+
+Method Symbol Table: func
+	Parameter: boolean test
+	Parameter: A[][] test2
+
+Class Symbol Table: B
+Children tables: C
+
+Class Symbol Table: C
+	Static method: main {string[] -> void}
+	Virtual method: func {boolean, A[][] -> int}
+Children tables: func, main
+
+Method Symbol Table: func
+	Parameter: boolean a
+	Parameter: A[][] test3
+
+Method Symbol Table: main
+	Parameter: string[] a
+
+Type Table: C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\testInheritance12.txt
+	1: Primitive type: int
+	2: Primitive type: boolean
+	3: Primitive type: null
+	4: Primitive type: string
+	5: Primitive type: void
+	8: Class: A
+	12: Class: B, Superclass ID: 8
+	13: Class: C, Superclass ID: 12
+	6: Array type: string[]
+	9: Array type: A[]
+	10: Array type: A[][]
+	7: Method type: {string[] -> void}
+	11: Method type: {boolean, A[][] -> int}
+
+Abstract Syntax Tree: C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\testInheritance12.txt
+
+1: Declaration of class: A, Type: A, Symbol table: Global
+    5: Declaration of virtual method: func, Type: {boolean, A[][] -> int}, Symbol table: A
+        5: Parameter: test, Type: boolean, Symbol table: func
+        5: Parameter: test2, Type: A[][], Symbol table: func
+        5: Return statement, with return value, Symbol table: func
+            5: Integer literal: 1, Type: int, Symbol table: func
+9: Declaration of class: B, subclass of A, Type: B, Symbol table: A
+16: Declaration of class: C, subclass of B, Type: C, Symbol table: B
+    19: Declaration of virtual method: func, Type: {boolean, A[][] -> int}, Symbol table: C
+        19: Parameter: a, Type: boolean, Symbol table: func
+        19: Parameter: test3, Type: A[][], Symbol table: func
+        19: Return statement, with return value, Symbol table: func
+            19: Mathematical unary operation: unary subtraction, Type: int, Symbol table: func
+                19: Integer literal: 1, Type: int, Symbol table: func
+    21: Declaration of static method: main, Type: {string[] -> void}, Symbol table: C
+        21: Parameter: a, Type: string[], Symbol table: main

@@ -1,0 +1,2 @@
+Parsed C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\structural3.txt successfully!
+semantic error at line 27: this keyword can only be used inside a virtual method

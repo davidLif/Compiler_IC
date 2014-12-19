@@ -1,0 +1,72 @@
+class A 
+{
+
+	/* first method should be valid */
+	void func()
+	{
+		int k = 5;
+		
+		if(true)
+		{
+			k = 6;
+		}
+		else
+		{
+			while(false)
+			{
+				k = 10;
+			}
+			return;
+		}
+	}
+	
+	
+	A foo()
+	{
+		while(true)
+		{
+			int k = 2;
+		}
+		
+		{
+		
+			if(true)
+			{
+				{
+					boolean g = true;
+					return new A();
+				}
+			}
+			else
+			{
+				while(true){} // does not return on all paths
+				
+				if(true)
+				{
+					{
+						return null;
+					}
+				
+				}
+				else
+					return null;
+			}
+		}
+		if(true)
+			return null;
+	
+	}
+	
+	static A foo()
+	{
+		return new A();
+	}
+	
+	static void main(string[]a)
+	{
+	}
+	
+	
+}
+
+/* valid */

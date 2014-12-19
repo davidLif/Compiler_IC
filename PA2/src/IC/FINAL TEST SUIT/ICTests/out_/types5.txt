@@ -1,0 +1,2 @@
+Parsed C:\Users\davidl\Documents\corses matirial\Compilers\EX3\input\types5.txt successfully!
+semantic error at line 30: init value type (B[][]) is not a subtype of declaration type (A[][])

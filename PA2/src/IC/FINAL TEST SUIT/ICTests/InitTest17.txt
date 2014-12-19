@@ -1,0 +1,27 @@
+class A 
+{
+
+	int k;
+	void func(int a, boolean b, boolean d)
+	{
+		int k ;
+		if(true)
+		{
+			k = 2;
+		}
+		else
+		{
+			k = 4;
+		}
+		
+		int g = k;
+		
+	}
+	
+	static void main(string[]a)
+	{
+	}
+	
+}
+
+/* valid */

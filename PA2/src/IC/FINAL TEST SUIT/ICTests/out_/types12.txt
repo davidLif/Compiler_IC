@@ -1,0 +1,2 @@
+Parsed D:\ICTests\types12.txt successfully!
+semantic error at line 59: init value type (void) is not a subtype of declaration type (boolean)

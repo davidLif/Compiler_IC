@@ -1,0 +1,28 @@
+class A
+{
+	
+	int func (A a) { return 1;}
+	
+}
+
+class B extends A
+{
+	
+	static void main(string[]a)
+	{
+	}
+	
+	
+	
+}
+class C extends B{ 
+
+	int func; 
+	
+
+}
+
+/* 
+	shadowing is not allowed
+
+*/

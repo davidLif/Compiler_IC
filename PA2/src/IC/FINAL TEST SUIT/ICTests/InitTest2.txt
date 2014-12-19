@@ -1,0 +1,27 @@
+class A 
+{
+	void func(int a, boolean b)
+	{
+		a = 5;
+		boolean c = false;
+		{
+		   boolean c;
+		   
+		   {
+				boolean d = foo(c);
+		   }
+		
+		}
+		
+		
+	}
+	boolean foo(boolean k)
+	{
+		return true;
+	}
+	static void main(string[]a)
+	{
+	}
+}
+
+/* output: semantic error at line 11: local variable c used before was initialized */

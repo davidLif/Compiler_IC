@@ -1,0 +1,35 @@
+class A
+{
+	A func(int a )
+	{
+		return new A();
+	}
+	
+}
+
+class B extends A
+{
+
+	
+	static C func( int a)
+	{
+		return new C();
+	}
+	
+	B func(string a) { return null;}  /* invalid argument */
+	
+	
+	static void main(string[]a)
+	{
+	}
+	
+	
+}
+class C { }
+
+/* 
+	different argument type
+	OUTPUT: 
+	semantic error at line 19: method func invalid overriding
+
+*/
