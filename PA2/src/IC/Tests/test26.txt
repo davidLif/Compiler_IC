@@ -1,9 +1,0 @@
-class Shachar
-{
-	static int mains( string[] args)
-	{
-		boolean b = true;
-		return 1;
-		
-	}
-}
