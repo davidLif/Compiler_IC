@@ -178,7 +178,7 @@ public class Compiler {
 					globalSymbolTable.printTable();
 				
 					/* print the type tables */
-					System.out.println(typeTable);
+					System.out.print(typeTable + "\n");
 				}
 				
 				if(printAST)

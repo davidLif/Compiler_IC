@@ -207,23 +207,23 @@ public class ClassSymbolTable extends SymbolTable{
 	public void printTable() {
 		
 		/* print title */
-		System.out.println(String.format("Class Symbol Table: %s", this.id));
+		System.out.print(String.format("Class Symbol Table: %s\n", this.id));
 		
 		/* print body */
 		
 		for(FieldSymbol field : this.fieldSymbolsList.values())
 		{
-			System.out.println("\t" + field.toString());
+			System.out.print("\t" + field.toString() + "\n");
 		}
 		
 		for(StaticMethodSymbol staticMethod : this.staticSymbolList.values())
 		{
-			System.out.println("\t" + staticMethod.toString());
+			System.out.print("\t" + staticMethod.toString() + "\n");
 		}
 		
 		for(VirtualMethodSymbol virtualMethod : this.virtualSymbolList.values())
 		{
-			System.out.println("\t" + virtualMethod.toString());
+			System.out.print("\t" + virtualMethod.toString() + "\n");
 		}
 		
 		this.printChildernTables();

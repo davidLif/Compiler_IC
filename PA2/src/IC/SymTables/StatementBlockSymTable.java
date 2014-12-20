@@ -35,11 +35,11 @@ public class StatementBlockSymTable extends VariableSymbolTable{
 
 	@Override
 	public void printTable() {
-		System.out.println(String.format("Statement Block Symbol Table ( located in %s )", this.parentSymbolTable.getId()));
+		System.out.print(String.format("Statement Block Symbol Table ( located in %s )\n", this.parentSymbolTable.getId()));
 		
 		for(Symbol sym : this.localVarsList.values())
 		{
-			System.out.println("\t" + sym.toString());
+			System.out.print("\t" + sym.toString() + "\n");
 		}
 		
 		this.printChildernTables();

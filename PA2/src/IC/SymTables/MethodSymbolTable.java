@@ -120,16 +120,16 @@ public class MethodSymbolTable extends VariableSymbolTable{
 	@Override
 	public void printTable() {
 
-		System.out.println(String.format("Method Symbol Table: %s", this.id));
+		System.out.print(String.format("Method Symbol Table: %s\n", this.id));
 		
 		for(Symbol sym : this.paramsList.values())
 		{
-			System.out.println("\t" + sym.toString());
+			System.out.print("\t" + sym.toString() + "\n");
 		}
 		
 		for(Symbol sym : this.localVarsList.values())
 		{
-			System.out.println("\t" + sym.toString());
+			System.out.print("\t" + sym.toString() + "\n");
 		}
 		
 		this.printChildernTables();

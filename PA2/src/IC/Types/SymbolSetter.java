@@ -54,11 +54,10 @@ import IC.SymTables.Symbols.Symbol;
 /**
  * 
  * 
- * 
  * This class visits the AST tree and locates new types, adds them to the type table and sets the types of the symbols in the symbol table
  * The following semantic checks will be carried out :
  * 
- * - Usage of an invalid type, for example a UserType of a class that was not define
+ * - Usage of an invalid type, for example a UserType of a class that was not defined
  *
  */
 

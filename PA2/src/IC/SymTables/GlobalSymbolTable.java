@@ -77,13 +77,13 @@ public class GlobalSymbolTable extends SymbolTable{
 	@Override
 	public void printTable() {
 		
-		System.out.println(String.format("\nGlobal Symbol Table: %s", this.id));
+		System.out.print(String.format("\nGlobal Symbol Table: %s\n", this.id));
 		
 		/* print body */
 		
 		for(ClassSymbol classSym : this.classList.values())
 		{
-			System.out.println("\t" + classSym.toString());
+			System.out.print("\t" + classSym.toString() + "\n");
 		}
 		
 		this.printChildernTables();

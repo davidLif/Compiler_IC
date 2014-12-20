@@ -25,7 +25,7 @@ public class ClassSymbol extends Symbol {
 	@Override
 	public String toString()
 	{
-		return String.format("Class : %s", this.id);
+		return String.format("Class: %s", this.id);
 	}
 	
 }
