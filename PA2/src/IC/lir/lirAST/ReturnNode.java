@@ -2,10 +2,14 @@ package IC.lir.lirAST;
 
 public class ReturnNode extends LirNode{
 
-	private Parameter returnParam;
+	/**
+	 * could be any parameters (Reg, Label, Memory, Immediate)
+	 */
+	
+	private LirNode returnParam;
 	
 	
-	public ReturnNode(Parameter returnParam)
+	public ReturnNode(LirNode returnParam)
 	{
 		this.returnParam = returnParam;
 	}

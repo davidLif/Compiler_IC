@@ -59,6 +59,7 @@ public class ClassLayout {
 		
 		// add all method to offsets mapping (super class prefix)
 		this.methodToOffset.putAll(parentClass.methodToOffset);
+		this.methodOffsetToClassName.putAll(parentClass.methodOffsetToClassName);
 		this.currentMaxMethodOffset = parentClass.currentMaxFieldOffset;
 		
 		// add all field to offsets mapping (super class prefix)
@@ -155,7 +156,7 @@ public class ClassLayout {
 	 * @return the dispatch table
 	 */
 	
-	public List<DispatchTableEntry> getDispatchTable()
+	public List<DispatchTableEntry> getDispatchTableEntries()
 	{
 		
 		// get the name of all classes that exist in this class (some methods may be inherited)

@@ -17,6 +17,8 @@ import IC.SymTables.*;
 import IC.Types.SymbolSetter;
 import IC.Types.TypeEvaluator;
 import IC.Types.TypeTable;
+import IC.lir.LirTranslator;
+import IC.lir.lirAST.LirProgram;
 
 /**
  * @team pooyae <pooyae@mail.tau.ac.il>
@@ -199,6 +201,13 @@ public class Compiler {
 					}
 				}
 				
+				
+				
+				// moving to lir
+				LirTranslator translator = new LirTranslator(prog);
+				LirProgram result = translator.translate();
+				
+				System.out.print(result.emit());
 				
 				
 			} 

@@ -1,11 +1,21 @@
 package IC.lir.lirAST;
 
-import IC.lir.Label;
+/**
+ * 
+ *
+ *
+ *	represents an unconditional jump node
+ *
+ */
+
 
 public class JumpNode extends LirNode{
 
-	
+	/**
+	 * jump label
+	 */
 	private Label jumpLabel;
+	
 	
 	public JumpNode(Label jumpLabel)
 	{

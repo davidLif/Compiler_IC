@@ -1,6 +1,5 @@
 package IC.lir.lirAST;
 
-import IC.lir.Label;
 
 public class JumpL extends JumpNode{
 

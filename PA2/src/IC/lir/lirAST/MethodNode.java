@@ -2,7 +2,6 @@ package IC.lir.lirAST;
 
 import java.util.List;
 
-import IC.lir.Label;
 import IC.lir.LabelGenerator;
 
 

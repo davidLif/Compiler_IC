@@ -8,6 +8,7 @@ import java.util.Map;
 import IC.AST.ICClass;
 import IC.AST.Program;
 import IC.lir.lirAST.DispatchTableNode;
+import IC.lir.lirAST.Label;
 
 public class ClassLayoutManager {
 
@@ -96,17 +97,35 @@ public class ClassLayoutManager {
 		ClassLayout layout = classToClassLayout.get(className);
 		
 		List<Label> methodLabels = new ArrayList<Label>();
-		List<DispatchTableEntry> entries = layout.getDispatchTable();
+		List<DispatchTableEntry> entries = layout.getDispatchTableEntries();
 		
 		/* transform the entries to actual method labels */
 		
 		for(DispatchTableEntry entry : entries)
 		{
-			methodLabels.add(labelGen.getMethodLabel(entry.getMethodName(), entry.getClassName()));
+			methodLabels.add(labelGen.getVirtualMethodLabel(entry.getMethodName(), entry.getClassName()));
 		}
 		Label classLabel = labelGen.getClassDVLabel(className);
 		
 		return new DispatchTableNode(classLabel, methodLabels);
+	}
+	
+	/**
+	 * this method returns a collection of all dispatch tables
+	 * @param labelGen - label generator
+	 * @return
+	 */
+	
+	public List<DispatchTableNode> getAllDispatchTables(LabelGenerator labelGen)
+	{
+		
+		List<DispatchTableNode> result = new ArrayList<DispatchTableNode>();
+		
+		for(String className : this.classToClassLayout.keySet())
+		{
+			result.add(this.getClassDispatchTable(className, labelGen));
+		}
+		return result;
 	}
 	
 	

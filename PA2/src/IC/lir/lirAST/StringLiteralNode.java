@@ -1,13 +1,21 @@
 package IC.lir.lirAST;
 
-import IC.lir.Label;
 import IC.lir.LabelGenerator;
 
 
 public class StringLiteralNode extends LirNode{
 
 	
-	private String stringLiteral; 
+	/**
+	 * the actual string  literal
+	 */
+	private String stringLiteral;
+	
+	
+	/**
+	 * the label generated for the string
+	 */
+	
 	private Label stringLabel;
 	
 	public StringLiteralNode(String stringLiteral, LabelGenerator labelGen)
