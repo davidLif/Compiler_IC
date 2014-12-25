@@ -16,8 +16,7 @@ public class ReturnNode extends LirNode{
 	
 	@Override
 	public String emit() {
-		// TODO Auto-generated method stub
-		return null;
+		return "Return "+returnParam.emit()+"\n";
 	}
 
 }

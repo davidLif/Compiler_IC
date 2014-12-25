@@ -1,13 +1,17 @@
 package IC.lir.lirAST;
 
-import IC.lir.Label;
 
-public class LabelNode extends Parameter{
+public class LabelNode extends LirNode{
 
 	private Label label;
 	
 	public LabelNode(Label label)
 	{
 		this.label = label;
+	}
+
+	@Override
+	public String emit() {
+		return label.emit()+":"+"\n";
 	}
 }

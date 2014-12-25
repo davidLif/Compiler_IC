@@ -14,7 +14,7 @@ public class JumpNode extends LirNode{
 	/**
 	 * jump label
 	 */
-	private Label jumpLabel;
+	protected Label jumpLabel;
 	
 	
 	public JumpNode(Label jumpLabel)
@@ -24,8 +24,7 @@ public class JumpNode extends LirNode{
 	
 	@Override
 	public String emit() {
-		// TODO Auto-generated method stub
-		return null;
+		return "Jump "+jumpLabel.emit()+"\n";
 	}
 
 }

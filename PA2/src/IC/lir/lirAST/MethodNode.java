@@ -33,7 +33,7 @@ public class MethodNode extends LirNode{
 		StringBuilder sb = new StringBuilder(this.methodLabel + ":\n");
 		for(LirNode instruct : this.instructions)
 		{
-			sb.append(instruct.emit() + "\n");
+			sb.append(instruct.emit());
 		}
 		return sb.toString();
 	}

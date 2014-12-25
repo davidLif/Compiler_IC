@@ -25,8 +25,13 @@ public class Memory extends LirNode{
 	
 	@Override
 	public String emit() {
-		// TODO Auto-generated method stub
-		return null;
+		if(kind == MemoryKind.PARAM){
+			//TODO- I think just name
+			return null;
+		}
+		else{
+			return name;
+		}
 	}
 
 	
