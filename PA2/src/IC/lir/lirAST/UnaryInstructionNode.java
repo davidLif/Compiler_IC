@@ -1,6 +1,6 @@
 package IC.lir.lirAST;
 
-public class UnaryInstructionNode {
+public class UnaryInstructionNode extends LirNode{
 
 	/**
 	 * the single operand
@@ -19,6 +19,12 @@ public class UnaryInstructionNode {
 	{
 		this.operand  = operand;
 		this.op = operation;
+	}
+
+
+	@Override
+	public String emit() {
+		return op.getRepresentation()+" "+operand.emit()+"\n";
 	}
 	
 	

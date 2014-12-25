@@ -43,6 +43,8 @@ import IC.SemanticChecks.SemanticError;
 import IC.SymTables.VariableSymbolTable;
 import IC.SymTables.Symbols.Symbol;
 import IC.Types.Type;
+import IC.lir.lirAST.ArrayLengthNode;
+import IC.lir.lirAST.BinaryInstructionNode;
 import IC.lir.lirAST.CompareNode;
 import IC.lir.lirAST.DispatchTableNode;
 import IC.lir.lirAST.Immediate;
@@ -59,6 +61,9 @@ import IC.lir.lirAST.MoveNode;
 import IC.lir.lirAST.Reg;
 import IC.lir.lirAST.ReturnNode;
 import IC.lir.lirAST.StringLiteralNode;
+import IC.lir.lirAST.UnaryInstructionNode;
+import IC.lir.lirAST.lirBinaryOp;
+import IC.lir.lirAST.lirUnaryOp;
 
 public class LirTranslator implements IC.AST.Visitor {
 
@@ -350,10 +355,25 @@ public class LirTranslator implements IC.AST.Visitor {
 		return instructions;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public Object visit(CallStatement callStatement)  {
-		// TODO Auto-generated method stub
-		return null;
+	public Object visit(CallStatement callStatement) throws SemanticError  {
+		List<LirNode> instructions = new ArrayList<LirNode>();
+		//push all arguments into registers
+		for (Expression arg:callStatement.getCall().getArguments()){
+			//calc arg i and save arg i in currentRegister+i
+			instructions.addAll((List<LirNode>)arg.accept(this));
+			currentRegister++;
+		}
+		
+		//make call and save to register currentRegister + num_of_parameters
+		instructions.addAll((List<LirNode>)callStatement.accept(this));
+		
+		//after call, arguments are no longer needed. free all the registers which we used to save them
+		for (int i=0; i<callStatement.getCall().getArguments().size();i++){
+			currentRegister--;
+		}
+		return instructions;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -549,7 +569,7 @@ public class LirTranslator implements IC.AST.Visitor {
 		//calc Array into currentRegister
 		instructions.addAll((List<LirNode>)length.getArray().accept(this));
 		//use special command
-		//instructions.addAll();
+		instructions.add(new ArrayLengthNode(new Reg(currentRegister),new Reg(currentRegister)));
 		return instructions;
 	}
 
@@ -565,16 +585,26 @@ public class LirTranslator implements IC.AST.Visitor {
 		return null;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public Object visit(MathUnaryOp unaryOp)  {
-		// TODO Auto-generated method stub
-		return null;
+	public Object visit(MathUnaryOp unaryOp) throws SemanticError  {
+		List<LirNode> instructions = new ArrayList<LirNode>();
+		//evaluate inner expression to currentRegister
+		instructions.addAll((List<LirNode>)unaryOp.getOperand().accept(this));
+		//only one unary math op - minus. calc it
+		instructions.add(new UnaryInstructionNode(new Reg(currentRegister),lirUnaryOp.NEG));
+		return instructions;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public Object visit(LogicalUnaryOp unaryOp)  {
-		// TODO Auto-generated method stub
-		return null;
+	public Object visit(LogicalUnaryOp unaryOp) throws SemanticError  {
+		List<LirNode> instructions = new ArrayList<LirNode>();
+		//evaluate inner expression to currentRegister
+		instructions.addAll((List<LirNode>)unaryOp.getOperand().accept(this));
+		//only one unary math op - not. calc it
+		instructions.add(new UnaryInstructionNode(new Reg(currentRegister),lirUnaryOp.NOT));
+		return instructions;
 	}
 
 	@Override

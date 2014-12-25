@@ -1,6 +1,6 @@
 package IC.lir.lirAST;
 
-public class BinaryInstructionNode {
+public class BinaryInstructionNode extends LirNode{
 
 	
 	/** 
@@ -28,6 +28,12 @@ public class BinaryInstructionNode {
 		this.binOp = binOp;
 		this.op1 = op1;
 		this.targetRegister = targetRegister;
+	}
+
+
+	@Override
+	public String emit() {
+		return binOp.getRepresentation()+" "+op1.emit()+","+targetRegister.emit()+"\n" ;
 	}
 	
 }
