@@ -16,8 +16,7 @@ public class StoreField extends MoveFieldNode{
 
 	@Override
 	public String emit() {
-		// TODO Auto-generated method stub
-		return null;
+		return "MoveField "+source.emit()+","+instanceRegister.emit()+"."+offset.emit()+"\n";
 	}
 
 }

@@ -5,14 +5,14 @@ public abstract class MoveFieldNode extends LirNode{
 	/**
 	 * the register that holds the class object reference
 	 */
-	private Reg instanceRegister; 
+	protected Reg instanceRegister; 
 	
 	
 	/**
 	 * the offset inside the class object that represents the field
 	 */
 	
-	private LirNode offset;
+	protected LirNode offset;
 	
 	
 	public MoveFieldNode(Reg instanceRegister, LirNode offset)

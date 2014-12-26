@@ -18,8 +18,7 @@ public class LoadField extends MoveFieldNode{
 
 	@Override
 	public String emit() {
-		// TODO Auto-generated method stub
-		return null;
+		return "MoveField "+instanceRegister.emit()+"."+offset.emit()+","+targetRegister.emit()+"\n";
 	}
 
 	

@@ -54,12 +54,15 @@ import IC.lir.lirAST.Label;
 import IC.lir.lirAST.LabelNode;
 import IC.lir.lirAST.LirNode;
 import IC.lir.lirAST.LirProgram;
+import IC.lir.lirAST.LoadField;
 import IC.lir.lirAST.Memory;
 import IC.lir.lirAST.Memory.MemoryKind;
 import IC.lir.lirAST.MethodNode;
+import IC.lir.lirAST.MoveFieldNode;
 import IC.lir.lirAST.MoveNode;
 import IC.lir.lirAST.Reg;
 import IC.lir.lirAST.ReturnNode;
+import IC.lir.lirAST.StoreField;
 import IC.lir.lirAST.StringLiteralNode;
 import IC.lir.lirAST.UnaryInstructionNode;
 import IC.lir.lirAST.lirBinaryOp;
@@ -327,17 +330,15 @@ public class LirTranslator implements IC.AST.Visitor {
 			return local_var_assgiment(var,assignment.getAssignment());
 		}
 		
-		instructions.addAll((List<LirNode>)assignment.getVariable().accept(this));
+		instructions.addAll((List<LirNode>)assignment.getAssignment().accept(this));
 		currentRegister++;//return register is currentRegister
 		
-		//return register is currentRegister+1 (or currentRegister if condition true
-		instructions.addAll((List<LirNode>)assignment.getAssignment().accept(this));
+		//if this is a field,use save field
+		if (assignment.getVariable() instanceof VariableLocation){
+			instructions.addAll((List<LirNode>)save_to_field((VariableLocation) assignment.getVariable(),currentRegister-1));
+		}
 		
-		//MOVE currentRegister+1,currentRegister
-		instructions.add(new MoveNode(new Reg(currentRegister),new Reg(currentRegister-1)));
 		currentRegister--;//return register is currentRegister
-			
-		//TODO: move currentRegister into the variable - do this by creating "saving backwards" method, that will do this with assignment.getVariable() 
 		
 		return instructions;
 	}
@@ -347,8 +348,11 @@ public class LirTranslator implements IC.AST.Visitor {
 	private List<LirNode> local_var_assgiment(Memory var,Expression assignment) throws SemanticError{
 		List<LirNode> instructions = new ArrayList<LirNode>();
 		
-		//return register is currentRegister+1 (or currentRegister if condition true
-		instructions.addAll((List<LirNode>)assignment.accept(this));
+		//return register is currentRegister if condition true
+		if (!debug || (List<LirNode>)assignment.accept(this)!= null){
+			instructions.addAll((List<LirNode>)assignment.accept(this));
+		}
+		
 		//Move R0,x (or y or any such)
 		instructions.add(new MoveNode(new Reg(currentRegister),var));
 		
@@ -512,17 +516,43 @@ public class LirTranslator implements IC.AST.Visitor {
 		return null;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public Object visit(VariableLocation location)  {
+	public Object visit(VariableLocation location) throws SemanticError  {
 		List<LirNode> instructions = new ArrayList<LirNode>();
 		if(location.isExternal()){
-			//TODO
+			//in here we will only LOAD the object (the external). in order to save it we will use save_to_field
+			
+			//load external of external to currentRegister
+			instructions.addAll((List<LirNode>)location.getLocation().accept(this));
+			
+			//calc offset of field
+			int field_offset = classManager.getFieldOffset(currentClassName, location.getName());
+			
+			//load external to currentRegister. we no longer need external of external
+			instructions.add(new LoadField(new Reg(currentRegister),new Immediate(field_offset),new Reg(currentRegister)));
+			
 		}
 		else{
 			Symbol var_symbol = location.getDefiningSymbol();
 			Memory var= new Memory(varNameGen.getVariableName(var_symbol),MemoryKind.LOCAL);
 			instructions.add(new MoveNode(var,new Reg(currentRegister)));
 		}
+		return instructions;
+	}
+	
+	//this method should be used each time we want to clac a field and save something in it
+	@SuppressWarnings("unchecked")
+	private List<LirNode> save_to_field(VariableLocation location,int to_store_value_reg) throws SemanticError{
+		List<LirNode> instructions = new ArrayList<LirNode>();
+		
+		//clac external of location to currentRegister
+		instructions.addAll((List<LirNode>)location.getLocation().accept(this));
+		//calc offset
+		int field_offset = classManager.getFieldOffset(currentClassName, location.getName());
+		//make save instruction
+		instructions.add(new StoreField(new Reg(currentRegister),new Immediate(field_offset),new Reg(to_store_value_reg)));
+		
 		return instructions;
 	}
 

@@ -83,7 +83,8 @@ public class ClassLayoutManager {
 	
 	public Integer getFieldOffset(String className, String fieldName)
 	{
-		return this.classToClassLayout.get(className).getFieldOffset(fieldName);
+		//since DV pointer is in offset 0, all field move +1
+		return this.classToClassLayout.get(className).getFieldOffset(fieldName)+1;
 	}
 	
 	/**
