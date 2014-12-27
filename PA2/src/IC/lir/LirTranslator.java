@@ -7,6 +7,7 @@ import IC.LiteralTypes;
 import IC.AST.ArrayLocation;
 import IC.AST.Assignment;
 import IC.AST.Break;
+import IC.AST.Call;
 import IC.AST.CallStatement;
 import IC.AST.Continue;
 import IC.AST.Expression;
@@ -52,6 +53,7 @@ import IC.lir.lirAST.JumpFalse;
 import IC.lir.lirAST.JumpNode;
 import IC.lir.lirAST.Label;
 import IC.lir.lirAST.LabelNode;
+import IC.lir.lirAST.LibraryCallNode;
 import IC.lir.lirAST.LirNode;
 import IC.lir.lirAST.LirProgram;
 import IC.lir.lirAST.LoadField;
@@ -62,6 +64,7 @@ import IC.lir.lirAST.MoveFieldNode;
 import IC.lir.lirAST.MoveNode;
 import IC.lir.lirAST.Reg;
 import IC.lir.lirAST.ReturnNode;
+import IC.lir.lirAST.StaticCallNode;
 import IC.lir.lirAST.StoreField;
 import IC.lir.lirAST.StringLiteralNode;
 import IC.lir.lirAST.UnaryInstructionNode;
@@ -362,22 +365,8 @@ public class LirTranslator implements IC.AST.Visitor {
 	@SuppressWarnings("unchecked")
 	@Override
 	public Object visit(CallStatement callStatement) throws SemanticError  {
-		List<LirNode> instructions = new ArrayList<LirNode>();
-		//push all arguments into registers
-		for (Expression arg:callStatement.getCall().getArguments()){
-			//calc arg i and save arg i in currentRegister+i
-			instructions.addAll((List<LirNode>)arg.accept(this));
-			currentRegister++;
-		}
-		
-		//make call and save to register currentRegister + num_of_parameters
-		instructions.addAll((List<LirNode>)callStatement.accept(this));
-		
-		//after call, arguments are no longer needed. free all the registers which we used to save them
-		for (int i=0; i<callStatement.getCall().getArguments().size();i++){
-			currentRegister--;
-		}
-		return instructions;
+		//TODO
+		return null;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -562,11 +551,65 @@ public class LirTranslator implements IC.AST.Visitor {
 		return null;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public Object visit(StaticCall call)  {
-		// TODO Auto-generated method stub
-		return null;
+	public Object visit(StaticCall call) throws SemanticError  {
+		List<LirNode> instructions = new ArrayList<LirNode>();
+		//this function push all arguments into registers
+		push_args_to_regs(call, instructions);
+		
+		//if this is a call to Library function
+		if(call.getClassName().equals("Library")){
+			//get call label
+			Label lib_call_label = labelGenerator.getLibraryMethodLabel(call.getName());
+			//make Library call and 
+			//TODO- CHECK THIS IS POSSIBLE-save in currentRegister- |parameters number| since we won't need the parameters after we will get the result
+			instructions.addAll((List<LirNode>)new LibraryCallNode(lib_call_label,param_regs_maker(call),new Reg(currentRegister)));
+		}
+		else{
+			//get call label
+			Label static_call_label = labelGenerator.getStaticMethodLabel(call.getName(), call.getClassName());
+			
+			//make Library call and 
+			//TODO- CHECK THIS IS POSSIBLE-save in currentRegister- |parameters number| since we won't need the parameters after we will get the result
+			//instructions.addAll((List<LirNode>)new StaticCallNode(static_call_label,param_regs_maker(call),new Reg(currentRegister)));
+		}
+		
+		free_parametrs_regs(call);
+		
+		return instructions;
 	}
+
+	//this function push all arguments into registers
+	private void push_args_to_regs(StaticCall call, List<LirNode> instructions)
+			throws SemanticError {
+		
+		for (Expression arg:call.getArguments()){
+			//calc arg i and save arg i in currentRegister+i
+			instructions.addAll((List<LirNode>)arg.accept(this));
+			currentRegister++;
+		}
+	}
+
+
+	private void free_parametrs_regs(StaticCall call) {
+		//after call, arguments are no longer needed. free all the registers which we used to save them
+		for (int i=0; i < call.getArguments().size()-1;i++){//-1 since the answer will be in (former currentRegister)- |parameters number|
+			currentRegister--;
+		}
+	}
+
+	//this function generates the register list where all the parameters lay
+	@SuppressWarnings("unchecked")
+	private List<LirNode> param_regs_maker(Call call) throws SemanticError {
+		List<LirNode> regs = new ArrayList<LirNode>();
+		
+		for (int i=0; i < call.getArguments().size();i++){
+			regs.add(new Reg(currentRegister-(call.getArguments().size()-i)));
+		}
+		return regs;
+	}
+
 
 	@Override
 	public Object visit(VirtualCall call) {
