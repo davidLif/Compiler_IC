@@ -247,20 +247,29 @@ public class LirTranslator implements IC.AST.Visitor {
 		else
 			methodLabel = this.labelGenerator.getVirtualMethodLabel(method.getName(), this.currentClassName);
 		
+		
+		// need to save the formal names
+		
+		for(Formal formal : method.getFormals())
+		{
+			Symbol formalSym = ((VariableSymbolTable)formal.enclosingScope()).getVariableLocally(formal.getName());
+			
+			this.varNameGen.getVariableName(formalSym); /* ignore the result */
+		}
+		
+		
 		// create lir instructions from statements
 		List<LirNode> instructions = new ArrayList<LirNode>();
 		
 		
 		
-		// debug
-		/*if(debug)
-			return new MethodNode(methodLabel, instructions);*/
-		//
-		
 		for(Statement stmt : method.getStatements())
 		{
 			// generate instructions from statement
-
+			// nullify the register counter
+			
+			this.currentRegister = 0;
+			
 			@SuppressWarnings("unchecked")
 			List<LirNode> statementInstructions = (List<LirNode>)stmt.accept(this);
 			
@@ -305,7 +314,10 @@ public class LirTranslator implements IC.AST.Visitor {
 
 	@Override
 	public Object visit(Formal formal)  {
-		// no lir instructions generated for formals, wont be visited
+		
+
+		
+		
 		return null;
 	}
 
