@@ -4,21 +4,17 @@ public abstract class MoveArrayNode extends LirNode{
 
 	
 	/**
-	 * the register that holds the array address
+	 * register that holds the array [ immediate or register of index ]
 	 */
 	
-	protected Reg arrayReg;   
+	protected RegWithIndex regIndex;   
 	
-	/**
-	 * the register/immediate that holds the array index
-	 */
-	protected LirNode index;  
+	 
 	 
 			
-	MoveArrayNode(Reg arrayReg, LirNode index)
+	public MoveArrayNode(RegWithIndex regIndex)
 	{
-		this.arrayReg = arrayReg;
-		this.index = index;
+		this.regIndex = regIndex;
 		
 	}
 	

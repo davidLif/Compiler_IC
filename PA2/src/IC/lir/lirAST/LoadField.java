@@ -8,8 +8,8 @@ public class LoadField extends MoveFieldNode{
 	private Reg targetRegister;
 	
 	
-	public LoadField(Reg instanceRegister, LirNode offset, Reg targetRegister) {
-		super(instanceRegister, offset);
+	public LoadField(RegWithOffset regWithOffset, Reg targetRegister) {
+		super(regWithOffset);
 		
 		this.targetRegister = targetRegister;
 		
@@ -18,7 +18,7 @@ public class LoadField extends MoveFieldNode{
 
 	@Override
 	public String emit() {
-		return "MoveField "+instanceRegister.emit()+"."+offset.emit()+","+targetRegister.emit()+"\n";
+		return "MoveField "+regWithOffset.emit()+","+targetRegister.emit()+"\n";
 	}
 
 	

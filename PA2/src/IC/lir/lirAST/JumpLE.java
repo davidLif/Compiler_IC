@@ -6,10 +6,6 @@ public class JumpLE extends JumpNode{
 		super(jumpLabel);
 		// TODO Auto-generated constructor stub
 	}
-	
-	@Override
-	public String emit() {
-		return "JumpLE "+jumpLabel.emit()+"\n";
-	}
+
 	
 }

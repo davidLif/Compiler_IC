@@ -7,8 +7,8 @@ public class LoadArrayNode extends MoveArrayNode {
 	 */
 	private Reg targetRegister; 
 	
-	LoadArrayNode(Reg arrayReg, LirNode index, Reg targetReg) {
-		super(arrayReg, index);
+	public LoadArrayNode(RegWithIndex regIndex, Reg targetReg) {
+		super(regIndex);
 		
 		this.targetRegister = targetReg;
 		
@@ -17,8 +17,8 @@ public class LoadArrayNode extends MoveArrayNode {
 
 	@Override
 	public String emit() {
-		// TODO Auto-generated method stub
-		return null;
+		
+		return "MoveArray " + this.regIndex.emit() + "," + this.targetRegister.emit() + "\n";
 	}
 
 }

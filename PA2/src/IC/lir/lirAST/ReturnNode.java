@@ -16,6 +16,13 @@ public class ReturnNode extends LirNode{
 	
 	@Override
 	public String emit() {
+		
+		if(returnParam == null)
+		{
+			// empty return
+			return "Return 9999\n";
+		}
+		
 		return "Return "+returnParam.emit()+"\n";
 	}
 

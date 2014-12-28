@@ -9,8 +9,8 @@ public class StoreArrayNode extends MoveArrayNode{
 	
 	private LirNode source;
 	
-	public StoreArrayNode(Reg arrayReg, LirNode index, LirNode source) {
-		super(arrayReg, index);
+	public StoreArrayNode(RegWithIndex regIndex, LirNode source) {
+		super(regIndex);
 		this.source = source;
 		
 	}
@@ -19,7 +19,7 @@ public class StoreArrayNode extends MoveArrayNode{
 	public String emit() {
 		
 		
-		return String.format("MoveArray %s,%s[%s]", source.emit(), this.arrayReg.emit(), this.index.emit());
+		return String.format("MoveArray %s,%s\n", source.emit(), this.regIndex.emit());
 	}
 
 	

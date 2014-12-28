@@ -8,15 +8,15 @@ public class StoreField extends MoveFieldNode{
 	private LirNode source;
 	
 	
-	public StoreField(Reg instanceRegister, LirNode offset, LirNode source) {
-		super(instanceRegister, offset);
+	public StoreField(RegWithOffset regWithOffset, LirNode source) {
+		super(regWithOffset);
 		this.source = source;
 	}
 
 
 	@Override
 	public String emit() {
-		return "MoveField "+source.emit()+","+instanceRegister.emit()+"."+offset.emit()+"\n";
+		return "MoveField "+source.emit()+","+regWithOffset.emit()+"\n";
 	}
 
 }

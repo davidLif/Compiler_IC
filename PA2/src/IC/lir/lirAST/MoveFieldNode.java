@@ -2,24 +2,18 @@ package IC.lir.lirAST;
 
 public abstract class MoveFieldNode extends LirNode{
 
-	/**
-	 * the register that holds the class object reference
-	 */
-	protected Reg instanceRegister; 
-	
 	
 	/**
-	 * the offset inside the class object that represents the field
+	 * represents the pair Register.Offset
+	 * when the register holds the class object
 	 */
+	protected RegWithOffset regWithOffset;
 	
-	protected LirNode offset;
 	
-	
-	public MoveFieldNode(Reg instanceRegister, LirNode offset)
+	public MoveFieldNode(RegWithOffset regWithOffset)
 	{
 		
-		this.instanceRegister = instanceRegister;
-		this.offset = offset;
+		this.regWithOffset = regWithOffset;
 		
 	}
 }
