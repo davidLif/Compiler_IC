@@ -567,18 +567,46 @@ public class LirTranslator implements IC.AST.Visitor {
 		return instructions;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Object visit(LocalVariable localVariable) throws SemanticError  {
+		
+		// the name is important
+		// we need to remember this name is reserved for this local variable
+		
+		Symbol localVariable_symbol = ((VariableSymbolTable)localVariable.enclosingScope()).getVariableLocally(localVariable.getName());
+		
+		Memory var = new Memory(varNameGen.getVariableName(localVariable_symbol),MemoryKind.LOCAL);
+		List<LirNode> instructions = new ArrayList<LirNode>();
+		
 		//if has initialization , just like assignment
 		if(localVariable.getInitValue() != null){
-			//get localVariable symbol
-			Symbol localVariable_symbol = ((VariableSymbolTable)localVariable.enclosingScope()).getVariableLocally(localVariable.getName());
-			//make Memory object for var
-			Memory var= new Memory(varNameGen.getVariableName(localVariable_symbol),MemoryKind.LOCAL);
-			return local_var_assgiment(var,localVariable.getInitValue());
+			
+			
+			LirNode rightHand;
+			
+			if(localVariable.getInitValue() instanceof Literal)
+			{
+				rightHand = getImmediateFromLiteral((Literal)localVariable.getInitValue());
+				
+			}
+			else
+			{
+				
+				// generate code for assignment and store result in register
+				instructions.addAll((List<LirNode>)localVariable.getInitValue().accept(this));
+				
+				// currentRegister is the result register at this point
+				rightHand = new Reg(currentRegister);
+				
+				
+			}
+			
+			// add move instruction
+			instructions.add(new MoveNode(rightHand, var));
 		}
-		//else no Lir generated
-		return null;
+		
+		return instructions;
 	}
 
 	@SuppressWarnings("unchecked")
