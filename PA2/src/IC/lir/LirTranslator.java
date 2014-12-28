@@ -421,10 +421,7 @@ public class LirTranslator implements IC.AST.Visitor {
 				--currentRegister;
 				
 			}
-			
-			
 		}
-		
 		return null;
 	
 	}
@@ -436,7 +433,6 @@ public class LirTranslator implements IC.AST.Visitor {
 		return null;//statement should return null
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public Object visit(Return returnStatement) throws SemanticError  {
 		LirNode assignmentResult = null;
@@ -530,18 +526,16 @@ public class LirTranslator implements IC.AST.Visitor {
 
 	@Override
 	public Object visit(Break breakStatement)  {
-		List<LirNode> instructions = new ArrayList<LirNode>();
 		//add jump to the end of the loop we are currently in
-		instructions.add(new JumpNode(tail_loop_label));
-		return instructions;
+		this.currentMethodInstructions.add(new JumpNode(tail_loop_label));
+		return null;//statements return null
 	}
 
 	@Override
 	public Object visit(Continue continueStatement)  {
-		List<LirNode> instructions = new ArrayList<LirNode>();
 		//add jump to the end of the loop we are currently in
-		instructions.add(new JumpNode(head_loop_label));
-		return instructions;
+		this.currentMethodInstructions.add(new JumpNode(head_loop_label));
+		return null;//statements return null
 	}
 
 	@SuppressWarnings("unchecked")
@@ -597,7 +591,6 @@ public class LirTranslator implements IC.AST.Visitor {
 		return null;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public Object visit(VariableLocation location) throws SemanticError  {
 		if(location.isExternal()){
@@ -629,12 +622,13 @@ public class LirTranslator implements IC.AST.Visitor {
 		LirNode locationNode = (LirNode)location.getLocation().accept(this);
 		
 		
-		// todo, check if location is memory
+		// TODO, check if location is memory
 		
 		
 		
-		//calc offset [ need to fix this ]
-		int field_offset = classManager.getFieldOffset(currentClassName, location.getName());
+		//calc offset
+		//((ClassType)((VariableLocation)location.getLocation()).getNodeType()).getName()== getting the name of the class of this field
+		int field_offset = classManager.getFieldOffset(((ClassType)((VariableLocation)location.getLocation()).getNodeType()).getName(), location.getName());
 		
 		/* this register holds the object , set by accept*/
 		Reg objectRegister = new Reg(currentRegister);
@@ -793,7 +787,7 @@ public class LirTranslator implements IC.AST.Visitor {
 
 	@Override
 	public Object visit(MathBinaryOp binaryOp) throws SemanticError  {
-		List<LirNode> instructions = new ArrayList<LirNode>();
+		LirNode math_exp = null;
 		//check types of vars for op
 		Type side_1 = binaryOp.getFirstOperand().getNodeType();
 		Type side_2 = binaryOp.getSecondOperand().getNodeType();
@@ -802,30 +796,48 @@ public class LirTranslator implements IC.AST.Visitor {
 			//get lirBinaryOp
 			lirBinaryOp op = get_function_by_BinaryOps_math(binaryOp.getOperator());
 			
-			simple_binary_op(binaryOp,op, instructions);
+			math_exp = simple_binary_op(binaryOp,op);
 		}
 		else { //if they aren't both int's, they are strings
-			concatenate_strings(binaryOp, instructions);
+			//math_exp = concatenate_strings(binaryOp);
 		}
-		return instructions;
+		return math_exp;
 	}
 
 
 	@SuppressWarnings("unchecked")
-	private void simple_binary_op(BinaryOp binaryOp,lirBinaryOp op,List<LirNode> instructions) throws SemanticError {
+	private LirNode simple_binary_op(BinaryOp binaryOp,lirBinaryOp op) throws SemanticError {
 		
 		//calc FirstOperand into currentRegister
-		instructions.addAll((List<LirNode>)binaryOp.getFirstOperand().accept(this));
+		LirNode right_exp = (LirNode) binaryOp.getFirstOperand().accept(this);
+		// need to move memory to register
+		Reg save_reg = new Reg(currentRegister);
+		// load memory to register
+		this.currentMethodInstructions.add(new MoveNode(right_exp, save_reg));
 		currentRegister++;
 		
-		//calc FirstOperand into currentRegister+1
-		instructions.addAll((List<LirNode>)binaryOp.getSecondOperand().accept(this));
+		//calc FirstOperand into currentRegister+1 (or pass right into 
+		LirNode left_exp = (LirNode) binaryOp.getSecondOperand().accept(this);
+		LirNode leftResult;
+		if(left_exp instanceof Memory)
+		{
+			// need to move memory to register
+			Reg temp = new Reg(currentRegister);
+			// load memory to register
+			this.currentMethodInstructions.add(new MoveNode(left_exp, temp));
+			leftResult = temp;
+		}
+		else {
+			leftResult = left_exp;
+		}
 		
 		//save op to currentRegister
-		instructions.add(new BinaryInstructionNode(op,new Reg(currentRegister),new Reg(currentRegister-1)));
+		this.currentMethodInstructions.add(new BinaryInstructionNode(op,leftResult,save_reg));
 		
 		//free currentRegister+1
 		currentRegister--;
+		
+		return save_reg;
 	}
 	
 
@@ -844,7 +856,7 @@ public class LirTranslator implements IC.AST.Visitor {
 			//we will use sub to simulate these ops
 			op = lirBinaryOp.SUB;
 			//calculate sub between both
-			simple_binary_op(binaryOp,op,instructions);
+			//simple_binary_op(binaryOp,op,instructions);
 			
 			JumpNode jump = make_logical_jump(binaryOp, true_label);//make proper jump
 			
