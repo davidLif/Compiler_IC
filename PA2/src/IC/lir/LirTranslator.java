@@ -65,6 +65,7 @@ import IC.lir.lirAST.MoveNode;
 import IC.lir.lirAST.Reg;
 import IC.lir.lirAST.ReturnNode;
 import IC.lir.lirAST.StaticCallNode;
+import IC.lir.lirAST.StoreArrayNode;
 import IC.lir.lirAST.StoreField;
 import IC.lir.lirAST.StringLiteralNode;
 import IC.lir.lirAST.UnaryInstructionNode;
@@ -122,7 +123,7 @@ public class LirTranslator implements IC.AST.Visitor {
 	private String currentClassName = null; 
 	
 	/**
-	 * this to labels are used so break and continue jumps will konow which labels should use
+	 * this to labels are used so break and continue jumps will know which labels should use
 	 */
 	private Label head_loop_label = null;
 	private Label tail_loop_label = null;
@@ -294,7 +295,7 @@ public class LirTranslator implements IC.AST.Visitor {
 	@Override
 	public Object visit(LibraryMethod method)  {
 		// this node wont be visited
-		// infact all library class wont be visited
+		// in fact all library class wont be visited
 		return null;
 	}
 	
@@ -323,32 +324,107 @@ public class LirTranslator implements IC.AST.Visitor {
 	@SuppressWarnings("unchecked")
 	@Override
 	public Object visit(Assignment assignment) throws SemanticError {
+		
+		
+		
+		/*
+		 * 	this method handles all store variants
+		 *  store to array
+		 *  store to local variable
+		 *  store to field
+		 *  
+		 *  note that in all cases, we can store either a register or a immediate
+		 *  if left hand side is a immediate we can optimize it immediately
+		 */
+		
+		
 		List<LirNode> instructions = new ArrayList<LirNode>();
 		
-		//optimization 1: Move R0,x - in opt 1 case no need to enter assignment.getVariable()
+		
+		LirNode leftHand;
+		
+		if(assignment.getAssignment() instanceof Literal)
+		{
+			leftHand = getImmediateFromLiteral((Literal)assignment.getAssignment());
+		}
+		else
+		{
+			
+			// generate code for assignment and store result in register
+			instructions.addAll((List<LirNode>)assignment.getAssignment().accept(this));
+			
+			// currentRegister is the result register at this point
+			
+			leftHand = new Reg(currentRegister);
+		}
+		
+		
+		
+		
+		
+		//case 1: assignment to local variable
 		if(assignment.getVariable() instanceof VariableLocation 
 				&& ((VariableLocation)assignment.getVariable()).isExternal()==false){
+			
 			Symbol var_symbol = ((VariableLocation)assignment.getVariable()).getDefiningSymbol();
-			Memory var= new Memory(varNameGen.getVariableName(var_symbol),MemoryKind.LOCAL);
-			return local_var_assgiment(var,assignment.getAssignment());
+			Memory var = new Memory(varNameGen.getVariableName(var_symbol),MemoryKind.LOCAL);
+			
+			// add move instruction
+			instructions.add(new MoveNode(leftHand, var));
+			
+			return instructions;
 		}
 		
-		instructions.addAll((List<LirNode>)assignment.getAssignment().accept(this));
-		currentRegister++;//return register is currentRegister
 		
-		//if this is a field,use save field
-		if (assignment.getVariable() instanceof VariableLocation){
-			instructions.addAll((List<LirNode>)save_to_field((VariableLocation) assignment.getVariable(),currentRegister-1));
+		// case 2: assignment to field (external variable location )
+		
+		else if(assignment.getVariable() instanceof VariableLocation)
+		{
+			
+			if(leftHand instanceof Reg)
+			{
+				// we stored our result in a register, we need to hold it
+				++currentRegister;
+			
+			}
+			instructions.addAll((List<LirNode>)save_to_field((VariableLocation) assignment.getVariable(), leftHand));
+			if(leftHand instanceof Reg){
+				
+				// no longer need the register that held the result we want to store
+				--currentRegister;
+				
+			}
+			
+			return instructions;
 		}
 		
-		currentRegister--;//return register is currentRegister
+		// case 3 : assignment to array
 		
-		return instructions;
+		else
+		{
+			if(leftHand instanceof Reg)
+			{
+				// we stored our result in a register, we need to hold it
+				++currentRegister;
+			
+			}
+			instructions.addAll((List<LirNode>)save_to_array((ArrayLocation) assignment.getVariable(), leftHand));
+			if(leftHand instanceof Reg){
+				
+				// no longer need the register that held the result we want to store
+				--currentRegister;
+				
+			}
+			
+			return instructions;
+			
+		}
+	
 	}
 
 
 	@SuppressWarnings("unchecked")
-	private List<LirNode> local_var_assgiment(Memory var,Expression assignment) throws SemanticError{
+	private List<LirNode> local_var_assgiment(Memory var, Expression assignment) throws SemanticError{
 		List<LirNode> instructions = new ArrayList<LirNode>();
 		
 		//return register is currentRegister if condition true
@@ -357,7 +433,7 @@ public class LirTranslator implements IC.AST.Visitor {
 		}
 		
 		//Move R0,x (or y or any such)
-		instructions.add(new MoveNode(new Reg(currentRegister),var));
+		instructions.add(new MoveNode(new Reg(currentRegister), var));
 		
 		return instructions;
 	}
@@ -530,21 +606,72 @@ public class LirTranslator implements IC.AST.Visitor {
 		return instructions;
 	}
 	
-	//this method should be used each time we want to clac a field and save something in it
+	//this method should be used each time we want to calculate a field and save something in it
 	@SuppressWarnings("unchecked")
-	private List<LirNode> save_to_field(VariableLocation location,int to_store_value_reg) throws SemanticError{
+	private List<LirNode> save_to_field(VariableLocation location, LirNode source) throws SemanticError{
 		List<LirNode> instructions = new ArrayList<LirNode>();
 		
-		//clac external of location to currentRegister
+		//calc external of location to currentRegister
 		instructions.addAll((List<LirNode>)location.getLocation().accept(this));
-		//calc offset
+		
+		//calc offset [ need to fix this ]
 		int field_offset = classManager.getFieldOffset(currentClassName, location.getName());
-		//make save instruction
-		instructions.add(new StoreField(new Reg(currentRegister),new Immediate(field_offset),new Reg(to_store_value_reg)));
+		
+		/* this register holds the object , set by accept*/
+		Reg objectRegister = new Reg(currentRegister);
+		
+		//make store instruction
+		instructions.add(new StoreField(objectRegister, new Immediate(field_offset), source));
 		
 		return instructions;
 	}
 
+	
+	@SuppressWarnings("unchecked")
+	private List<LirNode> save_to_array(ArrayLocation location, LirNode source) throws SemanticError{
+		List<LirNode> instructions = new ArrayList<LirNode>();
+		
+		// generate code for array location, result must be stored in register (currentRegister)
+		instructions.addAll((List<LirNode>)location.getArray().accept(this));
+		
+		Reg arrayReg = new Reg(currentRegister);
+		
+		// generate code for index
+		
+		LirNode indexNode;
+		
+		// optimization in case of single literal
+		
+		if(location.getIndex() instanceof Literal)
+		{
+			indexNode = getImmediateFromLiteral((Literal)location.getIndex());
+			
+			instructions.add(new StoreArrayNode(arrayReg, indexNode, source));
+			
+			return instructions;
+			
+		
+		}
+		
+		// otherwise, result must be stored in another register
+		// backup arrayReg
+		++currentRegister;
+		
+		instructions.addAll((List<LirNode>)location.getIndex().accept(this));
+		
+		/* this register holds the index result , set by accept*/
+		Reg indexRegister = new Reg(currentRegister);
+		
+		//make store instruction
+		instructions.add(new StoreArrayNode(arrayReg, indexRegister, source));
+		
+		// no longer need array reg
+		--currentRegister;
+		
+		return instructions;
+	}
+	
+	
 	@Override
 	public Object visit(ArrayLocation location) {
 		// TODO Auto-generated method stub
@@ -696,7 +823,7 @@ public class LirTranslator implements IC.AST.Visitor {
 		else {//all other literals translates to immediate
 			Immediate im = null;
 			if(literal.getType() == LiteralTypes.INTEGER){
-				im = new Immediate((int) literal.getValue());
+				im = new Immediate((Integer) literal.getValue());
 			}
 			else if(literal.getType() == LiteralTypes.FALSE){
 				//make new Immediate 0
@@ -718,6 +845,62 @@ public class LirTranslator implements IC.AST.Visitor {
 		return null;
 	}
 
+	
+	/**
+	 * this method simply creates a Label node or Immediate node from the given literal
+	 * @param literal
+	 * @return
+	 */
+	
+	
+	public LirNode getImmediateFromLiteral(Literal literal)
+	{
+		
+		if(literal.getType() == LiteralTypes.STRING){
+			
+			String value = literal.getValue().toString();
+		
+			// add new string definition to lir program
+
+			stringDefinitions.add(new StringLiteralNode(value, labelGenerator));
+			
+			
+			return labelGenerator.getStringLabel(value);
+		}
+		
+		else {
+			
+			//all other literals translates to immediate
+			
+			Immediate im = null;
+			
+			if(literal.getType() == LiteralTypes.INTEGER){
+				
+				im = new Immediate((Integer) literal.getValue());
+			}
+			else if(literal.getType() == LiteralTypes.FALSE){
+				//make new Immediate 0
+				im = new Immediate(0);
+			} 
+			else if(literal.getType() == LiteralTypes.TRUE){
+				//make new Immediate 1
+				im = new Immediate(1);
+			} 
+			else{
+				//literal.getType() == LiteralTypes.NULL
+				//zero will represent NULL
+				im = new Immediate(0);
+			}
+			
+			return im;
+		}
+		
+		
+		
+		
+	}
+	
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public Object visit(ExpressionBlock expressionBlock) throws SemanticError  {

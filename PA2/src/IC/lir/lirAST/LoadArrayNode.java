@@ -15,4 +15,10 @@ public class LoadArrayNode extends MoveArrayNode {
 		
 	}
 
+	@Override
+	public String emit() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
