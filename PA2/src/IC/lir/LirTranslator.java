@@ -236,6 +236,9 @@ public class LirTranslator implements IC.AST.Visitor {
 	}
 	
 	
+	
+	private List<LirNode> currentMethodInstructions;
+	
 	private MethodNode common_method_visit( Method method) throws SemanticError
 	{
 		
@@ -259,7 +262,7 @@ public class LirTranslator implements IC.AST.Visitor {
 		
 		
 		// create lir instructions from statements
-		List<LirNode> instructions = new ArrayList<LirNode>();
+		currentMethodInstructions = new ArrayList<LirNode>();
 		
 		
 		
@@ -270,18 +273,15 @@ public class LirTranslator implements IC.AST.Visitor {
 			
 			this.currentRegister = 0;
 			
-			@SuppressWarnings("unchecked")
-			List<LirNode> statementInstructions = (List<LirNode>)stmt.accept(this);
 			
-			// add all new instructions.some statements like "int x;" may not generate instructions 
-			if(statementInstructions != null){
-				instructions.addAll(statementInstructions);
-			}
+			// visit statements
+			stmt.accept(this);
+			
 			
 		}
 		
 		
-		return new MethodNode(methodLabel, instructions);
+		return new MethodNode(methodLabel, currentMethodInstructions);
 		
 	}
 	
@@ -308,16 +308,12 @@ public class LirTranslator implements IC.AST.Visitor {
 		return null;
 	}
 	
-	/*
-	 * Return type of all visit of all expressions will be the return temp name
-	*/
+	
 
 	@Override
 	public Object visit(Formal formal)  {
 		
-
-		
-		
+		// will not be visited
 		return null;
 	}
 
@@ -336,7 +332,6 @@ public class LirTranslator implements IC.AST.Visitor {
 	@SuppressWarnings("unchecked")
 	@Override
 	public Object visit(Assignment assignment) throws SemanticError {
-		
 		
 		
 		/*
@@ -369,10 +364,7 @@ public class LirTranslator implements IC.AST.Visitor {
 			
 			leftHand = new Reg(currentRegister);
 		}
-		
-		
-		
-		
+
 		
 		//case 1: assignment to local variable
 		if(assignment.getVariable() instanceof VariableLocation 
@@ -435,20 +427,7 @@ public class LirTranslator implements IC.AST.Visitor {
 	}
 
 
-	@SuppressWarnings("unchecked")
-	private List<LirNode> local_var_assgiment(Memory var, Expression assignment) throws SemanticError{
-		List<LirNode> instructions = new ArrayList<LirNode>();
-		
-		//return register is currentRegister if condition true
-		if (!debug || (List<LirNode>)assignment.accept(this)!= null){
-			instructions.addAll((List<LirNode>)assignment.accept(this));
-		}
-		
-		//Move R0,x (or y or any such)
-		instructions.add(new MoveNode(new Reg(currentRegister), var));
-		
-		return instructions;
-	}
+
 
 	@SuppressWarnings("unchecked")
 	@Override
