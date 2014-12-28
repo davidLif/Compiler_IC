@@ -3,9 +3,11 @@ package IC.lir;
 import java.util.ArrayList;
 import java.util.List;
 
+import IC.BinaryOps;
 import IC.LiteralTypes;
 import IC.AST.ArrayLocation;
 import IC.AST.Assignment;
+import IC.AST.BinaryOp;
 import IC.AST.Break;
 import IC.AST.Call;
 import IC.AST.CallStatement;
@@ -43,6 +45,8 @@ import IC.AST.While;
 import IC.SemanticChecks.SemanticError;
 import IC.SymTables.VariableSymbolTable;
 import IC.SymTables.Symbols.Symbol;
+import IC.Types.ClassType;
+import IC.Types.IntType;
 import IC.Types.Type;
 import IC.lir.lirAST.ArrayLengthNode;
 import IC.lir.lirAST.BinaryInstructionNode;
@@ -50,7 +54,12 @@ import IC.lir.lirAST.CompareNode;
 import IC.lir.lirAST.DispatchTableNode;
 import IC.lir.lirAST.Immediate;
 import IC.lir.lirAST.JumpFalse;
+import IC.lir.lirAST.JumpG;
+import IC.lir.lirAST.JumpGE;
+import IC.lir.lirAST.JumpL;
+import IC.lir.lirAST.JumpLE;
 import IC.lir.lirAST.JumpNode;
+import IC.lir.lirAST.JumpTrueNode;
 import IC.lir.lirAST.Label;
 import IC.lir.lirAST.LabelNode;
 import IC.lir.lirAST.LibraryCallNode;
@@ -60,13 +69,12 @@ import IC.lir.lirAST.LoadField;
 import IC.lir.lirAST.Memory;
 import IC.lir.lirAST.Memory.MemoryKind;
 import IC.lir.lirAST.MethodNode;
-import IC.lir.lirAST.MoveFieldNode;
 import IC.lir.lirAST.MoveNode;
 import IC.lir.lirAST.Reg;
 import IC.lir.lirAST.ReturnNode;
-import IC.lir.lirAST.StaticCallNode;
 import IC.lir.lirAST.StoreArrayNode;
 import IC.lir.lirAST.StoreField;
+import IC.lir.lirAST.StringConcatinetionCall;
 import IC.lir.lirAST.StringLiteralNode;
 import IC.lir.lirAST.UnaryInstructionNode;
 import IC.lir.lirAST.lirBinaryOp;
@@ -328,7 +336,6 @@ public class LirTranslator implements IC.AST.Visitor {
 		return null;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public Object visit(Assignment assignment) throws SemanticError {
 		
@@ -359,12 +366,9 @@ public class LirTranslator implements IC.AST.Visitor {
 			
 		}
 		else
-			
 		{
 			assignmentResult = rightHand;
 		}
-		
-		
 
 		
 		//case 1: assignment to local variable
@@ -379,9 +383,7 @@ public class LirTranslator implements IC.AST.Visitor {
 			
 		}
 		
-		
 		// case 2: assignment to field (external variable location )
-		
 		else if(assignment.getVariable() instanceof VariableLocation)
 		{
 			
@@ -427,29 +429,27 @@ public class LirTranslator implements IC.AST.Visitor {
 	
 	}
 
-
-
-
-	@SuppressWarnings("unchecked")
 	@Override
 	public Object visit(CallStatement callStatement) throws SemanticError  {
-		//TODO
-		return null;
+		//a call Statement generates code just for it's call
+		callStatement.getCall().accept(this);
+		return null;//statement should return null
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public Object visit(Return returnStatement) throws SemanticError  {
-		List<LirNode> instructions = new ArrayList<LirNode>();
-		
+		LirNode assignmentResult = null;
 		if (returnStatement.getValue() != null){
-			//evaluate return expression into currentRegister
-			instructions.addAll((List<LirNode>)returnStatement.getValue().accept(this));
+			//evaluate return expression
+			LirNode return_exp = (LirNode) returnStatement.getValue().accept(this);
+			//set the return_exp(register or var) to be the result 
+			assignmentResult = return_exp;
 		}
 		
 		//Return currentRegister - in case of return void return junk
-		instructions.add(new ReturnNode(new Reg(currentRegister)));
-		return instructions;
+		this.currentMethodInstructions.add(new ReturnNode(assignmentResult));
+		return null;//statement should return null
 	}
 
 	@SuppressWarnings("unchecked")
@@ -573,8 +573,7 @@ public class LirTranslator implements IC.AST.Visitor {
 		
 		//if has initialization , just like assignment
 		if(localVariable.getInitValue() != null){
-			
-			
+
 			LirNode rightHand;
 			
 			if(localVariable.getInitValue() instanceof Literal)
@@ -584,46 +583,42 @@ public class LirTranslator implements IC.AST.Visitor {
 			}
 			else
 			{
-				
 				// generate code for assignment and store result in register
 				instructions.addAll((List<LirNode>)localVariable.getInitValue().accept(this));
 				
 				// currentRegister is the result register at this point
 				rightHand = new Reg(currentRegister);
-				
-				
 			}
 			
 			// add move instruction
 			instructions.add(new MoveNode(rightHand, var));
 		}
 		
-		return instructions;
+		return null;
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public Object visit(VariableLocation location) throws SemanticError  {
-		List<LirNode> instructions = new ArrayList<LirNode>();
 		if(location.isExternal()){
 			//in here we will only LOAD the object (the external). in order to save it we will use save_to_field
 			
 			//load external of external to currentRegister
-			instructions.addAll((List<LirNode>)location.getLocation().accept(this));
+			location.getLocation().accept(this);
 			
 			//calc offset of field
-			int field_offset = classManager.getFieldOffset(currentClassName, location.getName());
+			//((ClassType)((VariableLocation)location.getLocation()).getNodeType()).getName()== getting the name of the class of this field
+			int field_offset = classManager.getFieldOffset(((ClassType)((VariableLocation)location.getLocation()).getNodeType()).getName(), location.getName());
 			
 			//load external to currentRegister. we no longer need external of external
-			instructions.add(new LoadField(new Reg(currentRegister),new Immediate(field_offset),new Reg(currentRegister)));
-			
+			this.currentMethodInstructions.add(new LoadField(new Reg(currentRegister),new Immediate(field_offset),new Reg(currentRegister)));
+			return null;
 		}
 		else{
 			Symbol var_symbol = location.getDefiningSymbol();
 			Memory var= new Memory(varNameGen.getVariableName(var_symbol),MemoryKind.LOCAL);
-			instructions.add(new MoveNode(var,new Reg(currentRegister)));
+			return var;
 		}
-		return instructions;
 	}
 	
 	//this method should be used each time we want to calculate a field and save something in it
@@ -797,15 +792,135 @@ public class LirTranslator implements IC.AST.Visitor {
 	}
 
 	@Override
-	public Object visit(MathBinaryOp binaryOp)  {
-		// TODO Auto-generated method stub
-		return null;
+	public Object visit(MathBinaryOp binaryOp) throws SemanticError  {
+		List<LirNode> instructions = new ArrayList<LirNode>();
+		//check types of vars for op
+		Type side_1 = binaryOp.getFirstOperand().getNodeType();
+		Type side_2 = binaryOp.getSecondOperand().getNodeType();
+		
+		if ((side_1 instanceof IntType) && (side_2 instanceof IntType)){
+			//get lirBinaryOp
+			lirBinaryOp op = get_function_by_BinaryOps_math(binaryOp.getOperator());
+			
+			simple_binary_op(binaryOp,op, instructions);
+		}
+		else { //if they aren't both int's, they are strings
+			concatenate_strings(binaryOp, instructions);
+		}
+		return instructions;
 	}
 
+
+	@SuppressWarnings("unchecked")
+	private void simple_binary_op(BinaryOp binaryOp,lirBinaryOp op,List<LirNode> instructions) throws SemanticError {
+		
+		//calc FirstOperand into currentRegister
+		instructions.addAll((List<LirNode>)binaryOp.getFirstOperand().accept(this));
+		currentRegister++;
+		
+		//calc FirstOperand into currentRegister+1
+		instructions.addAll((List<LirNode>)binaryOp.getSecondOperand().accept(this));
+		
+		//save op to currentRegister
+		instructions.add(new BinaryInstructionNode(op,new Reg(currentRegister),new Reg(currentRegister-1)));
+		
+		//free currentRegister+1
+		currentRegister--;
+	}
+	
+
+	@SuppressWarnings("unchecked")
 	@Override
-	public Object visit(LogicalBinaryOp binaryOp) {
-		// TODO Auto-generated method stub
-		return null;
+	public Object visit(LogicalBinaryOp binaryOp) throws SemanticError {
+		List<LirNode> instructions = new ArrayList<LirNode>();
+		//calc op
+		lirBinaryOp op = get_function_by_BinaryOps_logical(binaryOp.getOperator());
+		
+		if (op == null){ //LT or LTE or GT or GTE or EQUAL or NEQUAL
+			Label exit = labelGenerator.createLabel();
+			Label true_label = labelGenerator.createLabel();
+			//no need to make false label- we continue from jump to false case
+			
+			//we will use sub to simulate these ops
+			op = lirBinaryOp.SUB;
+			//calculate sub between both
+			simple_binary_op(binaryOp,op,instructions);
+			
+			JumpNode jump = make_logical_jump(binaryOp, true_label);//make proper jump
+			
+			//take test
+			instructions.add(new CompareNode(new Immediate(0),new Reg(currentRegister)));
+			instructions.add(jump);
+			
+			//make false case
+			instructions.add(new MoveNode(new Immediate(0),new Reg(currentRegister)));
+			instructions.add(new JumpNode(exit));//unconditional jump to exit
+			
+			//make true case
+			instructions.add(new LabelNode(true_label));
+			instructions.add(new MoveNode(new Immediate(1),new Reg(currentRegister)));
+			
+			//exit here
+			instructions.add(new LabelNode(exit));
+			
+		}
+		else{//LAND or LOR
+			//this label will be used if by calculating only the first op we will know the answer
+			Label op_label = labelGenerator.createLabel();
+			
+			//calc FirstOperand into currentRegister
+			instructions.addAll((List<LirNode>)binaryOp.getFirstOperand().accept(this));
+			currentRegister++;
+			
+			//test for "critical result"
+			instructions.add(new CompareNode(new Immediate(0),new Reg(currentRegister-1)));
+			if (op == lirBinaryOp.AND){
+				instructions.add(new JumpTrueNode(op_label));
+			}
+			else {//op == lirBinaryOp.OR
+				instructions.add(new JumpFalse(op_label));
+			}
+			
+			//check second operand (if no "critical result") to currentRegister+1
+			instructions.addAll((List<LirNode>)binaryOp.getSecondOperand().accept(this));
+			
+			//op labels points of the op calculation. we "jumped" over calculating the second operation
+			instructions.add(new LabelNode(op_label));
+			//save op to currentRegister
+			instructions.add(new BinaryInstructionNode(op,new Reg(currentRegister),new Reg(currentRegister-1)));
+			
+			//free second register
+			currentRegister--;
+		}
+		return instructions;
+	}
+
+
+	private JumpNode make_logical_jump(LogicalBinaryOp binaryOp, Label true_label) {
+		JumpNode jump = null;
+		switch(binaryOp.getOperator()){
+		case EQUAL: 
+			jump = new JumpTrueNode(true_label);
+			break;
+		case NEQUAL:
+			jump = new JumpFalse(true_label);
+			break;
+		case GT: 
+			jump = new JumpG(true_label);
+			break;
+		case GTE:
+			jump = new JumpGE(true_label);
+			break;
+		case LT: 
+			jump = new JumpL(true_label);
+			break;
+		case LTE:
+			jump = new JumpLE(true_label);
+			break;
+		default:
+			break;
+		}
+		return jump;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -832,9 +947,6 @@ public class LirTranslator implements IC.AST.Visitor {
 
 	@Override
 	public Object visit(Literal literal)  {
-		List<LirNode> generated_immidiate_in_list = new ArrayList<LirNode>();
-		// use this
-		
 		if(literal.getType() == LiteralTypes.STRING){
 		
 			String value = literal.getValue().toString();
@@ -844,38 +956,117 @@ public class LirTranslator implements IC.AST.Visitor {
 			stringDefinitions.add(new StringLiteralNode(value, labelGenerator));
 		}
 		else {//all other literals translates to immediate
-			Immediate im = null;
 			if(literal.getType() == LiteralTypes.INTEGER){
-				im = new Immediate((Integer) literal.getValue());
+				return new Immediate((Integer) literal.getValue());
 			}
 			else if(literal.getType() == LiteralTypes.FALSE){
 				//make new Immediate 0
-				im = new Immediate(0);
+				return new Immediate(0);
 			} 
 			else if(literal.getType() == LiteralTypes.TRUE){
 				//make new Immediate 1
-				im = new Immediate(1);
+				return new Immediate(1);
 			} 
 			else{//literal.getType() == LiteralTypes.NULL
 				//zero will represent NULL
-				im = new Immediate(0);
+				return new Immediate(0);
 			}
-			generated_immidiate_in_list.add(new MoveNode(im,new Reg(currentRegister)));
-			return generated_immidiate_in_list;
 		}
 		
 		
 		return null;
 	}
 
+	@SuppressWarnings("unchecked")
+	@Override
+	public Object visit(ExpressionBlock expressionBlock) throws SemanticError  {
+		List<LirNode> instructions = new ArrayList<LirNode>();
+		//call the inner expression to currentRegister
+		instructions.addAll((List<LirNode>)expressionBlock.getExpression().accept(this));
+		return instructions;//we return with expressionBlock evaluation in currentRegister 
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void concatenate_strings(MathBinaryOp binaryOp,List<LirNode> instructions) throws SemanticError {
+		//calc head to currentRegister-1. get Label if this a constant string
+		LirNode head;
+		if(binaryOp.getFirstOperand() instanceof Literal){
+			Label string_label = labelGenerator.getStringLabel(((Literal)binaryOp.getFirstOperand()).getValue().toString());
+			head = string_label;
+		}
+		else{ //need to caculate string. save it to currentRegister
+			instructions.addAll((List<LirNode>)binaryOp.getFirstOperand().accept(this));
+			head = new Reg(currentRegister);
+			currentRegister++;
+		}
+		
+		//calc tail to currentRegister
+		LirNode tail;
+		if(binaryOp.getSecondOperand() instanceof Literal){
+			Label string_label = labelGenerator.getStringLabel(((Literal)binaryOp.getSecondOperand()).getValue().toString());
+			tail = string_label;
+		}
+		else{
+			instructions.addAll((List<LirNode>)binaryOp.getSecondOperand().accept(this));
+			tail = new Reg(currentRegister);
+		}
+		
+		//add concatination instrucation
+		if((binaryOp.getFirstOperand() instanceof Literal)){
+			//add concatenate call. if head calculated last switch reg order
+			instructions.add(new StringConcatinetionCall(head,tail,new Reg(currentRegister)));
+		}
+		else{ //the head was label so we didn't do currentRegister++;
+			instructions.add(new StringConcatinetionCall(head,tail,new Reg(currentRegister-1)));
+			currentRegister--;//free currentRegister-1 if we used it to save head value
+		}
+	}
+	
+	private lirBinaryOp get_function_by_BinaryOps_math (BinaryOps op){
+		lirBinaryOp ret_op= null;
+		switch(op){
+		case PLUS:
+			ret_op= lirBinaryOp.ADD;
+			break;
+		case MINUS:
+			ret_op= lirBinaryOp.SUB;
+			break;
+		case MULTIPLY:
+			ret_op= lirBinaryOp.MUL;
+			break;
+		case DIVIDE:
+			ret_op= lirBinaryOp.DIV;
+			break;
+		case MOD:
+			ret_op= lirBinaryOp.MOD;
+			break;
+		default:
+			break;
+		}
+		return ret_op;
+	}
+	
+	//here null can be returned
+	private lirBinaryOp get_function_by_BinaryOps_logical (BinaryOps op){
+		lirBinaryOp ret_op= null;
+		switch(op){
+		case LAND:
+			ret_op= lirBinaryOp.AND;
+			break;
+		case LOR:
+			ret_op= lirBinaryOp.OR;
+			break;
+		default:
+			break;
+		}
+		return ret_op;
+	}
 	
 	/**
 	 * this method simply creates a Label node or Immediate node from the given literal
 	 * @param literal
 	 * @return
 	 */
-	
-	
 	public LirNode getImmediateFromLiteral(Literal literal)
 	{
 		
@@ -917,20 +1108,7 @@ public class LirTranslator implements IC.AST.Visitor {
 			
 			return im;
 		}
-		
-		
-		
-		
 	}
-	
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	public Object visit(ExpressionBlock expressionBlock) throws SemanticError  {
-		List<LirNode> instructions = new ArrayList<LirNode>();
-		//call the inner expression to currentRegister
-		instructions.addAll((List<LirNode>)expressionBlock.getExpression().accept(this));
-		return instructions;//we return with expressionBlock evaluation in currentRegister 
-	}
+
 
 }

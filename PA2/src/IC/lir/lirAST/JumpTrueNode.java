@@ -8,5 +8,8 @@ public class JumpTrueNode extends JumpNode{
 		// TODO Auto-generated constructor stub
 	}
 
-
+	@Override
+	public String emit() {
+		return "JumpTrue "+jumpLabel.emit()+"\n";
+	}
 }
