@@ -265,7 +265,6 @@ public class LirTranslator implements IC.AST.Visitor {
 		currentMethodInstructions = new ArrayList<LirNode>();
 		
 		
-		
 		for(Statement stmt : method.getStatements())
 		{
 			// generate instructions from statement
@@ -345,25 +344,27 @@ public class LirTranslator implements IC.AST.Visitor {
 		 */
 		
 		
-		List<LirNode> instructions = new ArrayList<LirNode>();
+		LirNode rightHand = (LirNode)assignment.getAssignment().accept(this);
 		
+		LirNode assignmentResult;
 		
-		LirNode leftHand;
-		
-		if(assignment.getAssignment() instanceof Literal)
+		if(rightHand instanceof Memory)
 		{
-			leftHand = getImmediateFromLiteral((Literal)assignment.getAssignment());
+			// need to move memory to register
+			Reg temp = new Reg(currentRegister);
+			// load memory to register
+			this.currentMethodInstructions.add(new MoveNode(rightHand, temp));
+			
+			assignmentResult = temp;
+			
 		}
 		else
+			
 		{
-			
-			// generate code for assignment and store result in register
-			instructions.addAll((List<LirNode>)assignment.getAssignment().accept(this));
-			
-			// currentRegister is the result register at this point
-			
-			leftHand = new Reg(currentRegister);
+			assignmentResult = rightHand;
 		}
+		
+		
 
 		
 		//case 1: assignment to local variable
@@ -371,12 +372,11 @@ public class LirTranslator implements IC.AST.Visitor {
 				&& ((VariableLocation)assignment.getVariable()).isExternal()==false){
 			
 			Symbol var_symbol = ((VariableLocation)assignment.getVariable()).getDefiningSymbol();
-			Memory var = new Memory(varNameGen.getVariableName(var_symbol),MemoryKind.LOCAL);
+			Memory var = new Memory(varNameGen.getVariableName(var_symbol), MemoryKind.LOCAL);
 			
 			// add move instruction
-			instructions.add(new MoveNode(leftHand, var));
+			this.currentMethodInstructions.add(new MoveNode(assignmentResult, var));
 			
-			return instructions;
 		}
 		
 		
@@ -385,44 +385,45 @@ public class LirTranslator implements IC.AST.Visitor {
 		else if(assignment.getVariable() instanceof VariableLocation)
 		{
 			
-			if(leftHand instanceof Reg)
+			if(rightHand instanceof Memory)
 			{
 				// we stored our result in a register, we need to hold it
 				++currentRegister;
 			
 			}
-			instructions.addAll((List<LirNode>)save_to_field((VariableLocation) assignment.getVariable(), leftHand));
-			if(leftHand instanceof Reg){
+			save_to_field((VariableLocation) assignment.getVariable(), assignmentResult);
+			
+			if(rightHand instanceof Memory){
 				
 				// no longer need the register that held the result we want to store
 				--currentRegister;
 				
 			}
 			
-			return instructions;
 		}
 		
 		// case 3 : assignment to array
 		
 		else
 		{
-			if(leftHand instanceof Reg)
+			if(rightHand instanceof Memory)
 			{
 				// we stored our result in a register, we need to hold it
 				++currentRegister;
 			
 			}
-			instructions.addAll((List<LirNode>)save_to_array((ArrayLocation) assignment.getVariable(), leftHand));
-			if(leftHand instanceof Reg){
+			save_to_array((ArrayLocation) assignment.getVariable(), assignmentResult);
+			if(rightHand instanceof Memory){
 				
 				// no longer need the register that held the result we want to store
 				--currentRegister;
 				
 			}
 			
-			return instructions;
 			
 		}
+		
+		return null;
 	
 	}
 
@@ -626,12 +627,16 @@ public class LirTranslator implements IC.AST.Visitor {
 	}
 	
 	//this method should be used each time we want to calculate a field and save something in it
-	@SuppressWarnings("unchecked")
-	private List<LirNode> save_to_field(VariableLocation location, LirNode source) throws SemanticError{
-		List<LirNode> instructions = new ArrayList<LirNode>();
+	
+	private void save_to_field(VariableLocation location, LirNode source) throws SemanticError{
 		
 		//calc external of location to currentRegister
-		instructions.addAll((List<LirNode>)location.getLocation().accept(this));
+		LirNode locationNode = (LirNode)location.getLocation().accept(this);
+		
+		
+		// todo, check if location is memory
+		
+		
 		
 		//calc offset [ need to fix this ]
 		int field_offset = classManager.getFieldOffset(currentClassName, location.getName());
@@ -640,9 +645,8 @@ public class LirTranslator implements IC.AST.Visitor {
 		Reg objectRegister = new Reg(currentRegister);
 		
 		//make store instruction
-		instructions.add(new StoreField(objectRegister, new Immediate(field_offset), source));
+		this.currentMethodInstructions.add(new StoreField(objectRegister, new Immediate(field_offset), source));
 		
-		return instructions;
 	}
 
 	
