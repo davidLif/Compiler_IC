@@ -1000,7 +1000,14 @@ public class LirTranslator implements IC.AST.Visitor {
 		LirNode a = (LirNode) binaryOp.getSecondOperand().accept(this);
 	
 		// no longer need b register
-		--this.currentRegister;
+		
+		if(!(right_exp instanceof Reg))
+		{
+			
+			 // we used a register to store the first operand
+			 // 
+			--this.currentRegister;
+		}
 		
 		//save op to currentRegister
 		this.currentMethodInstructions.add(new BinaryInstructionNode(op, a, b));
