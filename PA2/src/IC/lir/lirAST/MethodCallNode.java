@@ -2,7 +2,7 @@ package IC.lir.lirAST;
 
 import java.util.List;
 
-public abstract class MethodCallNode {
+public abstract class MethodCallNode extends LirNode{
 
 	
 	/**
@@ -15,13 +15,13 @@ public abstract class MethodCallNode {
 	 * 
 	 * in other words, anything that can store a value
 	 */
-	private List<LirNode> params;
+	protected List<LirNode> params;
 	
 	
 	/**
 	 * target register to store the result at
 	 */
-	private Reg targetRegister;
+	protected Reg targetRegister;
 	
 	public MethodCallNode(List<LirNode> params, Reg targetRegister)
 	{

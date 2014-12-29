@@ -79,6 +79,7 @@ import IC.lir.lirAST.RegWithOffset;
 import IC.lir.lirAST.ReturnNode;
 import IC.lir.lirAST.StoreArrayNode;
 import IC.lir.lirAST.StoreField;
+import IC.lir.lirAST.StringConcatinetionCall;
 import IC.lir.lirAST.StringLiteralNode;
 import IC.lir.lirAST.ThisNode;
 import IC.lir.lirAST.UnaryInstructionNode;
@@ -901,8 +902,7 @@ public class LirTranslator implements IC.AST.Visitor {
 
 	@Override
 	public Object visit(This thisExpression)  {
-		// TODO Auto-generated method stub
-		return null;
+		return new ThisNode();
 	}
 
 	@Override
@@ -950,7 +950,7 @@ public class LirTranslator implements IC.AST.Visitor {
 		else {
 			
 			//if they aren't both int's, they are strings
-			//math_exp = concatenate_strings(binaryOp);
+			math_exp = concatenate_strings(binaryOp);
 		}
 		return math_exp;
 	}
@@ -1133,10 +1133,10 @@ public class LirTranslator implements IC.AST.Visitor {
 				// must load into a register
 				b = new Reg(currentRegister);
 				this.currentMethodInstructions.add(new MoveNode(first_exp, b));
-				
-				// backup register
-				++this.currentRegister;
 			}
+			
+			//save register
+			currentRegister++;
 			
 			//test for "critical result"
 			this.currentMethodInstructions.add(new CompareNode(new Immediate(0),b));
@@ -1155,13 +1155,8 @@ public class LirTranslator implements IC.AST.Visitor {
 			//save op to currentRegister
 			this.currentMethodInstructions.add(new BinaryInstructionNode(op,second_exp,b));
 			
-			// no longer need b register
-			
-			if(!(first_exp instanceof Reg))
-			{
-				 // we used a register to store the first operand
-				--this.currentRegister;
-			}
+			// no longer need b register - if needed caller should handle
+			--this.currentRegister;
 			
 			return b;
 		}
@@ -1249,6 +1244,33 @@ public class LirTranslator implements IC.AST.Visitor {
 	@Override
 	public Object visit(ExpressionBlock expressionBlock) throws SemanticError  {
 		return expressionBlock.getExpression().accept(this);//return the reg of the expression 
+	}
+	
+	private LirNode concatenate_strings(MathBinaryOp binaryOp) throws SemanticError {
+		//calc head string
+		LirNode head = (LirNode) binaryOp.getFirstOperand().accept(this);
+		Reg b;//in this register we will save the answer in the end
+		
+		if(head instanceof Reg)
+		{
+			b = (Reg)head;
+		}
+		else {
+			// must load into a register
+			b = new Reg(currentRegister);
+		}
+		//save reg from override
+		currentRegister++;
+		
+		//calc tail string
+		LirNode tail = (LirNode) binaryOp.getSecondOperand().accept(this);
+		
+		this.currentMethodInstructions.add(new StringConcatinetionCall(head,tail,b));
+		
+		//free saved register
+		currentRegister--;
+		
+		return b;
 	}
 
 }

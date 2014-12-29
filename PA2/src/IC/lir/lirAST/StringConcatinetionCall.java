@@ -1,6 +1,9 @@
 package IC.lir.lirAST;
 
-public class StringConcatinetionCall extends LirNode {
+import java.util.ArrayList;
+import java.util.List;
+
+public class StringConcatinetionCall extends LibraryCallNode {
 
 	/**
 	 * this library call should be available even of the user didn't give us the library to compile with th
@@ -12,10 +15,12 @@ public class StringConcatinetionCall extends LirNode {
 	LirNode tail;
 	
 	//return value register
-	LirNode destination;
+	Reg destination;
 	
-	public StringConcatinetionCall(LirNode head,LirNode tail,LirNode destination){
-		super();
+	public StringConcatinetionCall(LirNode head,LirNode tail,Reg destination){
+		super(new Label ("__stringCat"),new ArrayList<LirNode>(), destination);
+		this.params.add(head);
+		this.params.add(tail);
 		this.head = head;
 		this.tail = tail;
 		this.destination = destination;

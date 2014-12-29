@@ -17,4 +17,9 @@ public class LibraryCallNode extends MethodCallNode{
 		this.methodLabel = methodLabel;
 	}
 
+	public String emit() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
