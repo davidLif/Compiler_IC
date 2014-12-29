@@ -37,13 +37,13 @@ import IC.AST.StatementsBlock;
 import IC.AST.StaticCall;
 import IC.AST.StaticMethod;
 import IC.AST.This;
+import IC.AST.UnaryOp;
 import IC.AST.UserType;
 import IC.AST.VariableLocation;
 import IC.AST.VirtualCall;
 import IC.AST.VirtualMethod;
 import IC.AST.While;
 import IC.SemanticChecks.SemanticError;
-import IC.SymTables.ClassSymbolTable;
 import IC.SymTables.VariableSymbolTable;
 import IC.SymTables.Symbols.FieldSymbol;
 import IC.SymTables.Symbols.Symbol;
@@ -72,13 +72,11 @@ import IC.lir.lirAST.LoadField;
 import IC.lir.lirAST.Memory;
 import IC.lir.lirAST.Memory.MemoryKind;
 import IC.lir.lirAST.MethodNode;
-import IC.lir.lirAST.MoveFieldNode;
 import IC.lir.lirAST.MoveNode;
 import IC.lir.lirAST.Reg;
 import IC.lir.lirAST.RegWithIndex;
 import IC.lir.lirAST.RegWithOffset;
 import IC.lir.lirAST.ReturnNode;
-import IC.lir.lirAST.StaticCallNode;
 import IC.lir.lirAST.StoreArrayNode;
 import IC.lir.lirAST.StoreField;
 import IC.lir.lirAST.StringLiteralNode;
@@ -142,8 +140,6 @@ public class LirTranslator implements IC.AST.Visitor {
 	 */
 	private Label head_loop_label = null;
 	private Label tail_loop_label = null;
-	
-	private boolean debug = true;
 	
 	
 	public LirTranslator(Program program)
@@ -457,14 +453,9 @@ public class LirTranslator implements IC.AST.Visitor {
 	
 	}
 
-
-
-
-	@SuppressWarnings("unchecked")
 	@Override
 	public Object visit(CallStatement callStatement) throws SemanticError  {
-		//TODO
-		return null;
+		return callStatement.getCall().accept(this);
 	}
 
 	@Override
@@ -503,7 +494,7 @@ public class LirTranslator implements IC.AST.Visitor {
 		ifStatement.getCondition().accept(this);
 		
 		//compare and jump to else if exist and out of if if doesn't
-		this.currentMethodInstructions.add(new CompareNode(new Immediate(0),new Reg(currentRegister)));
+		this.currentMethodInstructions.add(new CompareNode(new Immediate(1),new Reg(currentRegister)));
 		if(ifStatement.hasElse()){
 			this.currentMethodInstructions.add(new JumpFalse(else_label));
 		}
@@ -548,7 +539,7 @@ public class LirTranslator implements IC.AST.Visitor {
 		whileStatement.getCondition().accept(this);
 		
 		//compare and jump if condition false
-		this.currentMethodInstructions.add(new CompareNode(new Immediate(0),new Reg(currentRegister)));
+		this.currentMethodInstructions.add(new CompareNode(new Immediate(1),new Reg(currentRegister)));
 		this.currentMethodInstructions.add(new JumpFalse(tail_loop_label));
 		
 		//set loop code and jump to head
@@ -983,8 +974,7 @@ public class LirTranslator implements IC.AST.Visitor {
 			b = (Reg)right_exp;
 			
 		}
-		else
-		{
+		else {
 			
 			// must load into a register
 			b = new Reg(currentRegister);
@@ -1089,7 +1079,6 @@ public class LirTranslator implements IC.AST.Visitor {
 	}
 	
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public Object visit(LogicalBinaryOp binaryOp) throws SemanticError {
 		
@@ -1104,7 +1093,7 @@ public class LirTranslator implements IC.AST.Visitor {
 			//we will use sub to simulate these ops
 			op = lirBinaryOp.SUB;
 			//calculate sub between both
-			//simple_binary_op(binaryOp,op,instructions);
+			simple_binary_op(binaryOp,op);
 			
 			JumpNode jump = make_logical_jump(binaryOp, true_label);//make proper jump
 			
@@ -1122,6 +1111,7 @@ public class LirTranslator implements IC.AST.Visitor {
 			
 			//exit here
 			this.currentMethodInstructions.add(new LabelNode(exit));
+			return new Reg(currentRegister);
 			
 		}
 		else{//LAND or LOR
@@ -1129,11 +1119,27 @@ public class LirTranslator implements IC.AST.Visitor {
 			Label op_label = labelGenerator.createLabel();
 			
 			//calc FirstOperand into currentRegister
-			this.currentMethodInstructions.addAll((List<LirNode>)binaryOp.getFirstOperand().accept(this));
-			currentRegister++;
+			LirNode first_exp = (LirNode) binaryOp.getFirstOperand().accept(this);
+			Reg b;//in this register we will save the answer in the end
+			
+			if(first_exp instanceof Reg)
+			{
+				
+				b = (Reg)first_exp;
+				
+			}
+			else {
+				
+				// must load into a register
+				b = new Reg(currentRegister);
+				this.currentMethodInstructions.add(new MoveNode(first_exp, b));
+				
+				// backup register
+				++this.currentRegister;
+			}
 			
 			//test for "critical result"
-			this.currentMethodInstructions.add(new CompareNode(new Immediate(0),new Reg(currentRegister-1)));
+			this.currentMethodInstructions.add(new CompareNode(new Immediate(0),b));
 			if (op == lirBinaryOp.AND){
 				this.currentMethodInstructions.add(new JumpTrueNode(op_label));
 			}
@@ -1142,39 +1148,57 @@ public class LirTranslator implements IC.AST.Visitor {
 			}
 			
 			//check second operand (if no "critical result") to currentRegister+1
-			this.currentMethodInstructions.addAll((List<LirNode>)binaryOp.getSecondOperand().accept(this));
+			LirNode second_exp = (LirNode) binaryOp.getSecondOperand().accept(this);
 			
 			//op labels points of the op calculation. we "jumped" over calculating the second operation
 			this.currentMethodInstructions.add(new LabelNode(op_label));
 			//save op to currentRegister
-			this.currentMethodInstructions.add(new BinaryInstructionNode(op,new Reg(currentRegister),new Reg(currentRegister-1)));
+			this.currentMethodInstructions.add(new BinaryInstructionNode(op,second_exp,b));
 			
-			//free second register
-			currentRegister--;
+			// no longer need b register
+			
+			if(!(first_exp instanceof Reg))
+			{
+				 // we used a register to store the first operand
+				--this.currentRegister;
+			}
+			
+			return b;
 		}
-		return null; // TODO check this
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public Object visit(MathUnaryOp unaryOp) throws SemanticError  {
-		List<LirNode> instructions = new ArrayList<LirNode>();
-		//evaluate inner expression to currentRegister
-		instructions.addAll((List<LirNode>)unaryOp.getOperand().accept(this));
-		//only one unary math op - minus. calc it
-		instructions.add(new UnaryInstructionNode(new Reg(currentRegister),lirUnaryOp.NEG));
-		return instructions;
+		return unary_exp_calc(unaryOp);
 	}
 
-	@SuppressWarnings("unchecked")
+
+	private Reg unary_exp_calc(UnaryOp unaryOp) throws SemanticError {
+		//evaluate inner expression
+		LirNode exp = (LirNode) unaryOp.getOperand().accept(this);
+		Reg b;//in this register we will save the answer in the end
+		
+		if(exp instanceof Reg)
+		{
+			
+			b = (Reg)exp;
+			
+		}
+		else {
+			
+			// must load into a register
+			b = new Reg(currentRegister);
+			this.currentMethodInstructions.add(new MoveNode(exp, b));
+		}
+		
+		//only one unary math op - minus. calc it
+		this.currentMethodInstructions.add(new UnaryInstructionNode(b,lirUnaryOp.NEG));
+		return b;
+	}
+
 	@Override
 	public Object visit(LogicalUnaryOp unaryOp) throws SemanticError  {
-		List<LirNode> instructions = new ArrayList<LirNode>();
-		//evaluate inner expression to currentRegister
-		instructions.addAll((List<LirNode>)unaryOp.getOperand().accept(this));
-		//only one unary math op - not. calc it
-		instructions.add(new UnaryInstructionNode(new Reg(currentRegister),lirUnaryOp.NOT));
-		return instructions;
+		return unary_exp_calc(unaryOp);
 	}
 
 	@Override
@@ -1222,17 +1246,9 @@ public class LirTranslator implements IC.AST.Visitor {
 		}
 	}
 
-	
-	
-	
-	
-	@SuppressWarnings("unchecked")
 	@Override
 	public Object visit(ExpressionBlock expressionBlock) throws SemanticError  {
-		List<LirNode> instructions = new ArrayList<LirNode>();
-		//call the inner expression to currentRegister
-		instructions.addAll((List<LirNode>)expressionBlock.getExpression().accept(this));
-		return instructions;//we return with expressionBlock evaluation in currentRegister 
+		return expressionBlock.getExpression().accept(this);//return the reg of the expression 
 	}
 
 }
