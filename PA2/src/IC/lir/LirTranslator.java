@@ -907,14 +907,28 @@ public class LirTranslator implements IC.AST.Visitor {
 
 	@Override
 	public Object visit(NewClass newClass) {
-		// TODO Auto-generated method stub
-		return null;
+		//allocate object and return pointer reg
+		LirNode class_size = new Immediate(classManager.getClassSize(newClass.getName()));
+		Reg allocatedReg = allocate(class_size);
+		this.currentMethodInstructions.add(new StoreField(new RegWithOffset(allocatedReg,new Immediate(0)),new Label("_DV_"+newClass.getName())));
+		return allocatedReg;
 	}
 
 	@Override
-	public Object visit(NewArray newArray)  {
-		// TODO Auto-generated method stub
-		return null;
+	public Object visit(NewArray newArray) throws SemanticError  {
+		//allocate array and return pointer reg
+		return allocate((LirNode) newArray.getSize().accept(this));
+	}
+	
+	private Reg allocate(LirNode allocated_size){
+		List<LirNode> params = new ArrayList<LirNode>();
+		//the only parameter will be array size
+		params.add(allocated_size);
+		//make target reg
+		Reg allocation_reg = new Reg(currentRegister);
+		//allocate array space
+		this.currentMethodInstructions.add(new LibraryCallNode(new Label("__allocateObject"),params,allocation_reg));
+		return allocation_reg;//return the reg to which allocated array
 	}
 
 	public Object visit(Length length) throws SemanticError  {

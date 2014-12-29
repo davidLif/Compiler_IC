@@ -18,8 +18,13 @@ public class LibraryCallNode extends MethodCallNode{
 	}
 
 	public String emit() {
-		// TODO Auto-generated method stub
-		return null;
+		StringBuilder s =new StringBuilder();
+		s.append("Library "+methodLabel.emit()+"(");
+		for (LirNode arg:params){
+			s.append(arg.emit());
+		}
+		s.append("),"+targetRegister.emit()+"\n");
+		return s.toString();
 	}
 
 }

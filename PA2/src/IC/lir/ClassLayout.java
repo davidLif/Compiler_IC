@@ -37,7 +37,7 @@ public class ClassLayout {
 	/**
 	 *  this map maps a given field name to its offset in the class object
 	 */
-	private Map<String, Integer> fieldToOffset = new HashMap<String, Integer>();
+	public Map<String, Integer> fieldToOffset = new HashMap<String, Integer>();
 	
 	
 	private int currentMaxMethodOffset = 0;
