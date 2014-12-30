@@ -568,10 +568,12 @@ public class LirTranslator implements IC.AST.Visitor {
 		Label end_if_else_label = labelGenerator.createLabel();
 		
 		//evaluate condition expression into currentRegister
-		ifStatement.getCondition().accept(this);
+		LirNode cond_exp = (LirNode) ifStatement.getCondition().accept(this);
+		
+		Reg b=subExp_into_reg(cond_exp);
 		
 		//compare and jump to else if exist and out of if if doesn't
-		this.currentMethodInstructions.add(new CompareNode(new Immediate(1),new Reg(currentRegister)));
+		this.currentMethodInstructions.add(new CompareNode(new Immediate(1),b));
 		if(ifStatement.hasElse()){
 			this.currentMethodInstructions.add(new JumpFalse(else_label));
 		}
@@ -613,10 +615,12 @@ public class LirTranslator implements IC.AST.Visitor {
 		this.currentMethodInstructions.add(new LabelNode(head_loop_label));
 		
 		//evaluate condition expression into currentRegister
-		whileStatement.getCondition().accept(this);
+		LirNode cond_exp = (LirNode) whileStatement.getCondition().accept(this);
+				
+		Reg b = subExp_into_reg(cond_exp);
 		
 		//compare and jump if condition false
-		this.currentMethodInstructions.add(new CompareNode(new Immediate(1),new Reg(currentRegister)));
+		this.currentMethodInstructions.add(new CompareNode(new Immediate(1),b));
 		this.currentMethodInstructions.add(new JumpFalse(tail_loop_label));
 		
 		//set loop code and jump to head
@@ -631,6 +635,27 @@ public class LirTranslator implements IC.AST.Visitor {
 		this.currentMethodInstructions.add(new LabelNode(tail_loop_label));
 		
 		return null;
+	}
+
+
+	private Reg subExp_into_reg(LirNode cond_exp) {
+		Reg b;
+				
+		if(cond_exp instanceof Reg)
+		{
+			
+			b = (Reg)cond_exp;
+			
+		}
+		else {
+			
+			// must load into a register
+			b = new Reg(currentRegister);
+			this.currentMethodInstructions.add(new MoveNode(cond_exp, b));
+			
+			
+		}
+		return b;
 	}
 	
 	@Override
@@ -1224,22 +1249,7 @@ public class LirTranslator implements IC.AST.Visitor {
 		//calc FirstOperand (b), b will serve as a accumulator register
 		LirNode right_exp = (LirNode) binaryOp.getFirstOperand().accept(this);
 		
-		Reg b;
-		
-		if(right_exp instanceof Reg)
-		{
-			
-			b = (Reg)right_exp;
-			
-		}
-		else {
-			
-			// must load into a register
-			b = new Reg(currentRegister);
-			this.currentMethodInstructions.add(new MoveNode(right_exp, b));
-			
-			
-		}
+		Reg b=subExp_into_reg(right_exp);
 		// backup register
 		++this.currentRegister;
 		
@@ -1373,20 +1383,8 @@ public class LirTranslator implements IC.AST.Visitor {
 			
 			//calc FirstOperand into currentRegister
 			LirNode first_exp = (LirNode) binaryOp.getFirstOperand().accept(this);
-			Reg b;//in this register we will save the answer in the end
 			
-			if(first_exp instanceof Reg)
-			{
-				
-				b = (Reg)first_exp;
-				
-			}
-			else {
-				
-				// must load into a register
-				b = new Reg(currentRegister);
-				this.currentMethodInstructions.add(new MoveNode(first_exp, b));
-			}
+			Reg b=subExp_into_reg(first_exp);
 			
 			//save register
 			currentRegister++;
@@ -1424,20 +1422,8 @@ public class LirTranslator implements IC.AST.Visitor {
 	private Reg unary_exp_calc(UnaryOp unaryOp,lirUnaryOp op) throws SemanticError {
 		//evaluate inner expression
 		LirNode exp = (LirNode) unaryOp.getOperand().accept(this);
-		Reg b;//in this register we will save the answer in the end
 		
-		if(exp instanceof Reg)
-		{
-			
-			b = (Reg)exp;
-			
-		}
-		else {
-			
-			// must load into a register
-			b = new Reg(currentRegister);
-			this.currentMethodInstructions.add(new MoveNode(exp, b));
-		}
+		Reg b=subExp_into_reg(exp);
 		
 		//only one unary math op - minus. calc it
 		this.currentMethodInstructions.add(new UnaryInstructionNode(b,op));
