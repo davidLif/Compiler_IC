@@ -1374,11 +1374,11 @@ public class LirTranslator implements IC.AST.Visitor {
 
 	@Override
 	public Object visit(MathUnaryOp unaryOp) throws SemanticError  {
-		return unary_exp_calc(unaryOp);
+		return unary_exp_calc(unaryOp,lirUnaryOp.NEG);
 	}
 
 
-	private Reg unary_exp_calc(UnaryOp unaryOp) throws SemanticError {
+	private Reg unary_exp_calc(UnaryOp unaryOp,lirUnaryOp op) throws SemanticError {
 		//evaluate inner expression
 		LirNode exp = (LirNode) unaryOp.getOperand().accept(this);
 		Reg b;//in this register we will save the answer in the end
@@ -1397,13 +1397,13 @@ public class LirTranslator implements IC.AST.Visitor {
 		}
 		
 		//only one unary math op - minus. calc it
-		this.currentMethodInstructions.add(new UnaryInstructionNode(b,lirUnaryOp.NEG));
+		this.currentMethodInstructions.add(new UnaryInstructionNode(b,op));
 		return b;
 	}
 
 	@Override
 	public Object visit(LogicalUnaryOp unaryOp) throws SemanticError  {
-		return unary_exp_calc(unaryOp);
+		return unary_exp_calc(unaryOp,lirUnaryOp.NOT);
 	}
 
 	@Override
