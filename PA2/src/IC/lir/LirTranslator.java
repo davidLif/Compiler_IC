@@ -758,6 +758,11 @@ public class LirTranslator implements IC.AST.Visitor {
 				
 			}
 				
+			//runtime check prefix != null
+			List<LirNode> params = new ArrayList<LirNode>();
+			params.add(classObject);
+			this.currentMethodInstructions.add(new LibraryCallNode(new Label("__checkNullRef"),params,new Reg(currentRegister)));
+			
 			// get class type
 			
 			String definingClassName = ((ClassType)location.getLocation().getNodeType()).getName();
@@ -867,6 +872,12 @@ public class LirTranslator implements IC.AST.Visitor {
 			arrayObject = (Reg)arrayNode;
 		}
 		
+		//runtime check array != null
+		List<LirNode> params = new ArrayList<LirNode>();
+		params.add(arrayObject);
+		this.currentMethodInstructions.add(new LibraryCallNode(new Label("__checkNullRef"),params,new Reg(currentRegister)));
+		
+		
 		
 		// generate code for index
 		
@@ -877,7 +888,9 @@ public class LirTranslator implements IC.AST.Visitor {
 		if(location.getIndex() instanceof Literal)
 		{
 			indexNode = (LirNode) location.getIndex().accept(this);
-			
+			//runtime check and arraySize < i-1
+			params.add(indexNode);
+			this.currentMethodInstructions.add(new LibraryCallNode(new Label("__checkArrayAccess"),params,new Reg(currentRegister)));
 			return new RegWithIndex(arrayObject, indexNode);
 
 		}
@@ -904,6 +917,10 @@ public class LirTranslator implements IC.AST.Visitor {
 			indexRegister = (Reg)indexNode;
 		}
 		
+		//runtime check and arraySize < i-1
+		params.add(indexNode);
+		this.currentMethodInstructions.add(new LibraryCallNode(new Label("__checkArrayAccess"),params,new Reg(currentRegister)));
+		
 		// no longer need array register
 		--currentRegister;
 		
@@ -915,7 +932,6 @@ public class LirTranslator implements IC.AST.Visitor {
 	
 	@Override
 	public Object visit(ArrayLocation location) throws SemanticError {
-		
 		
 		// get array[index] pair
 		RegWithIndex result = ArrayLocationCommonVisit(location);
@@ -1014,6 +1030,13 @@ public class LirTranslator implements IC.AST.Visitor {
 				// already in register
 				classObjReg = (Reg)classObj;
 			}
+			
+			//runtime check array != null
+			currentRegister++;
+			List<LirNode> params = new ArrayList<LirNode>();
+			params.add(classObjReg);
+			this.currentMethodInstructions.add(new LibraryCallNode(new Label("__checkNullRef"),params,new Reg(currentRegister)));
+			currentRegister--;
 			
 			/* generate the call code, note that that method handles saving classObjReg */
 			VirtualCallNode virtualCallNode = virtualCallCommonVisit(classObjReg, call, definingClassName);
@@ -1188,7 +1211,20 @@ public class LirTranslator implements IC.AST.Visitor {
 	@Override
 	public Object visit(NewArray newArray) throws SemanticError  {
 		//allocate array and return pointer reg
-		return allocate((LirNode) newArray.getSize().accept(this));
+		LirNode objectNum = (LirNode) newArray.getSize().accept(this);
+		Reg objectNum_reg = subExp_into_reg(objectNum);
+		this.currentMethodInstructions.add(new BinaryInstructionNode(lirBinaryOp.MUL,new Immediate(4),objectNum_reg));
+		
+		//so size check won't override
+		currentRegister++;
+		//runtime check array size > 0
+		List<LirNode> params = new ArrayList<LirNode>();
+		params.add(objectNum_reg);
+		this.currentMethodInstructions.add(new LibraryCallNode(new Label("__checkSize"),params,new Reg(currentRegister)));
+		//size check return is uninteresting
+		currentRegister--;
+		
+		return allocate(objectNum_reg);
 	}
 	
 	private Reg allocate(LirNode allocated_size){
@@ -1207,11 +1243,16 @@ public class LirTranslator implements IC.AST.Visitor {
 		// get array object
 		LirNode array = (LirNode) length.getArray().accept(this);
 		
+		//runtime check array != null
+		List<LirNode> params = new ArrayList<LirNode>();
+		params.add(array);
+		this.currentMethodInstructions.add(new LibraryCallNode(new Label("__checkNullRef"),params,new Reg(currentRegister)));
+		
 		// array may be a register or a local var (memory allowed)
 		// currentRegister will hold the result
 			
 		this.currentMethodInstructions.add(new ArrayLengthNode(array , new Reg(currentRegister)));
-		return null;
+		return new Reg(currentRegister);
 	}
 	
 	@Override
@@ -1261,6 +1302,17 @@ public class LirTranslator implements IC.AST.Visitor {
 		
 		--this.currentRegister;
 		
+		//check zero div
+		if (op == lirBinaryOp.DIV){
+			//so zero check won't override
+			currentRegister++;
+			//runtime check array size > 0
+			List<LirNode> params = new ArrayList<LirNode>();
+			params.add(a);
+			this.currentMethodInstructions.add(new LibraryCallNode(new Label("__checkZero"),params,new Reg(currentRegister)));
+			//size check return is uninteresting
+			currentRegister--;
+		}
 		
 		//save op to currentRegister
 		this.currentMethodInstructions.add(new BinaryInstructionNode(op, a, b));
