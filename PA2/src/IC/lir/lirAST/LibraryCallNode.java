@@ -17,6 +17,7 @@ public class LibraryCallNode extends MethodCallNode{
 		this.methodLabel = methodLabel;
 	}
 
+	@Override
 	public String emit() {
 		StringBuilder s =new StringBuilder();
 		s.append("Library "+methodLabel.emit()+"(");

@@ -28,9 +28,18 @@ public class StaticCallNode extends MethodCallNode{
 
 	@Override
 	public String emit() {
-		// TODO Auto-generated method stub
-		return null;
+		
+		StringBuilder result = new StringBuilder(String.format("StaticCall %s(", this.methodLabel));
+		for(int i = 0; i < this.memoryVars.size(); ++i)
+		{
+			
+			result.append(String.format("%s=%s", memoryVars.get(i), params.get(i)));
+			
+		}
+		result.append(")");
+		
+		return result.toString();
+		
 	}
-	
 
 }

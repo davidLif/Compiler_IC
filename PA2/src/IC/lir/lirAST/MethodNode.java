@@ -12,14 +12,14 @@ public class MethodNode extends LirNode{
 	 * label of the method 
 	 */
 	
-	private Label        methodLabel;
+	protected Label        methodLabel;
 	
 	
 	/**
 	 * list of lir instructions
 	 */
 	
-	private List<LirNode> instructions;
+	protected List<LirNode> instructions;
 	
 	
 	public MethodNode(Label methodLabel, List<LirNode> instructions)

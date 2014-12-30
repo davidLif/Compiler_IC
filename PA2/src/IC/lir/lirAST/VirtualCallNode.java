@@ -32,8 +32,18 @@ public class VirtualCallNode extends MethodCallNode {
 
 	@Override
 	public String emit() {
-		// TODO Auto-generated method stub
-		return null;
+		
+		StringBuilder result = new StringBuilder(String.format("VirtualCall %s.%s(", this.objectRegister, this.offset));
+		for(int i = 0; i < this.memoryVars.size(); ++i)
+		{
+			
+			result.append(String.format("%s=%s", memoryVars.get(i), params.get(i)));
+			
+		}
+		result.append(")");
+		
+		return result.toString();
+		
 	}
 
 }

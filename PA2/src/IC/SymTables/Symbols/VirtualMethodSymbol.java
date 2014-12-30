@@ -2,8 +2,8 @@ package IC.SymTables.Symbols;
 
 public class VirtualMethodSymbol extends MethodSymbol{
 
-	public VirtualMethodSymbol(String id) {
-		super(id);
+	public VirtualMethodSymbol(String id, String className) {
+		super(id, className);
 		this.kind = SymbolKind.VIRTUAL_METHOD;
 		
 	}

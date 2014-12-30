@@ -107,8 +107,7 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 				   
 				    // add classSymTable as a child of superclass's symbol table
 				    super_symbol_table.addChildTable(classSymTable);
-				    
-				    
+				    	    
 					
 				}
 				
@@ -295,8 +294,8 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 	@Override
 	public SymbolTable visit(VirtualMethod method, SymbolTable classSymbolTable) throws SemanticError {
 		
-		VirtualMethodSymbol methodSym =  new VirtualMethodSymbol(method.getName());
 		ClassSymbolTable classSymTable = (ClassSymbolTable)classSymbolTable;
+		VirtualMethodSymbol methodSym =  new VirtualMethodSymbol(method.getName(), classSymTable.getId());
 		
 		/* add symbol */
 		classSymTable.addVirtualMethod(methodSym);
@@ -308,8 +307,8 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 	@Override
 	public SymbolTable visit(StaticMethod method, SymbolTable classSymbolTable) throws SemanticError {
 		
-		StaticMethodSymbol methodSym =  new StaticMethodSymbol(method.getName());
 		ClassSymbolTable classSymTable = (ClassSymbolTable)classSymbolTable;
+		StaticMethodSymbol methodSym =  new StaticMethodSymbol(method.getName(), classSymTable.getId());
 		
 		/* add symbol */
 		classSymTable.addStaticMethod(methodSym);
@@ -322,8 +321,9 @@ public class SymbolTableBuilder implements  PropagatingVisitor<SymbolTable, Symb
 		
 		/* same as static method */
 		
-		StaticMethodSymbol methodSym =  new StaticMethodSymbol(method.getName());
 		ClassSymbolTable classSymTable = (ClassSymbolTable)classSymbolTable;
+		StaticMethodSymbol methodSym =  new StaticMethodSymbol(method.getName(), classSymTable.getId());
+	
 		
 		/* add symbol */
 		classSymTable.addStaticMethod(methodSym);

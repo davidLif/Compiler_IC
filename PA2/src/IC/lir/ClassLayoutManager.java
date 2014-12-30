@@ -133,5 +133,24 @@ public class ClassLayoutManager {
 	}
 	
 	
+	/**
+	 * get class layout by class name
+	 * @param className
+	 * @return
+	 */
+	public ClassLayout getClassLayout(String className)
+	{
+		return classToClassLayout.get(className);
+		
+	}
+	
+	public Integer getClassSize(String className){
+		ClassLayout layout = classToClassLayout.get(className);
+		List<Integer> offsetList= new ArrayList<Integer>(layout.fieldToOffset.values());//get list of values
+		Collections.sort(offsetList); // Sort the list
+		return offsetList.get(offsetList.size()-1)+2;//+1 for dv pointer and +1 for counting from zero
+	}
+	
+	
 	
 }

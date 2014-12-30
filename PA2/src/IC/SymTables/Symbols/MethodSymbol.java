@@ -2,8 +2,16 @@ package IC.SymTables.Symbols;
 
 public abstract class MethodSymbol extends Symbol{
 	
-	public MethodSymbol(String id) {
+	
+	 /**
+	  * name of the class that defines this method
+	  */
+	private String className;
+	
+	public MethodSymbol(String id, String className) {
 		super(id);
+		this.className = className;
+		
 	}
 
 	
@@ -17,4 +25,10 @@ public abstract class MethodSymbol extends Symbol{
 	
 	public abstract boolean isStatic();
 
+	
+	public String getClassName()
+	{
+		
+		return this.className;
+	}
 }

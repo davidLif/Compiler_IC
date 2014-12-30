@@ -200,7 +200,16 @@ public class ClassLayout {
 	}
 	
 	
-	
-	
+	/**
+	 * get the actual class that defines the given method (that is, overrides it last)
+	 * @param methodName
+	 * @return
+	 */
+	public String getMethodClassName(String methodName)
+	{
+		
+		return this.methodOffsetToClassName.get(this.methodToOffset.get(methodName));
+		
+	}
 	
 }

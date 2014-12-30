@@ -204,7 +204,7 @@ public class Compiler {
 				
 				
 				// moving to lir
-				LirTranslator translator = new LirTranslator(prog);
+				LirTranslator translator = new LirTranslator(prog, globalSymbolTable);
 				LirProgram result = translator.translate();
 				
 				System.out.print(result.emit());

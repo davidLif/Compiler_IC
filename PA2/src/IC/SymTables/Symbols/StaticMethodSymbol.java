@@ -2,8 +2,8 @@ package IC.SymTables.Symbols;
 
 public class StaticMethodSymbol extends MethodSymbol{
 
-	public StaticMethodSymbol(String id) {
-		super(id);
+	public StaticMethodSymbol(String id, String className) {
+		super(id, className);
 		this.kind = SymbolKind.STATIC_METHOD;
 	}
 

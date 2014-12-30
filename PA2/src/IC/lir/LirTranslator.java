@@ -1,7 +1,9 @@
 package IC.lir;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import IC.BinaryOps;
 import IC.LiteralTypes;
@@ -44,8 +46,12 @@ import IC.AST.VirtualCall;
 import IC.AST.VirtualMethod;
 import IC.AST.While;
 import IC.SemanticChecks.SemanticError;
+import IC.SymTables.ClassSymbolTable;
+import IC.SymTables.GlobalSymbolTable;
 import IC.SymTables.VariableSymbolTable;
+import IC.SymTables.Symbols.ClassSymbol;
 import IC.SymTables.Symbols.FieldSymbol;
+import IC.SymTables.Symbols.MethodSymbol;
 import IC.SymTables.Symbols.Symbol;
 import IC.Types.ClassType;
 import IC.Types.IntType;
@@ -72,17 +78,20 @@ import IC.lir.lirAST.LoadField;
 import IC.lir.lirAST.Memory;
 import IC.lir.lirAST.Memory.MemoryKind;
 import IC.lir.lirAST.MethodNode;
+import IC.lir.lirAST.MoveFieldNode;
 import IC.lir.lirAST.MoveNode;
 import IC.lir.lirAST.Reg;
 import IC.lir.lirAST.RegWithIndex;
 import IC.lir.lirAST.RegWithOffset;
 import IC.lir.lirAST.ReturnNode;
+import IC.lir.lirAST.StaticCallNode;
 import IC.lir.lirAST.StoreArrayNode;
 import IC.lir.lirAST.StoreField;
 import IC.lir.lirAST.StringConcatinetionCall;
 import IC.lir.lirAST.StringLiteralNode;
 import IC.lir.lirAST.ThisNode;
 import IC.lir.lirAST.UnaryInstructionNode;
+import IC.lir.lirAST.VirtualCallNode;
 import IC.lir.lirAST.lirBinaryOp;
 import IC.lir.lirAST.lirUnaryOp;
 
@@ -137,17 +146,39 @@ public class LirTranslator implements IC.AST.Visitor {
 	private String currentClassName = null; 
 	
 	/**
-	 * this to labels are used so break and continue jumps will know which labels should use
+	 * this two labels are used so break and continue jumps will know which labels should use
 	 */
 	private Label head_loop_label = null;
 	private Label tail_loop_label = null;
 	
 	
-	public LirTranslator(Program program)
+	
+	
+	/**  
+	 * class name -> method name -> Method object
+	 */
+	
+	private Map<String, Map<String, Method>> methodMap ; 
+	
+	/**
+	 * class name -> static method name -> Method object
+	 */
+	private Map<String, Map<String, Method>> staticMethodMap ; 
+	
+	
+	/**
+	 * global symbol table, in our case, used to resolve method definitions [call statements]
+	 */
+	
+	private GlobalSymbolTable globSymTable;
+	
+	
+	
+	public LirTranslator(Program program, GlobalSymbolTable globSymTable)
 	{
 		
 		/* init data structures and fields */
-		
+		this.globSymTable = globSymTable;
 		this.icProgram = program;
 		
 		labelGenerator = new LabelGenerator();
@@ -159,6 +190,52 @@ public class LirTranslator implements IC.AST.Visitor {
 		/* saves all the string definitions we've seen, note that the type of the list is a LIR node */
 		
 		stringDefinitions = new ArrayList<StringLiteralNode>();
+		
+		
+		/* init method map, used for method calls */
+		
+		this.initMethodMap(program);
+		
+		
+		
+	}
+	
+	
+	/**
+	 * Fill the maps: class name -> method name -> method object
+	 * for both static and virtual methods
+	 * 
+	 */
+	
+	private void initMethodMap(Program program )
+	{
+		
+		
+		this.methodMap = new HashMap<String, Map<String,Method>>();
+		this.staticMethodMap = new HashMap<String, Map<String, Method>>();
+		for(ICClass icClass : program.getClasses())
+		{
+			
+			
+			Map<String, Method> namesToMethods = new HashMap<String, Method>();
+			Map<String, Method> staticNamesToMethods = new HashMap<String, Method>();
+ 			
+			for(Method method: icClass.getMethods())
+			{
+				if(method.isStatic())
+				{
+					staticNamesToMethods.put(method.getName(), method);
+				}
+				else
+				{
+					namesToMethods.put(method.getName(), method);
+				}
+			}
+				
+			
+			this.methodMap.put(icClass.getName(), namesToMethods);
+			this.staticMethodMap.put(icClass.getName(), staticNamesToMethods);
+		}
 		
 	}
 	
@@ -249,6 +326,10 @@ public class LirTranslator implements IC.AST.Visitor {
 	
 	
 	
+	/**
+	 * list saves the current instructions generated for current method we're visiting
+	 */
+	
 	private List<LirNode> currentMethodInstructions;
 	
 	private MethodNode common_method_visit( Method method) throws SemanticError
@@ -283,7 +364,6 @@ public class LirTranslator implements IC.AST.Visitor {
 			// nullify the register counter
 			
 			this.currentRegister = 0;
-			
 			
 			// visit statements
 			stmt.accept(this);
@@ -376,20 +456,12 @@ public class LirTranslator implements IC.AST.Visitor {
 			assignmentResult = rightHand;
 		}
 		
-		
+		// need to save assignment register
+		++currentRegister;
 
 		
 		//case 1: assignment to variable location (local var or field (this or external)
 		if(assignment.getVariable() instanceof VariableLocation ){
-			
-			
-			if(rightHand instanceof Memory)
-			{
-				// we stored our result in a register, we need to hold it
-				++currentRegister;
-			
-			}
-			
 			
 			// visit location, can be: local variable, a this field or an external field
 			LirNode locationNode = VariableLocationCommonVisit((VariableLocation) assignment.getVariable());
@@ -412,15 +484,6 @@ public class LirTranslator implements IC.AST.Visitor {
 				
 			}
 			
-			if(rightHand instanceof Memory)
-			{
-				// we stored our result in a register, we need to hold it
-				--currentRegister;
-			
-			}
-			
-			
-			
 		}
 		
 		
@@ -428,35 +491,30 @@ public class LirTranslator implements IC.AST.Visitor {
 		
 		else
 		{
-			if(rightHand instanceof Memory)
-			{
-				// we stored our result in a register, we need to hold it
-				++currentRegister;
 			
-			}
 			RegWithIndex arrayLoc = ArrayLocationCommonVisit((ArrayLocation) assignment.getVariable());
 			
 			// store the assignment in the array
 			
-			this.currentMethodInstructions.add(new StoreArrayNode(arrayLoc, assignmentResult));
-			
-			if(rightHand instanceof Memory){
-				
-				// no longer need the register that held the result we want to store
-				--currentRegister;
-				
-			}
-			
+			this.currentMethodInstructions.add(new StoreArrayNode(arrayLoc, assignmentResult));	
 			
 		}
+		// no longer need assignment register
+		--currentRegister;
 		
 		return null;
 	
 	}
 
+
+
+	//TODO handle RDummy
+
 	@Override
 	public Object visit(CallStatement callStatement) throws SemanticError  {
-		return callStatement.getCall().accept(this);
+		
+		callStatement.getCall().accept(this);
+		return null;
 	}
 
 	@Override
@@ -660,10 +718,8 @@ public class LirTranslator implements IC.AST.Visitor {
 			// get class type
 			
 			String definingClassName = ((ClassType)location.getLocation().getNodeType()).getName();
-
 				
 			int field_offset = classManager.getFieldOffset(definingClassName, location.getName());
-			
 			
 			/* returns a new lir object that holds a. register that holds the object b. an offset of the field */
 			return new RegWithOffset(classObject, new Immediate(field_offset));
@@ -780,10 +836,7 @@ public class LirTranslator implements IC.AST.Visitor {
 			indexNode = (LirNode) location.getIndex().accept(this);
 			
 			return new RegWithIndex(arrayObject, indexNode);
-			
 
-			
-		
 		}
 		
 		// otherwise, result must be stored in another register
@@ -834,71 +887,214 @@ public class LirTranslator implements IC.AST.Visitor {
 		return destReg;
 	}
 
-	@SuppressWarnings("unchecked")
+	
 	@Override
 	public Object visit(StaticCall call) throws SemanticError  {
-		List<LirNode> instructions = new ArrayList<LirNode>();
-		//this function push all arguments into registers
-		push_args_to_regs(call, instructions);
 		
-		//if this is a call to Library function
-		if(call.getClassName().equals("Library")){
-			//get call label
-			Label lib_call_label = labelGenerator.getLibraryMethodLabel(call.getName());
-			//make Library call and 
-			//TODO- CHECK THIS IS POSSIBLE-save in currentRegister- |parameters number| since we won't need the parameters after we will get the result
-			instructions.addAll((List<LirNode>)new LibraryCallNode(lib_call_label,param_regs_maker(call),new Reg(currentRegister)));
-		}
-		else{
-			//get call label
-			Label static_call_label = labelGenerator.getStaticMethodLabel(call.getName(), call.getClassName());
-			
-			//make Library call and 
-			//TODO- CHECK THIS IS POSSIBLE-save in currentRegister- |parameters number| since we won't need the parameters after we will get the result
-			//instructions.addAll((List<LirNode>)new StaticCallNode(static_call_label,param_regs_maker(call),new Reg(currentRegister)));
-		}
+		// need to find out the name of the class that defines the method
+		// might not actually be call.getClassName(), because, inheritance
+		String className = call.getClassName();
 		
-		free_parametrs_regs(call);
+		ClassSymbol classSymobl = this.globSymTable.getClassSymbol(className);
+		ClassSymbolTable classSymbolTable = classSymobl.getClassSymbolTable();
 		
-		return instructions;
-	}
-
-	//this function push all arguments into registers
-	private void push_args_to_regs(StaticCall call, List<LirNode> instructions)
-			throws SemanticError {
+		// retrieve the method symbol table from the symbol table [ true stands for static ]
+		MethodSymbol methodSym = classSymbolTable.getMethod(call.getName(), true);
 		
-		for (Expression arg:call.getArguments()){
-			//calc arg i and save arg i in currentRegister+i
-			instructions.addAll((List<LirNode>)arg.accept(this));
-			currentRegister++;
-		}
+		String definingClassName = methodSym.getClassName();
+		
+		
+		return staticCallCommonVisit(definingClassName, call);
 	}
 
 
-	private void free_parametrs_regs(StaticCall call) {
-		//after call, arguments are no longer needed. free all the registers which we used to save them
-		for (int i=0; i < call.getArguments().size()-1;i++){//-1 since the answer will be in (former currentRegister)- |parameters number|
-			currentRegister--;
-		}
-	}
-
-	//this function generates the register list where all the parameters lay
-	@SuppressWarnings("unchecked")
-	private List<LirNode> param_regs_maker(Call call) throws SemanticError {
-		List<LirNode> regs = new ArrayList<LirNode>();
-		
-		for (int i=0; i < call.getArguments().size();i++){
-			regs.add(new Reg(currentRegister-(call.getArguments().size()-i)));
-		}
-		return regs;
-	}
 
 
 	@Override
-	public Object visit(VirtualCall call) {
-		// TODO Auto-generated method stub
-		return null;
+	public Object visit(VirtualCall call) throws SemanticError {
+		
+		if(call.isExternal())
+		{
+			// check if external 
+			
+			ClassType objectClassType = (ClassType) call.getLocation().getNodeType();
+			
+			String staticTypeClassName = objectClassType.getName();
+			
+			// get the actual class that defines the method (overrides it last)
+			// in other words, which method really holds the definition for this method call
+			
+			String definingClassName = classManager.getClassLayout(staticTypeClassName).getMethodClassName(call.getName());
+			
+			// generate code for the location
+			LirNode classObj = (LirNode) call.getLocation().accept(this);
+			Reg classObjReg;
+			
+			if(classObj instanceof Memory)
+			{
+				// load to register
+				classObjReg = new Reg(currentRegister);
+				
+				// move to register
+				this.currentMethodInstructions.add(new MoveNode(classObj, classObjReg));
+			}
+			else
+			{
+				// already in register
+				classObjReg = (Reg)classObj;
+			}
+			
+			/* generate the call code, note that that method handles saving classObjReg */
+			return virtualCallCommonVisit(classObjReg, call, definingClassName);
+			
+			
+		}
+		else	
+		{
+			
+			// may be a static call, may be a virtual call, get the symbol that defines this method
+			MethodSymbol methodSym = ((VariableSymbolTable)call.enclosingScope()).getMethod(call.getName());
+			
+			// get the class that defines the method
+			String className = methodSym.getClassName();
+			
+			if(methodSym.isStatic())
+			{
+				// same as static call
+				return this.staticCallCommonVisit(className, call);
+			}
+			
+			// else, virtual method, object register should be loaded with this
+			ThisNode thisNode = new ThisNode();
+			Reg classObjReg = new Reg(currentRegister);
+			this.currentMethodInstructions.add(new MoveNode(thisNode, classObjReg ));
+			
+			return virtualCallCommonVisit(classObjReg, call, className);
+			
+			
+		}
+		
+	
 	}
+	
+	
+	private List<Memory> generateParameterList(Method method)
+	{
+		
+		// generate the list of parameters according to the given names of formals
+		List<Memory> params = new ArrayList<Memory>();
+							
+		for(Formal formal : method.getFormals())
+		{
+							
+			params.add(new Memory(formal.getName(), MemoryKind.PARAM));
+							
+		}
+		
+		return params;
+		
+	}
+	
+	
+	
+	private List<LirNode> getParameterValues(Call call) throws SemanticError
+	{
+		
+		List<LirNode> values = new ArrayList<LirNode>();
+		
+		for(Expression exp : call.getArguments())
+		{
+			// visit each expression
+			LirNode expressionResult = (LirNode) exp.accept(this);
+						
+			if(expressionResult instanceof Reg)
+			{
+				// need to backup register
+				++this.currentRegister;
+			}
+						
+			values.add(expressionResult);
+						
+		}
+		return values;
+		
+	}
+	
+	
+	/**
+	 * this method handles common virtual visit. the method generates the proper instructions
+	 * for loading parameters and generating the call node
+	 * @param classRegister - the register that holds the class object
+	 * @param call          - AST node call object (virtual call)
+	 * @param definingClassName - the class name that actually defines the method
+	 * @return
+	 * @throws SemanticError
+	 */
+	
+	private VirtualCallNode virtualCallCommonVisit(Reg classRegister, VirtualCall call, String definingClassName) throws SemanticError
+	{
+		
+		// get the virtual method object			
+		Method method = this.methodMap.get(definingClassName).get(call.getName());
+					
+					
+		// generate the list of parameters according to the given names of formals
+		List<Memory> params = generateParameterList(method);
+			
+		// remember the register we started with
+		int temp = this.currentRegister;
+					
+		// save classRegister
+		++this.currentRegister;
+		
+	    // get method offset
+					
+		Immediate methodOffset = new Immediate(this.classManager.getMethodOffset(definingClassName, call.getName()));
+					
+		List<LirNode> values = getParameterValues(call);
+					
+		// create a target register, may reuse registers
+					
+		this.currentRegister = temp;
+		return new VirtualCallNode(classRegister, methodOffset, params, values, new Reg(currentRegister));
+		
+		
+	}
+	
+	/**
+	 * this method handles common static call visit. the method generates the proper instructions for 
+	 * loading parameters and generating the call node
+	 * @param className - the class that defines the given method
+	 * @param call      - AST call node
+	 * @return
+	 * @throws SemanticError
+	 */
+	
+	
+	private StaticCallNode staticCallCommonVisit(String className, Call call) throws SemanticError
+	{
+		
+		// generate method label
+		Label methodLabel = this.labelGenerator.getStaticMethodLabel(call.getName(), className);
+		
+		// get the method object
+		Method method = this.staticMethodMap.get(className).get(call.getName());
+		
+		// generate list of parameters according to the method
+		List<Memory> params = generateParameterList(method);
+		
+		// back up initial counter
+		int temp = currentRegister;
+		
+		// get value for each parameter
+		List<LirNode> paramValues = getParameterValues(call);
+		
+		this.currentRegister = temp;
+		
+		return new StaticCallNode(methodLabel, params, paramValues, new Reg(currentRegister));
+	}
+
+
 
 	@Override
 	public Object visit(This thisExpression)  {
