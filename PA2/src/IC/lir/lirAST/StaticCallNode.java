@@ -29,17 +29,20 @@ public class StaticCallNode extends MethodCallNode{
 	@Override
 	public String emit() {
 		
-		StringBuilder result = new StringBuilder(String.format("StaticCall %s(", this.methodLabel));
+		StringBuilder result = new StringBuilder(String.format("StaticCall %s(", this.methodLabel.emit()));
 		for(int i = 0; i < this.memoryVars.size(); ++i)
 		{
-			
-			result.append(String.format("%s=%s", memoryVars.get(i), params.get(i)));
+			if(i < this.memoryVars.size() - 1)
+				result.append(String.format("%s=%s,", memoryVars.get(i).emit(), params.get(i).emit()));
+			else
+				result.append(String.format("%s=%s", memoryVars.get(i).emit(), params.get(i).emit()));
 			
 		}
-		result.append(")");
+		result.append(")," + this.targetRegister.emit() + "\n");
 		
 		return result.toString();
 		
 	}
 
+	
 }

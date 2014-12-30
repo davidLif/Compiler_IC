@@ -888,6 +888,7 @@ public class LirTranslator implements IC.AST.Visitor {
 	}
 
 	
+	
 	@Override
 	public Object visit(StaticCall call) throws SemanticError  {
 		
@@ -904,7 +905,9 @@ public class LirTranslator implements IC.AST.Visitor {
 		String definingClassName = methodSym.getClassName();
 		
 		
-		return staticCallCommonVisit(definingClassName, call);
+		StaticCallNode staticCallNode = staticCallCommonVisit(definingClassName, call);
+		this.currentMethodInstructions.add(staticCallNode);
+		return staticCallNode.getTargetReg();
 	}
 
 
@@ -945,7 +948,9 @@ public class LirTranslator implements IC.AST.Visitor {
 			}
 			
 			/* generate the call code, note that that method handles saving classObjReg */
-			return virtualCallCommonVisit(classObjReg, call, definingClassName);
+			VirtualCallNode virtualCallNode = virtualCallCommonVisit(classObjReg, call, definingClassName);
+			this.currentMethodInstructions.add(virtualCallNode);
+			return virtualCallNode.getTargetReg();
 			
 			
 		}
@@ -961,16 +966,18 @@ public class LirTranslator implements IC.AST.Visitor {
 			if(methodSym.isStatic())
 			{
 				// same as static call
-				return this.staticCallCommonVisit(className, call);
+				StaticCallNode staticCallNode = staticCallCommonVisit(className, call);
+				this.currentMethodInstructions.add(staticCallNode);
+				return staticCallNode.getTargetReg();
 			}
 			
 			// else, virtual method, object register should be loaded with this
 			ThisNode thisNode = new ThisNode();
 			Reg classObjReg = new Reg(currentRegister);
 			this.currentMethodInstructions.add(new MoveNode(thisNode, classObjReg ));
-			
-			return virtualCallCommonVisit(classObjReg, call, className);
-			
+			VirtualCallNode virtualCallNode = virtualCallCommonVisit(classObjReg, call, className);
+			this.currentMethodInstructions.add(virtualCallNode);
+			return virtualCallNode.getTargetReg();
 			
 		}
 		
@@ -1190,10 +1197,10 @@ public class LirTranslator implements IC.AST.Visitor {
 			b = new Reg(currentRegister);
 			this.currentMethodInstructions.add(new MoveNode(right_exp, b));
 			
-			// backup register
-			++this.currentRegister;
+			
 		}
-		
+		// backup register
+		++this.currentRegister;
 		
 		
 		// get secondOperand (a), may be anything!
@@ -1201,13 +1208,8 @@ public class LirTranslator implements IC.AST.Visitor {
 	
 		// no longer need b register
 		
-		if(!(right_exp instanceof Reg))
-		{
-			
-			 // we used a register to store the first operand
-			 // 
-			--this.currentRegister;
-		}
+		--this.currentRegister;
+		
 		
 		//save op to currentRegister
 		this.currentMethodInstructions.add(new BinaryInstructionNode(op, a, b));

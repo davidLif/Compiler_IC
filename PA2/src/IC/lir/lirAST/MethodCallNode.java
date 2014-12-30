@@ -29,4 +29,10 @@ public abstract class MethodCallNode extends LirNode{
 		this.targetRegister = targetRegister;
 	}
 	
+	public Reg getTargetReg()
+	{
+		return this.targetRegister;
+	}
+	
+
 }

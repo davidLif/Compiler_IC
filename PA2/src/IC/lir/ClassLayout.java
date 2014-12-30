@@ -60,7 +60,7 @@ public class ClassLayout {
 		// add all method to offsets mapping (super class prefix)
 		this.methodToOffset.putAll(parentClass.methodToOffset);
 		this.methodOffsetToClassName.putAll(parentClass.methodOffsetToClassName);
-		this.currentMaxMethodOffset = parentClass.currentMaxFieldOffset;
+		this.currentMaxMethodOffset = parentClass.currentMaxMethodOffset;
 		
 		// add all field to offsets mapping (super class prefix)
 		this.fieldToOffset.putAll(parentClass.fieldToOffset);
