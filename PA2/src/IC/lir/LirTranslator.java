@@ -1111,9 +1111,9 @@ public class LirTranslator implements IC.AST.Visitor {
 	@Override
 	public Object visit(NewClass newClass) {
 		//allocate object and return pointer reg
-		LirNode class_size = new Immediate(classManager.getClassSize(newClass.getName()));
+		LirNode class_size = new Immediate(classManager.getClassSize(newClass.getName())*4);
 		Reg allocatedReg = allocate(class_size);
-		this.currentMethodInstructions.add(new StoreField(new RegWithOffset(allocatedReg,new Immediate(0)),new Label("_DV_"+newClass.getName())));
+		this.currentMethodInstructions.add(new StoreField(new RegWithOffset(allocatedReg, new Immediate(0)), this.labelGenerator.getClassDVLabel(newClass.getName())));
 		return allocatedReg;
 	}
 
@@ -1130,13 +1130,11 @@ public class LirTranslator implements IC.AST.Visitor {
 		//make target reg
 		Reg allocation_reg = new Reg(currentRegister);
 		//allocate array space
-		this.currentMethodInstructions.add(new LibraryCallNode(new Label("__allocateObject"),params,allocation_reg));
+		this.currentMethodInstructions.add(new LibraryCallNode(this.labelGenerator.getLibraryMethodLabel("allocateObject"),params,allocation_reg));
 		return allocation_reg;//return the reg to which allocated array
 	}
 
 	public Object visit(Length length) throws SemanticError  {
-		
-	
 		
 		// get array object
 		LirNode array = (LirNode) length.getArray().accept(this);
@@ -1455,7 +1453,7 @@ public class LirTranslator implements IC.AST.Visitor {
 
 	@Override
 	public Object visit(ExpressionBlock expressionBlock) throws SemanticError  {
-		return expressionBlock.getExpression().accept(this);//return the reg of the expression 
+		return expressionBlock.getExpression().accept(this);//return the reg/mem of the expression 
 	}
 	
 	private LirNode concatenate_strings(MathBinaryOp binaryOp) throws SemanticError {
@@ -1476,8 +1474,8 @@ public class LirTranslator implements IC.AST.Visitor {
 		
 		//calc tail string
 		LirNode tail = (LirNode) binaryOp.getSecondOperand().accept(this);
-		
-		this.currentMethodInstructions.add(new StringConcatinetionCall(head,tail,b));
+		Label concatMethodLabel = this.labelGenerator.getLibraryMethodLabel("stringCat");
+		this.currentMethodInstructions.add(new StringConcatinetionCall(concatMethodLabel, head,tail,b));
 		
 		//free saved register
 		currentRegister--;

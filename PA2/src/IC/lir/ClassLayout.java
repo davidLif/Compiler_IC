@@ -212,4 +212,10 @@ public class ClassLayout {
 		
 	}
 	
+	
+	public int getDispatchTableSize()
+	{
+		//  +1 for DV pointer
+		return 1 + this.currentMaxFieldOffset ;
+	}
 }

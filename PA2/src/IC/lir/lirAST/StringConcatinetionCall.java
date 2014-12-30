@@ -6,28 +6,32 @@ import java.util.List;
 public class StringConcatinetionCall extends LibraryCallNode {
 
 	/**
-	 * this library call should be available even of the user didn't give us the library to compile with th
+	 * this library call should be available even of the user didn't give us the library to compile with the
 	 * program, so I use this class instead of LibraryCallNode
 	 */
 	
 	//this two will save the two labels of the strings to concatenate
-	LirNode head;
-	LirNode tail;
+	protected LirNode head;
+	protected LirNode tail;
 	
 	//return value register
-	Reg destination;
+	protected Reg destination;
 	
-	public StringConcatinetionCall(LirNode head,LirNode tail,Reg destination){
-		super(new Label ("__stringCat"),new ArrayList<LirNode>(), destination);
+	// actual method label
+	protected Label methodLabel;
+	
+	public StringConcatinetionCall(Label callLabel, LirNode head, LirNode tail,Reg destination){
+		super(callLabel,new ArrayList<LirNode>(), destination);
 		this.params.add(head);
 		this.params.add(tail);
 		this.head = head;
 		this.tail = tail;
+		this.methodLabel = callLabel;
 		this.destination = destination;
 	}
 	@Override
 	public String emit() {
-		return "__stringCat("+head.emit()+","+tail.emit()+"),"+destination.emit()+"\n";
+		return methodLabel.emit() + "("+head.emit()+","+tail.emit()+"),"+destination.emit()+"\n";
 	}
 
 }
