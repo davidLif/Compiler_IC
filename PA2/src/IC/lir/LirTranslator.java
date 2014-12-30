@@ -1563,5 +1563,48 @@ public class LirTranslator implements IC.AST.Visitor {
 		
 		return b;
 	}
+	
+	private void add_run_time_checks_implementation(){
+		List<LirNode> inject_checks = new ArrayList<LirNode>();
+		
+		inject_checks.add(new LabelNode(new Label ("__checkNullRef")));
+		Label correct = labelGenerator.createLabel();
+		inject_checks.add(new CompareNode(new Immediate(0), new Memory("a",MemoryKind.PARAM)));
+		inject_checks.add(new JumpFalse(correct));
+		//if not null jump to return 1. else print and out
+		List<LirNode> param_check_null = new ArrayList<LirNode>();
+		//add String to param
+		inject_checks.add(new LibraryCallNode(new Label("__println"),param_check_null,new Reg(currentRegister)));
+		inject_checks.add(new JumpNode(new Label("exit")));//quit program
+		inject_checks.add(new LabelNode(correct));
+		inject_checks.add(new ReturnNode(new Immediate(1)));
+		
+		
+/*		inject_checks.add(new LabelNode(new Label ("__checkZero")));
+		inject_checks.add(new CompareNode(new Immediate(0), new Memory("b",MemoryKind.PARAM)));
+		inject_checks.add(new JumpFalse(correct));
+		
+		//if not null jump to return 1. else print and out
+		List<LirNode> param_check_zero = new ArrayList<LirNode>();
+		//add String to param
+		inject_checks.add(new LibraryCallNode(new Label("__println"),param_check_zero,new Reg(currentRegister)));
+		inject_checks.add(new JumpNode(new Label("exit")));//quit program
+		
+		inject_checks.add(new LabelNode(correct));
+		inject_checks.add(new ReturnNode(new Immediate(1)));
+		
+		inject_checks.add(new LabelNode(new Label ("__checkSize")));
+		inject_checks.add(new CompareNode(new Immediate(0), new Memory("n",MemoryKind.PARAM)));
+		inject_checks.add(new JumpL(new Label(correct)));
+		
+		//if not null jump to return 1. else print and out
+		List<LirNode> param_check_zero = new ArrayList<LirNode>();
+		//add String to param
+		inject_checks.add(new LibraryCallNode(new Label("__println"),param_check_zero,new Reg(currentRegister)));
+		inject_checks.add(new JumpNode(new Label("exit")));//quit program
+		
+		inject_checks.add(new LabelNode(correct));
+		inject_checks.add(new ReturnNode(new Immediate(1)));*/
+	}
 
 }
