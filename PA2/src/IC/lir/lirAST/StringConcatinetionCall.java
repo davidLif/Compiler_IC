@@ -29,9 +29,6 @@ public class StringConcatinetionCall extends LibraryCallNode {
 		this.methodLabel = callLabel;
 		this.destination = destination;
 	}
-	@Override
-	public String emit() {
-		return methodLabel.emit() + "("+head.emit()+","+tail.emit()+"),"+destination.emit()+"\n";
-	}
+	
 
 }

@@ -21,9 +21,17 @@ public class LibraryCallNode extends MethodCallNode{
 	public String emit() {
 		StringBuilder s =new StringBuilder();
 		s.append("Library "+methodLabel.emit()+"(");
-		for (LirNode arg:params){
-			s.append(arg.emit());
+		
+		for(int i = 0; i < params.size(); ++i)
+		{
+			if( i < params.size() - 1)
+				s.append(params.get(i).emit() + ",");
+			else
+				s.append(params.get(i).emit() );
 		}
+		
+		
+		
 		s.append("),"+targetRegister.emit()+"\n");
 		return s.toString();
 	}

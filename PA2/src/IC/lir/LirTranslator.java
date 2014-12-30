@@ -2,8 +2,10 @@ package IC.lir;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import IC.BinaryOps;
 import IC.LiteralTypes;
@@ -55,6 +57,7 @@ import IC.SymTables.Symbols.MethodSymbol;
 import IC.SymTables.Symbols.Symbol;
 import IC.Types.ClassType;
 import IC.Types.IntType;
+import IC.Types.MethodType;
 import IC.Types.Type;
 import IC.lir.lirAST.ArrayLengthNode;
 import IC.lir.lirAST.BinaryInstructionNode;
@@ -94,6 +97,7 @@ import IC.lir.lirAST.UnaryInstructionNode;
 import IC.lir.lirAST.VirtualCallNode;
 import IC.lir.lirAST.lirBinaryOp;
 import IC.lir.lirAST.lirUnaryOp;
+import IC.Types.VoidType;
 
 public class LirTranslator implements IC.AST.Visitor {
 
@@ -174,6 +178,7 @@ public class LirTranslator implements IC.AST.Visitor {
 	
 	
 	
+	
 	public LirTranslator(Program program, GlobalSymbolTable globSymTable)
 	{
 		
@@ -210,12 +215,18 @@ public class LirTranslator implements IC.AST.Visitor {
 	private void initMethodMap(Program program )
 	{
 		
-		
+		/* maps and sets for all types of methods */
 		this.methodMap = new HashMap<String, Map<String,Method>>();
 		this.staticMethodMap = new HashMap<String, Map<String, Method>>();
+		
 		for(ICClass icClass : program.getClasses())
 		{
 			
+			if(icClass.getName().equals("Library"))
+			{
+				continue;
+				
+			}
 			
 			Map<String, Method> namesToMethods = new HashMap<String, Method>();
 			Map<String, Method> staticNamesToMethods = new HashMap<String, Method>();
@@ -239,6 +250,7 @@ public class LirTranslator implements IC.AST.Visitor {
 		
 	}
 	
+
 	
 	public LirProgram translate()
 	{
@@ -371,6 +383,12 @@ public class LirTranslator implements IC.AST.Visitor {
 			
 		}
 		
+		MethodType methodType = (MethodType) method.getNodeType();
+		if(methodType.getReturnType() instanceof VoidType)
+		{
+			// need to add dummy return
+			currentMethodInstructions.add(new ReturnNode(new Immediate(9999)));
+		}
 		
 		return new MethodNode(methodLabel, currentMethodInstructions);
 		
@@ -888,6 +906,26 @@ public class LirTranslator implements IC.AST.Visitor {
 	}
 
 	
+	public Reg libraryCallVisit(StaticCall call) throws SemanticError
+	{
+		
+		// get method label
+		Label methodLabel = this.labelGenerator.getLibraryMethodLabel(call.getName());
+		
+		int temp = currentRegister;
+		// get values for arguments
+		List<LirNode> values = getParameterValues(call);
+		
+		currentRegister = temp;
+		Reg targetReg = new Reg(currentRegister);
+		
+		LibraryCallNode libCall = new LibraryCallNode(methodLabel, values, targetReg);
+		
+		this.currentMethodInstructions.add(libCall);
+		return targetReg;
+		
+	}
+	
 	
 	@Override
 	public Object visit(StaticCall call) throws SemanticError  {
@@ -895,6 +933,11 @@ public class LirTranslator implements IC.AST.Visitor {
 		// need to find out the name of the class that defines the method
 		// might not actually be call.getClassName(), because, inheritance
 		String className = call.getClassName();
+		
+		if(className.equals("Library"))
+		{
+			return this.libraryCallVisit(call);
+		}
 		
 		ClassSymbol classSymobl = this.globSymTable.getClassSymbol(className);
 		ClassSymbolTable classSymbolTable = classSymobl.getClassSymbolTable();
