@@ -2,10 +2,8 @@ package IC.lir;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import IC.BinaryOps;
 import IC.LiteralTypes;
@@ -87,6 +85,7 @@ import IC.lir.lirAST.Reg;
 import IC.lir.lirAST.RegWithIndex;
 import IC.lir.lirAST.RegWithOffset;
 import IC.lir.lirAST.ReturnNode;
+import IC.lir.lirAST.SpaceNode;
 import IC.lir.lirAST.StaticCallNode;
 import IC.lir.lirAST.StoreArrayNode;
 import IC.lir.lirAST.StoreField;
@@ -292,7 +291,7 @@ public class LirTranslator implements IC.AST.Visitor {
 		Label programExitLabel = labelGenerator.getExitLabel();
 		Label mainMethodLabel = labelGenerator.mainMethodLabel();
 		
-		this.runTimeChecks =  new RuntimeChecks(this.labelGenerator, programExitLabel);
+		this.runTimeChecks =  new RuntimeChecks(this.labelGenerator, programExitLabel,stringDefinitions);
 		
 		for(ICClass currClass : program.getClasses())
 		{
@@ -403,7 +402,7 @@ public class LirTranslator implements IC.AST.Visitor {
 		}
 		
 		MethodType methodType = (MethodType) method.getNodeType();
-		if(methodType.getReturnType() instanceof VoidType)
+		if(methodType.getReturnType() instanceof VoidType && !(methodLabel.emit().equals("_ic_main")))
 		{
 			// need to add dummy return
 			currentMethodInstructions.add(new ReturnNode(new Immediate(9999)));
@@ -1582,83 +1581,6 @@ public class LirTranslator implements IC.AST.Visitor {
 		currentRegister--;
 		
 		return b;
-	}
-	
-	private void add_run_time_checks_implementation(){
-		List<LirNode> inject_checks = new ArrayList<LirNode>();
-		
-		//checkNullRef
-		Label correct_null_ref = labelGenerator.createLabel();
-		//inject_checks.add(new LabelNode(this.labelGenerator.get_runTime_checks_Label("checkNullRef", null)));
-		inject_checks.add(new CompareNode(new Immediate(0), new Memory("a",MemoryKind.PARAM)));
-		inject_checks.add(new JumpFalse(correct_null_ref));
-		//if not null jump to return 1. else print and out
-		List<LirNode> param_check_null = new ArrayList<LirNode>();
-		//add String to param
-		stringDefinitions.add(new StringLiteralNode("Runtime Error: Null pointer dereference!", labelGenerator));
-		param_check_null.add(labelGenerator.getStringLabel("Runtime Error: Null pointer dereference!"));
-		//print and exit
-		inject_checks.add(new LibraryCallNode(new Label("__println"),param_check_null,new Reg(currentRegister)));
-		inject_checks.add(new JumpNode(new Label("exit")));//quit program
-		inject_checks.add(new LabelNode(correct_null_ref));
-		inject_checks.add(new ReturnNode(new Immediate(1)));
-		
-		//checkZero
-		Label correct_zero = labelGenerator.createLabel();
-		//inject_checks.add(new LabelNode(this.labelGenerator.get_runTime_checks_Label("checkZero", null))));
-		inject_checks.add(new CompareNode(new Immediate(0), new Memory("b",MemoryKind.PARAM)));
-		inject_checks.add(new JumpFalse(correct_zero));
-		
-		//if not null jump to return 1. else print and out
-		List<LirNode> param_check_zero = new ArrayList<LirNode>();
-		//add String to param
-		stringDefinitions.add(new StringLiteralNode("Runtime Error: Array index out of bounds!", labelGenerator));
-		param_check_null.add(labelGenerator.getStringLabel("Runtime Error: Array index out of bounds!"));
-		//print and exit
-		inject_checks.add(new LibraryCallNode(new Label("__println"),param_check_zero,new Reg(currentRegister)));
-		inject_checks.add(new JumpNode(new Label("exit")));//quit program
-		
-		inject_checks.add(new LabelNode(correct_zero));
-		inject_checks.add(new ReturnNode(new Immediate(1)));
-		
-		//checkSize
-		Label correct_size = labelGenerator.createLabel();
-		//inject_checks.add(new LabelNode(this.labelGenerator.get_runTime_checks_Label("checkSize", null))));
-		inject_checks.add(new CompareNode(new Immediate(0), new Memory("n",MemoryKind.PARAM)));
-		inject_checks.add(new JumpL(correct_size));
-		
-		//if not null jump to return 1. else print and out
-		List<LirNode> param_check_size = new ArrayList<LirNode>();
-		//add String to param
-		stringDefinitions.add(new StringLiteralNode("Runtime Error: Division by zero!", labelGenerator));
-		param_check_null.add(labelGenerator.getStringLabel("Runtime Error: Division by zero!"));
-		//print and exit
-		inject_checks.add(new LibraryCallNode(new Label("__println"),param_check_size,new Reg(currentRegister)));
-		inject_checks.add(new JumpNode(new Label("exit")));//quit program
-		
-		inject_checks.add(new LabelNode(correct_size));
-		inject_checks.add(new ReturnNode(new Immediate(1)));
-		
-		
-		//"__checkArrayAccess"
-		Label correct_array_access = labelGenerator.createLabel();
-		//inject_checks.add(new LabelNode(this.labelGenerator.get_runTime_checks_Label("checkSize", null))));
-		inject_checks.add(new ArrayLengthNode(new Memory("a",MemoryKind.PARAM),new Reg(currentRegister)));
-		inject_checks.add(new CompareNode(new Memory("i",MemoryKind.PARAM),new Reg(currentRegister)));
-		inject_checks.add(new JumpL(correct_array_access));
-		
-		//if not null jump to return 1. else print and out
-		List<LirNode> param_check_array_access = new ArrayList<LirNode>();
-		//add String to param
-		stringDefinitions.add(new StringLiteralNode("Runtime Error: Array index out of bounds!", labelGenerator));
-		param_check_null.add(labelGenerator.getStringLabel("Runtime Error: Array index out of bounds!"));
-		//print and exit
-		inject_checks.add(new LibraryCallNode(new Label("__println"),param_check_array_access,new Reg(currentRegister)));
-		inject_checks.add(new JumpNode(new Label("exit")));//quit program
-		
-		inject_checks.add(new LabelNode(correct_array_access));
-		inject_checks.add(new ReturnNode(new Immediate(1)));
-		
 	}
 
 }
