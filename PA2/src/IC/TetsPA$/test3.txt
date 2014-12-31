@@ -1,0 +1,55 @@
+
+
+
+class B
+{
+
+	void print()
+	{
+		Library.print("failure");
+
+	}
+
+	void print2()
+	{
+		Library.print("failure");
+
+	}
+
+	
+
+}
+class A extends B
+{
+	int x;
+	boolean a;
+
+	static void main( string[] args)
+	{
+		
+		A shachar = new A();
+		shachar.x  =0;
+		shachar.print();
+		shachar.print2();
+
+
+	}
+
+	/*overide*/
+	void print()
+	{
+		Library.print("success");
+
+	}
+ /* new function */
+	void print2()
+	{
+		Library.print("sucess");
+
+	}
+
+
+
+
+
+}
