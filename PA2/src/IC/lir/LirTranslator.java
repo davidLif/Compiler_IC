@@ -87,6 +87,7 @@ import IC.lir.lirAST.Reg;
 import IC.lir.lirAST.RegWithIndex;
 import IC.lir.lirAST.RegWithOffset;
 import IC.lir.lirAST.ReturnNode;
+import IC.lir.lirAST.SpaceNode;
 import IC.lir.lirAST.StaticCallNode;
 import IC.lir.lirAST.StoreArrayNode;
 import IC.lir.lirAST.StoreField;
@@ -295,7 +296,7 @@ public class LirTranslator implements IC.AST.Visitor {
 		
 		// use all the data we gathered: dispatch tables, string literals and methods
 		
-		return new LirProgram(stringDefinitions, dispatchTables, programMethods);
+		return new LirProgram(stringDefinitions, dispatchTables, programMethods,this);
 		
 	}
 
@@ -1565,8 +1566,9 @@ public class LirTranslator implements IC.AST.Visitor {
 		return b;
 	}
 	
-	private void add_run_time_checks_implementation(){
+	public List<LirNode> add_run_time_checks_implementation(){
 		List<LirNode> inject_checks = new ArrayList<LirNode>();
+		inject_checks.add(new SpaceNode());
 		
 		//checkNullRef
 		Label correct_null_ref = labelGenerator.createLabel();
@@ -1583,6 +1585,7 @@ public class LirTranslator implements IC.AST.Visitor {
 		inject_checks.add(new JumpNode(new Label("exit")));//quit program
 		inject_checks.add(new LabelNode(correct_null_ref));
 		inject_checks.add(new ReturnNode(new Immediate(1)));
+		inject_checks.add(new SpaceNode());
 		
 		//checkZero
 		Label correct_zero = labelGenerator.createLabel();
@@ -1601,6 +1604,7 @@ public class LirTranslator implements IC.AST.Visitor {
 		
 		inject_checks.add(new LabelNode(correct_zero));
 		inject_checks.add(new ReturnNode(new Immediate(1)));
+		inject_checks.add(new SpaceNode());
 		
 		//checkSize
 		Label correct_size = labelGenerator.createLabel();
@@ -1619,7 +1623,7 @@ public class LirTranslator implements IC.AST.Visitor {
 		
 		inject_checks.add(new LabelNode(correct_size));
 		inject_checks.add(new ReturnNode(new Immediate(1)));
-		
+		inject_checks.add(new SpaceNode());
 		
 		//"__checkArrayAccess"
 		Label correct_array_access = labelGenerator.createLabel();
@@ -1639,7 +1643,9 @@ public class LirTranslator implements IC.AST.Visitor {
 		
 		inject_checks.add(new LabelNode(correct_array_access));
 		inject_checks.add(new ReturnNode(new Immediate(1)));
+		inject_checks.add(new SpaceNode());
 		
+		return inject_checks;
 	}
 
 }
