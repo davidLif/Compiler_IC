@@ -25,11 +25,28 @@ public class LirProgram extends LirNode {
 	private List<MethodNode> methods;
 	
 	
-	public LirProgram(List<StringLiteralNode> strings, List<DispatchTableNode> dispatchTables, List<MethodNode> methods)
+	
+	/**
+	 *  used for termination
+	 */
+	
+	private Label exitLabel; 
+	
+	
+	/**
+	 * entrance label
+	 */
+	
+	private Label mainMethodLabel;
+	
+	
+	public LirProgram(List<StringLiteralNode> strings, List<DispatchTableNode> dispatchTables, List<MethodNode> methods, Label exitLabel, Label mainMethodLabel)
 	{
 		this.strings = strings;
 		this.dispatchTables = dispatchTables;
 		this.methods = methods;
+		this.mainMethodLabel = mainMethodLabel;
+		this.exitLabel = exitLabel;
 		
 	}
 	
@@ -50,22 +67,19 @@ public class LirProgram extends LirNode {
 			sb.append(dispatchTable.emit() + "\n");
 		}
 		
+		String mainMethod = null;
 		for(MethodNode method : methods)
 		{
-			if (method.methodLabel.emit().equals("_ic_main")){
+			if (method.methodLabel == this.mainMethodLabel){
+				mainMethod = method.emit() + "\n";
 				continue;
 			}
 			sb.append(method.emit() + "\n");
 		}
-		for(MethodNode method : methods)
-		{
-			if (method.methodLabel.emit().equals("_ic_main")){
-				sb.append(method.emit());
-			}
-		}
-		sb.append(new LabelNode(new Label("exit")).emit());
-		
-		
+		// add main method last
+		sb.append(mainMethod + "\n");
+		// add exit label
+		sb.append(this.exitLabel.emit());	
 		return sb.toString();
 	}
 }

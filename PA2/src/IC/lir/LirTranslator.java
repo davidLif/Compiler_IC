@@ -177,6 +177,12 @@ public class LirTranslator implements IC.AST.Visitor {
 	private GlobalSymbolTable globSymTable;
 	
 	
+	/**
+	 * run time check manager, use this object to generate implementation and generate calls
+	 */
+	private RuntimeChecks runTimeChecks;
+	
+	
 	
 	
 	public LirTranslator(Program program, GlobalSymbolTable globSymTable)
@@ -281,6 +287,13 @@ public class LirTranslator implements IC.AST.Visitor {
 		
 		List<MethodNode> programMethods = new ArrayList<MethodNode>();   // list of lir methods
 		
+		/* get the exit label, main method label */
+		
+		Label programExitLabel = labelGenerator.getExitLabel();
+		Label mainMethodLabel = labelGenerator.mainMethodLabel();
+		
+		this.runTimeChecks =  new RuntimeChecks(this.labelGenerator, programExitLabel);
+		
 		for(ICClass currClass : program.getClasses())
 		{
 			// go over each class and get all its lir methods
@@ -293,9 +306,15 @@ public class LirTranslator implements IC.AST.Visitor {
 		
 		List<DispatchTableNode> dispatchTables = classManager.getAllDispatchTables(labelGenerator);
 		
+		
+		
+		/* insert the run time check implementation */
+		
+		programMethods.addAll(this.runTimeChecks.getImplementation());
+		
 		// use all the data we gathered: dispatch tables, string literals and methods
 		
-		return new LirProgram(stringDefinitions, dispatchTables, programMethods);
+		return new LirProgram(stringDefinitions, dispatchTables, programMethods, programExitLabel, mainMethodLabel);
 		
 	}
 
