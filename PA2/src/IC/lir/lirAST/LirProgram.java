@@ -52,7 +52,16 @@ public class LirProgram extends LirNode {
 		
 		for(MethodNode method : methods)
 		{
+			if (method.methodLabel.equals("_ic_main")){
+				continue;
+			}
 			sb.append(method.emit() + "\n");
+		}
+		for(MethodNode method : methods)
+		{
+			if (method.methodLabel.equals("_ic_main")){
+				sb.append(method.emit() + "\n");
+			}
 		}
 		
 		

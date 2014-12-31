@@ -19,7 +19,7 @@ package IC.lir.lirAST;
  *  
  */
 
-public class Label extends LirNode{
+public class Label extends Memory{
 
 	
 	
@@ -32,6 +32,7 @@ public class Label extends LirNode{
 	
 	public Label(String labelName)
 	{
+		super(labelName,MemoryKind.LOCAL);
 		this.labelName = labelName;
 	}
 	
