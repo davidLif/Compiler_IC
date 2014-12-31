@@ -58,7 +58,11 @@ public class LabelGenerator {
 	
 	private Map<String, Label> libraryMethodLabels = new HashMap<String, Label>();
 	
-	
+	/**
+	 * labels for runtime check methods
+	 * 
+	 */
+	private Map<String, Label> runtimeChecksLabels = new HashMap<String, Label>();
 	
 	
 	/**
@@ -72,9 +76,18 @@ public class LabelGenerator {
 	
 	/**
 	 * label of the main method, only one exists and can be allocated at object initialization
+	 * entry point
 	 */
 	
 	private Label mainMethodLabel = new Label("_ic_main");
+	
+	
+	/**
+	 *  label of the exit point of the program
+	 */
+	
+	private Label exitLabel = new Label("_exit");
+	
 	
 	/**
 	 * method returns a label by given string literal
@@ -253,6 +266,47 @@ public class LabelGenerator {
 		
 	}
 	
+	
+	/**
+	 * 
+	 * @return exit label for program [singleton]
+	 */
+	
+	public Label getExitLabel()
+	{
+		
+		return this.exitLabel;
+	}
+	
+	/**
+	 * 
+	 * @return the main method label for the program [singleton]
+	 */
+	
+	public Label mainMethodLabel()
+	{
+		return this.mainMethodLabel;
+		
+	}
+	
+	/**
+	 * method returns (and maintains) labels for our custom runtime check methods
+	 * @param methodName - name of method
+	 * @return label
+	 */
+	
+	
+	public Label getRuntimeCheckLabel(String methodName)
+	{
+		
+		if(this.runtimeChecksLabels.get(methodName) == null)
+		{
+			runtimeChecksLabels.put(methodName, new Label("__" + methodName));
+			
+		}
+		return runtimeChecksLabels.get(methodName);
+		
+	}
 	
 	
 	
