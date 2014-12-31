@@ -761,7 +761,7 @@ public class LirTranslator implements IC.AST.Visitor {
 			//runtime check prefix != null
 			List<LirNode> params = new ArrayList<LirNode>();
 			params.add(classObject);
-			this.currentMethodInstructions.add(new LibraryCallNode(new Label("__checkNullRef"),params,new Reg(currentRegister)));
+			//this.currentMethodInstructions.add(new StaticCall(new Label("__checkNullRef"),params,new Reg(currentRegister)));
 			
 			// get class type
 			
@@ -872,11 +872,11 @@ public class LirTranslator implements IC.AST.Visitor {
 			arrayObject = (Reg)arrayNode;
 		}
 		
-		//runtime check array != null
+		/*//runtime check array != null
 		List<LirNode> params = new ArrayList<LirNode>();
 		params.add(arrayObject);
 		this.currentMethodInstructions.add(new LibraryCallNode(new Label("__checkNullRef"),params,new Reg(currentRegister)));
-		
+		*/
 		
 		
 		// generate code for index
@@ -887,12 +887,13 @@ public class LirTranslator implements IC.AST.Visitor {
 		
 		if(location.getIndex() instanceof Literal)
 		{
+			
 			indexNode = (LirNode) location.getIndex().accept(this);
-			//runtime check and arraySize < i-1
+			/*//runtime check and arraySize < i-1
 			params.add(indexNode);
-			this.currentMethodInstructions.add(new LibraryCallNode(new Label("__checkArrayAccess"),params,new Reg(currentRegister)));
+			this.currentMethodInstructions.add(new LibraryCallNode(new Label("__checkArrayAccess"),params,new Reg(currentRegister)));*/
 			return new RegWithIndex(arrayObject, indexNode);
-
+			
 		}
 		
 		// otherwise, result must be stored in another register
@@ -917,10 +918,10 @@ public class LirTranslator implements IC.AST.Visitor {
 			indexRegister = (Reg)indexNode;
 		}
 		
-		//runtime check and arraySize < i-1
+		/*//runtime check and arraySize < i-1
 		params.add(indexNode);
 		this.currentMethodInstructions.add(new LibraryCallNode(new Label("__checkArrayAccess"),params,new Reg(currentRegister)));
-		
+		*/
 		// no longer need array register
 		--currentRegister;
 		
@@ -1031,12 +1032,12 @@ public class LirTranslator implements IC.AST.Visitor {
 				classObjReg = (Reg)classObj;
 			}
 			
-			//runtime check array != null
+			/*//runtime check array != null
 			currentRegister++;
 			List<LirNode> params = new ArrayList<LirNode>();
 			params.add(classObjReg);
 			this.currentMethodInstructions.add(new LibraryCallNode(new Label("__checkNullRef"),params,new Reg(currentRegister)));
-			currentRegister--;
+			currentRegister--;*/
 			
 			/* generate the call code, note that that method handles saving classObjReg */
 			VirtualCallNode virtualCallNode = virtualCallCommonVisit(classObjReg, call, definingClassName);
@@ -1203,7 +1204,7 @@ public class LirTranslator implements IC.AST.Visitor {
 	public Object visit(NewClass newClass) {
 		//allocate object and return pointer reg
 		LirNode class_size = new Immediate(classManager.getClassSize(newClass.getName())*4);
-		Reg allocatedReg = allocate(class_size);
+		Reg allocatedReg = allocate(class_size,"allocateObject");
 		this.currentMethodInstructions.add(new StoreField(new RegWithOffset(allocatedReg, new Immediate(0)), this.labelGenerator.getClassDVLabel(newClass.getName())));
 		return allocatedReg;
 	}
@@ -1215,26 +1216,26 @@ public class LirTranslator implements IC.AST.Visitor {
 		Reg objectNum_reg = subExp_into_reg(objectNum);
 		this.currentMethodInstructions.add(new BinaryInstructionNode(lirBinaryOp.MUL,new Immediate(4),objectNum_reg));
 		
-		//so size check won't override
+		/*//so size check won't override
 		currentRegister++;
 		//runtime check array size > 0
 		List<LirNode> params = new ArrayList<LirNode>();
 		params.add(objectNum_reg);
 		this.currentMethodInstructions.add(new LibraryCallNode(new Label("__checkSize"),params,new Reg(currentRegister)));
 		//size check return is uninteresting
-		currentRegister--;
+		currentRegister--;*/
 		
-		return allocate(objectNum_reg);
+		return allocate(objectNum_reg,"allocateArray");
 	}
 	
-	private Reg allocate(LirNode allocated_size){
+	private Reg allocate(LirNode allocated_size,String alloc_kind){
 		List<LirNode> params = new ArrayList<LirNode>();
 		//the only parameter will be array size
 		params.add(allocated_size);
 		//make target reg
 		Reg allocation_reg = new Reg(currentRegister);
 		//allocate array space
-		this.currentMethodInstructions.add(new LibraryCallNode(this.labelGenerator.getLibraryMethodLabel("allocateObject"),params,allocation_reg));
+		this.currentMethodInstructions.add(new LibraryCallNode(this.labelGenerator.getLibraryMethodLabel(alloc_kind),params,allocation_reg));
 		return allocation_reg;//return the reg to which allocated array
 	}
 
@@ -1243,11 +1244,11 @@ public class LirTranslator implements IC.AST.Visitor {
 		// get array object
 		LirNode array = (LirNode) length.getArray().accept(this);
 		
-		//runtime check array != null
+		/*//runtime check array != null
 		List<LirNode> params = new ArrayList<LirNode>();
 		params.add(array);
 		this.currentMethodInstructions.add(new LibraryCallNode(new Label("__checkNullRef"),params,new Reg(currentRegister)));
-		
+		*/
 		// array may be a register or a local var (memory allowed)
 		// currentRegister will hold the result
 			
@@ -1304,14 +1305,14 @@ public class LirTranslator implements IC.AST.Visitor {
 		
 		//check zero div
 		if (op == lirBinaryOp.DIV){
-			//so zero check won't override
+			/*//so zero check won't override
 			currentRegister++;
 			//runtime check array size > 0
 			List<LirNode> params = new ArrayList<LirNode>();
 			params.add(a);
 			this.currentMethodInstructions.add(new LibraryCallNode(new Label("__checkZero"),params,new Reg(currentRegister)));
 			//size check return is uninteresting
-			currentRegister--;
+			currentRegister--;*/
 		}
 		
 		//save op to currentRegister
@@ -1567,44 +1568,78 @@ public class LirTranslator implements IC.AST.Visitor {
 	private void add_run_time_checks_implementation(){
 		List<LirNode> inject_checks = new ArrayList<LirNode>();
 		
-		inject_checks.add(new LabelNode(new Label ("__checkNullRef")));
-		Label correct = labelGenerator.createLabel();
+		//checkNullRef
+		Label correct_null_ref = labelGenerator.createLabel();
+		//inject_checks.add(new LabelNode(this.labelGenerator.get_runTime_checks_Label("checkNullRef", null)));
 		inject_checks.add(new CompareNode(new Immediate(0), new Memory("a",MemoryKind.PARAM)));
-		inject_checks.add(new JumpFalse(correct));
+		inject_checks.add(new JumpFalse(correct_null_ref));
 		//if not null jump to return 1. else print and out
 		List<LirNode> param_check_null = new ArrayList<LirNode>();
 		//add String to param
+		stringDefinitions.add(new StringLiteralNode("Runtime Error: Null pointer dereference!", labelGenerator));
+		param_check_null.add(labelGenerator.getStringLabel("Runtime Error: Null pointer dereference!"));
+		//print and exit
 		inject_checks.add(new LibraryCallNode(new Label("__println"),param_check_null,new Reg(currentRegister)));
 		inject_checks.add(new JumpNode(new Label("exit")));//quit program
-		inject_checks.add(new LabelNode(correct));
+		inject_checks.add(new LabelNode(correct_null_ref));
 		inject_checks.add(new ReturnNode(new Immediate(1)));
 		
-		
-/*		inject_checks.add(new LabelNode(new Label ("__checkZero")));
+		//checkZero
+		Label correct_zero = labelGenerator.createLabel();
+		//inject_checks.add(new LabelNode(this.labelGenerator.get_runTime_checks_Label("checkZero", null))));
 		inject_checks.add(new CompareNode(new Immediate(0), new Memory("b",MemoryKind.PARAM)));
-		inject_checks.add(new JumpFalse(correct));
+		inject_checks.add(new JumpFalse(correct_zero));
 		
 		//if not null jump to return 1. else print and out
 		List<LirNode> param_check_zero = new ArrayList<LirNode>();
 		//add String to param
+		stringDefinitions.add(new StringLiteralNode("Runtime Error: Array index out of bounds!", labelGenerator));
+		param_check_null.add(labelGenerator.getStringLabel("Runtime Error: Array index out of bounds!"));
+		//print and exit
 		inject_checks.add(new LibraryCallNode(new Label("__println"),param_check_zero,new Reg(currentRegister)));
 		inject_checks.add(new JumpNode(new Label("exit")));//quit program
 		
-		inject_checks.add(new LabelNode(correct));
+		inject_checks.add(new LabelNode(correct_zero));
 		inject_checks.add(new ReturnNode(new Immediate(1)));
 		
-		inject_checks.add(new LabelNode(new Label ("__checkSize")));
+		//checkSize
+		Label correct_size = labelGenerator.createLabel();
+		//inject_checks.add(new LabelNode(this.labelGenerator.get_runTime_checks_Label("checkSize", null))));
 		inject_checks.add(new CompareNode(new Immediate(0), new Memory("n",MemoryKind.PARAM)));
-		inject_checks.add(new JumpL(new Label(correct)));
+		inject_checks.add(new JumpL(correct_size));
 		
 		//if not null jump to return 1. else print and out
-		List<LirNode> param_check_zero = new ArrayList<LirNode>();
+		List<LirNode> param_check_size = new ArrayList<LirNode>();
 		//add String to param
-		inject_checks.add(new LibraryCallNode(new Label("__println"),param_check_zero,new Reg(currentRegister)));
+		stringDefinitions.add(new StringLiteralNode("Runtime Error: Division by zero!", labelGenerator));
+		param_check_null.add(labelGenerator.getStringLabel("Runtime Error: Division by zero!"));
+		//print and exit
+		inject_checks.add(new LibraryCallNode(new Label("__println"),param_check_size,new Reg(currentRegister)));
 		inject_checks.add(new JumpNode(new Label("exit")));//quit program
 		
-		inject_checks.add(new LabelNode(correct));
-		inject_checks.add(new ReturnNode(new Immediate(1)));*/
+		inject_checks.add(new LabelNode(correct_size));
+		inject_checks.add(new ReturnNode(new Immediate(1)));
+		
+		
+		//"__checkArrayAccess"
+		Label correct_array_access = labelGenerator.createLabel();
+		//inject_checks.add(new LabelNode(this.labelGenerator.get_runTime_checks_Label("checkSize", null))));
+		inject_checks.add(new ArrayLengthNode(new Memory("a",MemoryKind.PARAM),new Reg(currentRegister)));
+		inject_checks.add(new CompareNode(new Memory("i",MemoryKind.PARAM),new Reg(currentRegister)));
+		inject_checks.add(new JumpL(correct_array_access));
+		
+		//if not null jump to return 1. else print and out
+		List<LirNode> param_check_array_access = new ArrayList<LirNode>();
+		//add String to param
+		stringDefinitions.add(new StringLiteralNode("Runtime Error: Array index out of bounds!", labelGenerator));
+		param_check_null.add(labelGenerator.getStringLabel("Runtime Error: Array index out of bounds!"));
+		//print and exit
+		inject_checks.add(new LibraryCallNode(new Label("__println"),param_check_array_access,new Reg(currentRegister)));
+		inject_checks.add(new JumpNode(new Label("exit")));//quit program
+		
+		inject_checks.add(new LabelNode(correct_array_access));
+		inject_checks.add(new ReturnNode(new Immediate(1)));
+		
 	}
 
 }

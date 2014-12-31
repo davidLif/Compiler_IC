@@ -60,9 +60,10 @@ public class LirProgram extends LirNode {
 		for(MethodNode method : methods)
 		{
 			if (method.methodLabel.emit().equals("_ic_main")){
-				sb.append(method.emit() + "\n");
+				sb.append(method.emit());
 			}
 		}
+		sb.append(new LabelNode(new Label("exit")).emit());
 		
 		
 		return sb.toString();
