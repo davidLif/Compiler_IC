@@ -147,7 +147,7 @@ public class ClassLayoutManager {
 	public Integer getClassSize(String className){
 		ClassLayout layout = classToClassLayout.get(className);
 		
-		return layout.getDispatchTableSize();
+		return layout.getClassSize();
 	}
 	
 	

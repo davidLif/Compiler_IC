@@ -1,10 +1,10 @@
 package IC;
-import IC.AST.ICClass;
 import IC.AST.PrettyPrinter;
 import IC.AST.Program;
 import IC.Parser.*;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.PrintWriter;
 import java.util.List;
 
 
@@ -51,6 +51,7 @@ public class Compiler {
 		String library_name = null;
 		boolean dumpSymTable = false;
 		boolean printAST = false;
+		boolean makeLir = false;
 		
 		for(int i = 1 ; i < args.length; ++i)
 		{
@@ -70,6 +71,10 @@ public class Compiler {
 			else if(temp.equals("-dump-symtab"))
 			{
 				dumpSymTable = true;
+			}
+			else if(temp.equals("-print-lir"))
+			{
+				makeLir = true;
 			}
 			else
 			{
@@ -207,7 +212,33 @@ public class Compiler {
 				LirTranslator translator = new LirTranslator(prog, globalSymbolTable);
 				LirProgram result = translator.translate();
 				
-				System.out.print(result.emit());
+				if(makeLir)
+				{
+				
+					// remove this later
+					System.out.print(result.emit());
+				
+					// output to file
+					String newFileName;
+					if(args[0].endsWith(".ic"))
+					{
+						newFileName = args[0].substring(0, args[0].length() - 3);
+					}
+					else if(args[0].endsWith(".txt"))
+					{
+						newFileName = args[0].substring(0, args[0].length() - 4);
+					}
+					else
+					{
+						// don't know, keep it this way
+						newFileName = args[0];
+					}
+				
+					PrintWriter writer = new PrintWriter(newFileName + ".lir");
+					writer.print(result.emit());
+					writer.close();
+				
+				}
 				
 				
 			} 

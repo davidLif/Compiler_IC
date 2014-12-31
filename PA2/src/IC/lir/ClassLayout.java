@@ -212,8 +212,12 @@ public class ClassLayout {
 		
 	}
 	
+	/**
+	 * number of words needed to allocate the class objects
+	 * @return
+	 */
 	
-	public int getDispatchTableSize()
+	public int getClassSize()
 	{
 		//  +1 for DV pointer
 		return 1 + this.currentMaxFieldOffset ;
