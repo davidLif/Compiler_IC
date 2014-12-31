@@ -91,7 +91,7 @@ public class RuntimeChecks {
 		param_check_null.add(labelGen.getStringLabel("Runtime Error: Null pointer dereference!"));
 		//print and exit
 		instructions.add(new LibraryCallNode(new Label("__println"),param_check_null,new Reg(0)));
-		instructions.add(new JumpNode(new Label("exit")));//quit program
+		instructions.add(new JumpNode(exitLabel));//quit program
 		instructions.add(new LabelNode(correct_null_ref));
 		instructions.add(new ReturnNode(new Immediate(1)));
 
@@ -146,8 +146,8 @@ public class RuntimeChecks {
 		//if not null jump to return 1. else print and out
 		List<LirNode> param_check_size = new ArrayList<LirNode>();
 		//add String to param
-		stringDefinitions.add(new StringLiteralNode("Runtime Error: Division by zero!", labelGen));
-		param_check_size.add(labelGen.getStringLabel("Runtime Error: Division by zero!"));
+		stringDefinitions.add(new StringLiteralNode("Runtime Error: Array allocation with negative array size!", labelGen));
+		param_check_size.add(labelGen.getStringLabel("Runtime Error: Array allocation with negative array size!"));
 		//print and exit
 		instructions.add(new LibraryCallNode(new Label("__println"),param_check_size,new Reg(0)));
 		instructions.add(new JumpNode(exitLabel));//quit program
@@ -178,8 +178,8 @@ public class RuntimeChecks {
 		//if not null jump to return 1. else print and out
 		List<LirNode> param_check_zero = new ArrayList<LirNode>();
 		//add String to param
-		stringDefinitions.add(new StringLiteralNode("Runtime Error: Array index out of bounds!", labelGen));
-		param_check_zero.add(labelGen.getStringLabel("Runtime Error: Array index out of bounds!"));
+		stringDefinitions.add(new StringLiteralNode("Runtime Error: Division by zero!",labelGen));
+		param_check_zero.add(labelGen.getStringLabel("Runtime Error: Division by zero!"));
 		//print and exit
 		instructions.add(new LibraryCallNode(new Label("__println"),param_check_zero,new Reg(0)));
 		instructions.add(new JumpNode(exitLabel));//quit program
