@@ -2,6 +2,8 @@ package IC.lir.lirAST;
 
 import java.util.List;
 
+import IC.lir.LirTranslator;
+
 public class LirProgram extends LirNode {
 
 	/**
@@ -79,7 +81,7 @@ public class LirProgram extends LirNode {
 		// add main method last
 		sb.append(mainMethod + "\n");
 		// add exit label
-		sb.append(this.exitLabel.emit());	
+		sb.append(new LabelNode(this.exitLabel).emit());	
 		return sb.toString();
 	}
 }

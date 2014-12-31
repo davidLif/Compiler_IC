@@ -2,8 +2,6 @@ package IC.lir.lirAST;
 
 import java.util.List;
 
-import IC.lir.LabelGenerator;
-
 
 public class MethodNode extends LirNode{
 
