@@ -16,6 +16,7 @@ import IC.lir.lirAST.LibraryCallNode;
 import IC.lir.lirAST.LirNode;
 import IC.lir.lirAST.Memory;
 import IC.lir.lirAST.MethodNode;
+import IC.lir.lirAST.MoveNode;
 import IC.lir.lirAST.Reg;
 import IC.lir.lirAST.ReturnNode;
 import IC.lir.lirAST.SpaceNode;
@@ -80,9 +81,10 @@ public class RuntimeChecks {
 		Label methodLabel = labelGen.getRuntimeCheckLabel("checkNullRef");
 		
 		Memory param = new Memory("a", MemoryKind.PARAM);
+		instructions.add(new MoveNode(param,new Reg(0)));
 		
 		Label correct_null_ref = labelGen.createLabel();
-		instructions.add(new CompareNode(new Immediate(0),param));
+		instructions.add(new CompareNode(new Immediate(0),new Reg(0)));
 		instructions.add(new JumpFalse(correct_null_ref));
 		//if not null jump to return 1. else print and out
 		List<LirNode> param_check_null = new ArrayList<LirNode>();
@@ -137,10 +139,10 @@ public class RuntimeChecks {
 		Label methodLabel = labelGen.getRuntimeCheckLabel("checkSize");
 		
 		Memory numItems = new Memory("n", MemoryKind.PARAM);
-		
+		instructions.add(new MoveNode(numItems,new Reg(0)));
 		
 		Label correct_size = labelGen.createLabel();
-		instructions.add(new CompareNode(new Immediate(0), numItems));
+		instructions.add(new CompareNode(new Immediate(0), new Reg(0)));
 		instructions.add(new JumpL(correct_size));
 		
 		//if not null jump to return 1. else print and out
@@ -168,11 +170,11 @@ public class RuntimeChecks {
 		Label methodLabel = labelGen.getRuntimeCheckLabel("checkZero");
 		
 		Memory devisor = new Memory("b", MemoryKind.PARAM);
-		
+		instructions.add(new MoveNode(devisor,new Reg(0)));
 		
 		Label correct_zero = labelGen.createLabel();
 		//inject_checks.add(new LabelNode(this.labelGenerator.get_runTime_checks_Label("checkZero", null))));
-		instructions.add(new CompareNode(new Immediate(0),devisor));
+		instructions.add(new CompareNode(new Immediate(0),new Reg(0)));
 		instructions.add(new JumpFalse(correct_zero));
 		
 		//if not null jump to return 1. else print and out
