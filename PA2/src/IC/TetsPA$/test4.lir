@@ -1,0 +1,47 @@
+
+_DV_A:
+_static_A_whilefunction:
+Move 0,i
+Move 0,x
+_label_0:
+Move i,R0
+Sub 100,R0
+Compare 0,R0
+JumpL _label_3
+Move 0,R0
+Jump _label_2
+_label_3:
+Move 1,R0
+_label_2:
+Compare 1,R0
+JumpFalse _label_1
+Move i,R0
+Add 1,R0
+Move R0,i
+Move i,R0
+Sub 20,R0
+Compare 0,R0
+JumpG _label_6
+Move 0,R0
+Jump _label_5
+_label_6:
+Move 1,R0
+_label_5:
+Compare 1,R0
+JumpFalse _label_4
+Jump _label_0
+_label_4:
+Move x,R0
+Add 1,R0
+Move R0,x
+Jump _label_0
+_label_1:
+Library __printi(x),R0
+Return 9999
+
+
+_ic_main:
+StaticCall _static_A_whilefunction(),R0
+
+
+_exit:
