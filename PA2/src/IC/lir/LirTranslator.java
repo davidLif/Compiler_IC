@@ -1434,7 +1434,8 @@ public class LirTranslator implements IC.AST.Visitor {
 			
 			//save register
 			currentRegister++;
-			
+			//to fill the other register with value, just in case we will find "critical result". otherwise the value will be overridden
+			this.currentMethodInstructions.add(new MoveNode(new Immediate(0),new Reg(currentRegister)));
 			//test for "critical result"
 			this.currentMethodInstructions.add(new CompareNode(new Immediate(0),b));
 			if (op == lirBinaryOp.AND){

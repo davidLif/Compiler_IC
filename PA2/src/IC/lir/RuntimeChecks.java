@@ -9,6 +9,7 @@ import IC.lir.lirAST.ArrayLengthNode;
 import IC.lir.lirAST.CompareNode;
 import IC.lir.lirAST.Immediate;
 import IC.lir.lirAST.JumpFalse;
+import IC.lir.lirAST.JumpG;
 import IC.lir.lirAST.JumpL;
 import IC.lir.lirAST.JumpNode;
 import IC.lir.lirAST.Label;
@@ -127,7 +128,7 @@ public class RuntimeChecks {
 		Label correct_array_access = labelGen.createLabel();
 		instructions.add(new ArrayLengthNode(arrayParam,new Reg(0)));
 		instructions.add(new CompareNode(indexParam,new Reg(0)));
-		instructions.add(new JumpL(correct_array_access));
+		instructions.add(new JumpG(correct_array_access));
 		
 		//if not null jump to return 1. else print and out
 		List<LirNode> param_check_array_access = new ArrayList<LirNode>();
@@ -157,7 +158,7 @@ public class RuntimeChecks {
 		
 		Label correct_size = labelGen.createLabel();
 		instructions.add(new CompareNode(new Immediate(0), new Reg(0)));
-		instructions.add(new JumpL(correct_size));
+		instructions.add(new JumpG(correct_size));
 		
 		//if not null jump to return 1. else print and out
 		List<LirNode> param_check_size = new ArrayList<LirNode>();
