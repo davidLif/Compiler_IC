@@ -1,0 +1,18 @@
+class Shachar 
+{	
+	int x;
+
+	static void main(string[] args)
+	{
+		Shachar a = null;
+		a.whatsupman();
+
+	}
+
+	void whatsupman()
+	{
+
+	}
+
+
+}
