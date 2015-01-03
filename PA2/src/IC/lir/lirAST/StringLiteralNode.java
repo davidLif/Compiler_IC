@@ -27,7 +27,7 @@ public class StringLiteralNode extends LirNode{
 	@Override
 	public String emit() {
 		
-		return String.format("%s: \"%s\"", stringLabel, stringLiteral);
+		return String.format("%s: %s", stringLabel, stringLiteral);
 	}
 
 	

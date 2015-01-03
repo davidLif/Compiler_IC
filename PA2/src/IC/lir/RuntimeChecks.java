@@ -2,6 +2,7 @@ package IC.lir;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 
 import IC.lir.lirAST.ArrayLengthNode;
@@ -41,12 +42,17 @@ public class RuntimeChecks {
 	
 	private List<StringLiteralNode> stringDefinitions;
 	
-	public RuntimeChecks(LabelGenerator labelGen, Label exitLabel,List<StringLiteralNode> stringDefinitions)
+	public RuntimeChecks(LabelGenerator labelGen, Label exitLabel,List<StringLiteralNode> stringDefinitions, Set<String> foundStrings)
 	{
 		
 		this.labelGen = labelGen;
 		this.exitLabel = exitLabel;
 		this.stringDefinitions = stringDefinitions;
+		
+		foundStrings.add(nullRefMsg);
+		foundStrings.add(indexBoundsMsg);
+		foundStrings.add(allocationMsg);
+		foundStrings.add(devZeroMsg);
 	}
 	
 
@@ -66,11 +72,17 @@ public class RuntimeChecks {
 		
 	}
 	
+	private final String nullRefMsg = "\"Runtime Error: Null pointer dereference!\"";
+	private final String indexBoundsMsg = "\"Runtime Error: Array index out of bounds!\"";
+	private final String allocationMsg = "\"Runtime Error: Array allocation with negative array size!\"";
+	private final String devZeroMsg = "\"Runtime Error: Division by zero!\"";
+	
 	/**
 	 * 
 	 * the following methods provide implementation for the runtime checks
 	 * 
 	 */
+	
 	
 	
 	
@@ -89,10 +101,11 @@ public class RuntimeChecks {
 		//if not null jump to return 1. else print and out
 		List<LirNode> param_check_null = new ArrayList<LirNode>();
 		//add String to param
-		stringDefinitions.add(new StringLiteralNode("Runtime Error: Null pointer dereference!", labelGen));
-		param_check_null.add(labelGen.getStringLabel("Runtime Error: Null pointer dereference!"));
+		stringDefinitions.add(new StringLiteralNode(nullRefMsg, labelGen));
+		param_check_null.add(labelGen.getStringLabel(nullRefMsg));
 		//print and exit
-		instructions.add(new LibraryCallNode(new Label("__println"),param_check_null,new Reg(0)));
+		Label printlnLabel = this.labelGen.getLibraryMethodLabel("println");
+		instructions.add(new LibraryCallNode(printlnLabel, param_check_null, new Reg(0)));
 		instructions.add(new JumpNode(exitLabel));//quit program
 		instructions.add(new LabelNode(correct_null_ref));
 		instructions.add(new ReturnNode(new Immediate(1)));
@@ -119,10 +132,11 @@ public class RuntimeChecks {
 		//if not null jump to return 1. else print and out
 		List<LirNode> param_check_array_access = new ArrayList<LirNode>();
 		//add String to param
-		stringDefinitions.add(new StringLiteralNode("Runtime Error: Array index out of bounds!", labelGen));
-		param_check_array_access.add(labelGen.getStringLabel("Runtime Error: Array index out of bounds!"));
+		stringDefinitions.add(new StringLiteralNode(indexBoundsMsg, labelGen));
+		param_check_array_access.add(labelGen.getStringLabel(indexBoundsMsg));
 		//print and exit
-		instructions.add(new LibraryCallNode(new Label("__println"),param_check_array_access,new Reg(0)));
+		Label printlnLabel = this.labelGen.getLibraryMethodLabel("println");
+		instructions.add(new LibraryCallNode(printlnLabel,param_check_array_access,new Reg(0)));
 		instructions.add(new JumpNode(exitLabel));//quit program
 		
 		instructions.add(new LabelNode(correct_array_access));
@@ -148,10 +162,11 @@ public class RuntimeChecks {
 		//if not null jump to return 1. else print and out
 		List<LirNode> param_check_size = new ArrayList<LirNode>();
 		//add String to param
-		stringDefinitions.add(new StringLiteralNode("Runtime Error: Array allocation with negative array size!", labelGen));
-		param_check_size.add(labelGen.getStringLabel("Runtime Error: Array allocation with negative array size!"));
+		stringDefinitions.add(new StringLiteralNode(allocationMsg, labelGen));
+		param_check_size.add(labelGen.getStringLabel(allocationMsg));
 		//print and exit
-		instructions.add(new LibraryCallNode(new Label("__println"),param_check_size,new Reg(0)));
+		Label printlnLabel = this.labelGen.getLibraryMethodLabel("println");
+		instructions.add(new LibraryCallNode(printlnLabel, param_check_size,new Reg(0)));
 		instructions.add(new JumpNode(exitLabel));//quit program
 		
 		instructions.add(new LabelNode(correct_size));
@@ -180,10 +195,11 @@ public class RuntimeChecks {
 		//if not null jump to return 1. else print and out
 		List<LirNode> param_check_zero = new ArrayList<LirNode>();
 		//add String to param
-		stringDefinitions.add(new StringLiteralNode("Runtime Error: Division by zero!",labelGen));
-		param_check_zero.add(labelGen.getStringLabel("Runtime Error: Division by zero!"));
+		stringDefinitions.add(new StringLiteralNode(devZeroMsg,labelGen));
+		param_check_zero.add(labelGen.getStringLabel(devZeroMsg));
 		//print and exit
-		instructions.add(new LibraryCallNode(new Label("__println"),param_check_zero,new Reg(0)));
+		Label printlnLabel = this.labelGen.getLibraryMethodLabel("println");
+		instructions.add(new LibraryCallNode(printlnLabel, param_check_zero,new Reg(0)));
 		instructions.add(new JumpNode(exitLabel));//quit program
 		
 		instructions.add(new LabelNode(correct_zero));
@@ -200,7 +216,7 @@ public class RuntimeChecks {
 	 * @return
 	 */
 	
-	public StaticCallNode getNullRefCheck(LirNode value, Reg targetReg)
+	public StaticCallNode getNullRefCheck(LirNode value)
 	{
 		
 		Label methodLabel = labelGen.getRuntimeCheckLabel("checkNullRef");
@@ -212,7 +228,7 @@ public class RuntimeChecks {
 		List<LirNode> values = new ArrayList<LirNode>();
 		values.add(value);
 		
-		return new StaticCallNode(methodLabel, memVars, values, targetReg);
+		return new StaticCallNode(methodLabel, memVars, values, new Reg(-1));
 		
 		
 		
@@ -221,12 +237,12 @@ public class RuntimeChecks {
 
 	/**
 	 * method returns an ArrayAccessCheck
-	 * @param value      - the value to pass to the method
+	 * @param value      - array register
 	 * @param targetReg  - the register to store the value at
 	 * @return
 	 */
 	
-	public StaticCallNode getArrayAccessCheck(LirNode value, Reg targetReg)
+	public StaticCallNode getArrayAccessCheck(LirNode arr, LirNode index)
 	{
 		
 		Label methodLabel = labelGen.getRuntimeCheckLabel("checkArrayAccess");
@@ -237,9 +253,10 @@ public class RuntimeChecks {
 		memVars.add(new Memory("i", MemoryKind.PARAM));
 		
 		List<LirNode> values = new ArrayList<LirNode>();
-		values.add(value);
+		values.add(arr);
+		values.add(index);
 		
-		return new StaticCallNode(methodLabel, memVars, values, targetReg);
+		return new StaticCallNode(methodLabel, memVars, values, new Reg(-1));
 		
 		
 		
@@ -252,7 +269,7 @@ public class RuntimeChecks {
 	 * @return
 	 */
 	
-	public StaticCallNode getSizeCheck(LirNode value, Reg targetReg)
+	public StaticCallNode getSizeCheck(LirNode value)
 	{
 		
 		Label methodLabel = labelGen.getRuntimeCheckLabel("checkSize");
@@ -264,7 +281,7 @@ public class RuntimeChecks {
 		List<LirNode> values = new ArrayList<LirNode>();
 		values.add(value);
 		
-		return new StaticCallNode(methodLabel, memVars, values, targetReg);
+		return new StaticCallNode(methodLabel, memVars, values, new Reg(-1));
 		
 		
 	}
@@ -276,7 +293,7 @@ public class RuntimeChecks {
 	 * @return
 	 */
 	
-	public StaticCallNode getCheckZero(LirNode value, Reg targetReg)
+	public StaticCallNode getCheckZero(LirNode value)
 	{
 		
 		Label methodLabel = labelGen.getRuntimeCheckLabel("checkZero");
@@ -288,7 +305,7 @@ public class RuntimeChecks {
 		List<LirNode> values = new ArrayList<LirNode>();
 		values.add(value);
 		
-		return new StaticCallNode(methodLabel, memVars, values, targetReg);
+		return new StaticCallNode(methodLabel, memVars, values, new Reg(-1));
 		
 		
 	}

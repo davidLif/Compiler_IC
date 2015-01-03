@@ -29,6 +29,8 @@ public class Reg extends LirNode{
 	@Override
 	public String emit() {
 		
+		if(index == -1)
+			return "Rdummy";
 		return "R" + index;
 	}
 

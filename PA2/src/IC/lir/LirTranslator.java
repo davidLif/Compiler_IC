@@ -2,8 +2,10 @@ package IC.lir;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import IC.BinaryOps;
 import IC.LiteralTypes;
@@ -79,13 +81,11 @@ import IC.lir.lirAST.LoadField;
 import IC.lir.lirAST.Memory;
 import IC.lir.lirAST.Memory.MemoryKind;
 import IC.lir.lirAST.MethodNode;
-import IC.lir.lirAST.MoveFieldNode;
 import IC.lir.lirAST.MoveNode;
 import IC.lir.lirAST.Reg;
 import IC.lir.lirAST.RegWithIndex;
 import IC.lir.lirAST.RegWithOffset;
 import IC.lir.lirAST.ReturnNode;
-import IC.lir.lirAST.SpaceNode;
 import IC.lir.lirAST.StaticCallNode;
 import IC.lir.lirAST.StoreArrayNode;
 import IC.lir.lirAST.StoreField;
@@ -120,6 +120,12 @@ public class LirTranslator implements IC.AST.Visitor {
 	 * collects all the string literal definitions (Lir nodes) that we created
 	 */
 	private List<StringLiteralNode> stringDefinitions;
+	
+	/**
+	 * all the strings we've already seen
+	 */
+	
+	private Set<String> foundStrings; 
 	
 	
 	/**
@@ -200,6 +206,8 @@ public class LirTranslator implements IC.AST.Visitor {
 		/* saves all the string definitions we've seen, note that the type of the list is a LIR node */
 		
 		stringDefinitions = new ArrayList<StringLiteralNode>();
+		
+		foundStrings = new HashSet<String>();
 		
 		
 		/* init method map, used for method calls */
@@ -291,7 +299,11 @@ public class LirTranslator implements IC.AST.Visitor {
 		Label programExitLabel = labelGenerator.getExitLabel();
 		Label mainMethodLabel = labelGenerator.mainMethodLabel();
 		
-		this.runTimeChecks =  new RuntimeChecks(this.labelGenerator, programExitLabel,stringDefinitions);
+		this.runTimeChecks =  new RuntimeChecks(this.labelGenerator, programExitLabel, stringDefinitions, foundStrings);
+		
+		/* insert the run time check implementation */
+		
+		programMethods.addAll(this.runTimeChecks.getImplementation());
 		
 		for(ICClass currClass : program.getClasses())
 		{
@@ -305,11 +317,6 @@ public class LirTranslator implements IC.AST.Visitor {
 		
 		List<DispatchTableNode> dispatchTables = classManager.getAllDispatchTables(labelGenerator);
 		
-		
-		
-		/* insert the run time check implementation */
-		
-		programMethods.addAll(this.runTimeChecks.getImplementation());
 		
 		// use all the data we gathered: dispatch tables, string literals and methods
 		
@@ -544,7 +551,6 @@ public class LirTranslator implements IC.AST.Visitor {
 
 
 
-	//TODO handle RDummy
 
 	@Override
 	public Object visit(CallStatement callStatement) throws SemanticError  {
@@ -777,9 +783,8 @@ public class LirTranslator implements IC.AST.Visitor {
 			}
 				
 			//runtime check prefix != null
-			List<LirNode> params = new ArrayList<LirNode>();
-			params.add(classObject);
-			//this.currentMethodInstructions.add(new StaticCall(new Label("__checkNullRef"),params,new Reg(currentRegister)));
+			
+			this.currentMethodInstructions.add(this.runTimeChecks.getNullRefCheck(classObject));
 			
 			// get class type
 			
@@ -890,12 +895,8 @@ public class LirTranslator implements IC.AST.Visitor {
 			arrayObject = (Reg)arrayNode;
 		}
 		
-		/*//runtime check array != null
-		List<LirNode> params = new ArrayList<LirNode>();
-		params.add(arrayObject);
-		this.currentMethodInstructions.add(new LibraryCallNode(new Label("__checkNullRef"),params,new Reg(currentRegister)));
-		*/
 		
+		this.currentMethodInstructions.add(this.runTimeChecks.getNullRefCheck(arrayObject));
 		
 		// generate code for index
 		
@@ -907,9 +908,9 @@ public class LirTranslator implements IC.AST.Visitor {
 		{
 			
 			indexNode = (LirNode) location.getIndex().accept(this);
-			/*//runtime check and arraySize < i-1
-			params.add(indexNode);
-			this.currentMethodInstructions.add(new LibraryCallNode(new Label("__checkArrayAccess"),params,new Reg(currentRegister)));*/
+			
+			this.currentMethodInstructions.add(this.runTimeChecks.getArrayAccessCheck(arrayObject, indexNode));
+			
 			return new RegWithIndex(arrayObject, indexNode);
 			
 		}
@@ -936,10 +937,7 @@ public class LirTranslator implements IC.AST.Visitor {
 			indexRegister = (Reg)indexNode;
 		}
 		
-		/*//runtime check and arraySize < i-1
-		params.add(indexNode);
-		this.currentMethodInstructions.add(new LibraryCallNode(new Label("__checkArrayAccess"),params,new Reg(currentRegister)));
-		*/
+		this.currentMethodInstructions.add(this.runTimeChecks.getArrayAccessCheck(arrayObject, indexRegister));
 		// no longer need array register
 		--currentRegister;
 		
@@ -1050,13 +1048,7 @@ public class LirTranslator implements IC.AST.Visitor {
 				classObjReg = (Reg)classObj;
 			}
 			
-			/*//runtime check array != null
-			currentRegister++;
-			List<LirNode> params = new ArrayList<LirNode>();
-			params.add(classObjReg);
-			this.currentMethodInstructions.add(new LibraryCallNode(new Label("__checkNullRef"),params,new Reg(currentRegister)));
-			currentRegister--;*/
-			
+			this.currentMethodInstructions.add(this.runTimeChecks.getNullRefCheck(classObj));
 			/* generate the call code, note that that method handles saving classObjReg */
 			VirtualCallNode virtualCallNode = virtualCallCommonVisit(classObjReg, call, definingClassName);
 			this.currentMethodInstructions.add(virtualCallNode);
@@ -1234,14 +1226,7 @@ public class LirTranslator implements IC.AST.Visitor {
 		Reg objectNum_reg = subExp_into_reg(objectNum);
 		this.currentMethodInstructions.add(new BinaryInstructionNode(lirBinaryOp.MUL,new Immediate(4),objectNum_reg));
 		
-		/*//so size check won't override
-		currentRegister++;
-		//runtime check array size > 0
-		List<LirNode> params = new ArrayList<LirNode>();
-		params.add(objectNum_reg);
-		this.currentMethodInstructions.add(new LibraryCallNode(new Label("__checkSize"),params,new Reg(currentRegister)));
-		//size check return is uninteresting
-		currentRegister--;*/
+		this.currentMethodInstructions.add(this.runTimeChecks.getSizeCheck(objectNum_reg));
 		
 		return allocate(objectNum_reg,"allocateArray");
 	}
@@ -1262,11 +1247,7 @@ public class LirTranslator implements IC.AST.Visitor {
 		// get array object
 		LirNode array = (LirNode) length.getArray().accept(this);
 		
-		/*//runtime check array != null
-		List<LirNode> params = new ArrayList<LirNode>();
-		params.add(array);
-		this.currentMethodInstructions.add(new LibraryCallNode(new Label("__checkNullRef"),params,new Reg(currentRegister)));
-		*/
+		this.currentMethodInstructions.add(this.runTimeChecks.getNullRefCheck(array));
 		// array may be a register or a local var (memory allowed)
 		// currentRegister will hold the result
 			
@@ -1323,14 +1304,8 @@ public class LirTranslator implements IC.AST.Visitor {
 		
 		//check zero div
 		if (op == lirBinaryOp.DIV){
-			/*//so zero check won't override
-			currentRegister++;
-			//runtime check array size > 0
-			List<LirNode> params = new ArrayList<LirNode>();
-			params.add(a);
-			this.currentMethodInstructions.add(new LibraryCallNode(new Label("__checkZero"),params,new Reg(currentRegister)));
-			//size check return is uninteresting
-			currentRegister--;*/
+			
+			this.currentMethodInstructions.add(this.runTimeChecks.getCheckZero(a));
 		}
 		
 		//save op to currentRegister
@@ -1516,9 +1491,16 @@ public class LirTranslator implements IC.AST.Visitor {
 			String value = literal.getValue().toString();
 		
 			// add new string definition to lir program
-
-			stringDefinitions.add(new StringLiteralNode(value, labelGenerator));
 			
+			if(this.foundStrings.contains(value))
+			{
+				// no need to add new definition, label already exists
+				return labelGenerator.getStringLabel(value);
+			}
+
+			
+			this.foundStrings.add(value);
+			stringDefinitions.add( new StringLiteralNode(value, labelGenerator));
 			
 			return labelGenerator.getStringLabel(value);
 		}
