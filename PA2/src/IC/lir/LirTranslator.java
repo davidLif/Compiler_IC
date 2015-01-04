@@ -626,7 +626,9 @@ public class LirTranslator implements IC.AST.Visitor {
 	
 	
 	public Object visit(While whileStatement) throws SemanticError  {
-		
+		//remember outer loop labels
+		Label outerLoopLabel_head = head_loop_label;
+		Label outerLoopLabel_tail = tail_loop_label;
 		//make labels
 		Label head_loop_label = labelGenerator.createLabel();
 		Label tail_loop_label = labelGenerator.createLabel();
@@ -652,8 +654,8 @@ public class LirTranslator implements IC.AST.Visitor {
 		this.currentMethodInstructions.add(new JumpNode(head_loop_label));
 		
 		//set labels loop global values for break and continue - in case inner loop made us "forget"
-		this.head_loop_label = head_loop_label;
-		this.tail_loop_label = tail_loop_label;
+		this.head_loop_label = outerLoopLabel_head;
+		this.tail_loop_label = outerLoopLabel_tail;
 		
 		//set tail
 		this.currentMethodInstructions.add(new LabelNode(tail_loop_label));
