@@ -47,6 +47,10 @@ public class DispatchTableNode extends LirNode{
 			}
 			sb.append("]");
 		}
+		else
+		{
+			sb.append(" []");
+		}
 		return sb.toString();
 
 		
