@@ -1479,9 +1479,19 @@ public class LirTranslator implements IC.AST.Visitor {
 		return b;
 	}
 
+	//we made our not . the boolean values are 0,1
 	@Override
 	public Object visit(LogicalUnaryOp unaryOp) throws SemanticError  {
-		return unary_exp_calc(unaryOp,lirUnaryOp.NOT);
+		//evaluate inner expression
+		LirNode exp = (LirNode) unaryOp.getOperand().accept(this);
+				
+		Reg b=subExp_into_reg(exp);
+		
+		//add one
+		this.currentMethodInstructions.add(new BinaryInstructionNode(lirBinaryOp.ADD,new Immediate(1),b));
+		//mod 2
+		this.currentMethodInstructions.add(new BinaryInstructionNode(lirBinaryOp.MOD,new Immediate(2),b));
+		return b;
 	}
 
 	@Override
