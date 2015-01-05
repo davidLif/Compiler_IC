@@ -10,6 +10,7 @@ import IC.lir.lirAST.CompareNode;
 import IC.lir.lirAST.Immediate;
 import IC.lir.lirAST.JumpFalse;
 import IC.lir.lirAST.JumpG;
+import IC.lir.lirAST.JumpGE;
 import IC.lir.lirAST.JumpL;
 import IC.lir.lirAST.JumpNode;
 import IC.lir.lirAST.Label;
@@ -158,7 +159,7 @@ public class RuntimeChecks {
 		
 		Label correct_size = labelGen.createLabel();
 		instructions.add(new CompareNode(new Immediate(0), new Reg(0)));
-		instructions.add(new JumpG(correct_size));
+		instructions.add(new JumpGE(correct_size));
 		
 		//if not null jump to return 1. else print and out
 		List<LirNode> param_check_size = new ArrayList<LirNode>();
