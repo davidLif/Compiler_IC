@@ -1,0 +1,150 @@
+
+/* result : 
+
+	 static method in D callMe obj-17 END static method in D  static method in D callMe obj-17 END static method in D 24-6 called func in C size: 17-- my array: 012345678910111213141516func visited012goo visitedgoo visited16horray */
+
+class A
+{
+
+	string aField;
+	int aInt;
+	boolean aBool;
+	A me;
+	
+	A[] arr;
+	
+	int func(int k)
+	{
+		Library.print("func visited");
+		int temp = k % k;
+		Library.printi(temp);
+		temp = k / k;
+		Library.printi(temp);
+		temp = 1 + 1 * 1 - 1 % 1 / 1;
+		Library.printi(temp);
+		this.goo();
+		goo();
+		
+		Library.printi(arr[16].aInt);
+		return 0;
+	}
+	
+	boolean goo()
+	{
+		Library.print("goo visited");
+		
+		return new A() == new A();
+	}
+	
+	
+}
+
+
+class B extends A
+{
+
+	A[] getAArray(int size)
+	{
+		Library.print("size: " ); Library.printi(size);
+		
+		A[] res = allocArray(size);
+		
+		int counter = 0;
+		while(counter < size)
+		{
+		
+			res[counter] = new A();
+			res[counter].aInt = counter;
+			counter = counter + 1;
+		}
+		printArray(res);
+		return res;
+		
+	
+	}
+	
+	A[] allocArray(int size)
+	{
+		return new A[size];
+	}
+	
+	
+	static void printArray(A[]arr)
+	{
+		Library.print("-- my array: "); 
+		int counter = 0;
+		while(counter < arr.length)
+		{
+		
+			Library.printi(arr[counter].aInt);
+			counter = counter + 1;
+		}
+	}
+
+
+}
+
+class C extends B
+{
+
+	int func(int a)
+	{
+		Library.print(" called func in C ");
+		A b = new A();
+		b.arr = getAArray(17);
+		
+		b.func(200);
+		
+		return a;
+		
+	}
+	
+	static void main(string[] args)
+	{
+	
+		D.callMe(2);
+		C c = new C();
+		int k = c.func(17);
+		if(k == 17)
+			Library.print("horray");
+		
+	}
+
+
+}
+
+
+class D 
+{
+
+	static A method(A me)
+	{
+	
+		Library.print(" static method in D ");
+		Library.print(me.aField);
+		Library.printi(me.aInt);
+		Library.print(" END static method in D ");
+		
+		return null;
+	
+	}
+	
+	static void callMe(int k)
+	{
+		A temp = new A();
+		temp.aField = "callMe obj";
+		temp.aInt = temp.aInt * 5 + 2 % 2 - 17 ;
+		temp.aBool = true || false || false || true;
+		
+		method(temp);
+		D.method(temp);
+		Library.printi(k);
+		
+		k = k * k;
+		Library.printi(k);
+		Library.printi(k - 10);
+	
+	}
+
+
+}

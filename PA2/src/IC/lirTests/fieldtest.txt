@@ -1,0 +1,122 @@
+
+class A
+{
+
+
+	/*
+	
+	output:
+	
+	 first check passed ..  second check passed 16 helloodirect test205555hel01717
+	 
+	 */
+
+
+	static void main(string[] args)
+	{
+	
+		// testing move instructions
+		
+		
+		boolean a;
+		boolean b;
+		boolean c;
+		
+		a = true;
+		b = false;
+		c = a || b;
+		
+		if(c || a || b)
+		{
+			Library.print(" first check passed .. ");
+		}
+		
+		if( !c || b || !a)
+		{
+			Library.print("failed ");
+		}
+		else
+		{
+			Library.print(" second check passed " );
+		}
+		
+		int y = -4;
+		y = -y;
+		
+		int k = 3 + 2 + 4 + 3 + y;
+		
+		Library.printi(k);
+		
+		string test = " hell" + "oo"; 
+		Library.print(test);
+		Library.print("direct test");
+		
+		
+		C obj = new C();
+		
+		int [] array  = new int [2] ;
+		Library.printi(array.length);
+		
+		Library.printi(obj.field1);
+		
+		if(obj.field2 == false)
+		{
+			obj.field1 = 55;
+			obj.method(obj.field1);
+			string result = B.coolMethod("hel", "0");
+			
+			if(result == result)
+			{
+				Library.print(result);
+			}
+		
+		}
+		
+		
+		obj.c = new C();
+		obj.c.c = new C();
+		
+		obj.c.c.method(17);
+		
+		
+	
+	}
+
+}
+
+
+class B
+{
+	int field1;
+	boolean field2;
+	string field3;
+	
+	static string coolMethod(string one, string two)
+	{
+		return one + two;
+	
+	}
+}
+
+
+class C extends B
+{
+	string field4;
+	
+	void method(int temp)
+	{
+		Library.printi(temp);
+		
+		this.secmethod(temp);
+	
+	}
+	
+	int secmethod(int temp)
+	{
+		Library.printi(temp);
+		
+		return 2;
+	}
+	
+	C c;
+}

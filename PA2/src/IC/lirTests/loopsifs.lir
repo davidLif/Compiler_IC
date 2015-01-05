@@ -1,0 +1,312 @@
+str0: "Runtime Error: Null pointer dereference!"
+str1: "Runtime Error: Array index out of bounds!"
+str2: "Runtime Error: Array allocation with negative array size!"
+str3: "Runtime Error: Division by zero!"
+str4: " test.. "
+str5: "Yes sir "
+str6: " errorrrr"
+str7: " OK!! "
+str8: " while 1... "
+str9: " while 2 ... "
+str10: " while 3 ... "
+str11: " after break ; "
+str12: "reached 10, trying to break out!!"
+str13: " almoset out.. "
+str14: "out!, going to if tests"
+str15: "nah"
+str16: "all correct, now testing uncessary while "
+str17: "ok"
+str18: "what ? "
+str19: "impossibru"
+str20: "error"
+str21: "Done!"
+_DV_A: []
+__checkNullRef:
+Move a,R0
+Compare 0,R0
+JumpFalse _label_0
+Library __println(str0),R0
+Jump _exit
+_label_0:
+Return 1
+
+__checkArrayAccess:
+ArrayLength a,R0
+Compare i,R0
+JumpG _label_1
+Library __println(str1),R0
+Jump _exit
+_label_1:
+Return 1
+
+__checkSize:
+Move n,R0
+Compare 0,R0
+JumpG _label_2
+Library __println(str2),R0
+Jump _exit
+_label_2:
+Return 1
+
+__checkZero:
+Move b,R0
+Compare 0,R0
+JumpFalse _label_3
+Library __println(str3),R0
+Jump _exit
+_label_3:
+Return 1
+
+_ic_main:
+Move 0,counter
+Move 0,flag
+Move flag,R0
+Add 1,R0
+Mod 2,R0
+Move R0,flag
+Library __print(str4),R0
+Move flag,R0
+Sub 1,R0
+Compare 0,R0
+JumpTrue _label_7
+Move 0,R0
+Jump _label_6
+_label_7:
+Move 1,R0
+_label_6:
+Compare 1,R0
+JumpFalse _label_4
+Library __print(str5),R0
+Jump _label_5
+_label_4:
+Library __print(str6),R0
+_label_5:
+Move 5,a
+Move a,R0
+Neg R0
+Sub 0,R0
+Compare 0,R0
+JumpLE _label_10
+Move 0,R0
+Jump _label_9
+_label_10:
+Move 1,R0
+_label_9:
+Compare 1,R0
+JumpFalse _label_8
+Library __print(str7),R0
+_label_8:
+Move 0,flag
+_label_11:
+Move flag,R0
+Add 1,R0
+Mod 2,R0
+Compare 1,R0
+JumpFalse _label_12
+Library __print(str8),R0
+_label_13:
+Move flag,R0
+Add 1,R0
+Mod 2,R0
+Compare 1,R0
+JumpFalse _label_14
+Library __print(str9),R0
+_label_15:
+Move flag,R0
+Add 1,R0
+Mod 2,R0
+Compare 1,R0
+JumpFalse _label_16
+Library __print(str10),R0
+Move flag,R0
+Compare 1,R0
+JumpFalse _label_17
+Jump _label_16
+_label_17:
+Library __print(str11),R0
+_label_18:
+Move flag,R0
+Add 1,R0
+Mod 2,R0
+Compare 1,R0
+JumpFalse _label_19
+Move counter,R0
+Add 1,R0
+Move R0,counter
+Move counter,R0
+Sub 10,R0
+Compare 0,R0
+JumpTrue _label_22
+Move 0,R0
+Jump _label_21
+_label_22:
+Move 1,R0
+_label_21:
+Compare 1,R0
+JumpFalse _label_20
+Library __print(str12),R0
+Jump _label_19
+_label_20:
+Jump _label_18
+_label_19:
+Move 1,flag
+Jump _label_15
+Jump _label_15
+_label_16:
+Jump _label_13
+_label_14:
+Library __print(str13),R0
+Jump _label_12
+Jump _label_11
+_label_12:
+Library __print(str14),R0
+Move flag,R0
+Compare 1,R0
+JumpFalse _label_23
+Move 1,R0
+Move 0,R1
+Compare 0,R0
+JumpTrue _label_27
+_label_27:
+And 0,R0
+Compare 1,R0
+JumpFalse _label_25
+Library __print(str15),R0
+Jump _label_26
+_label_25:
+Move 4,R0
+Sub 5,R0
+Compare 0,R0
+JumpL _label_29
+Move 0,R0
+Jump _label_28
+_label_29:
+Move 1,R0
+_label_28:
+Move R0,maybe
+Move maybe,R0
+Compare 1,R0
+JumpFalse _label_30
+Move 4,R0
+Sub 5,R0
+Compare 0,R0
+JumpG _label_33
+Move 0,R0
+Jump _label_32
+_label_33:
+Move 1,R0
+_label_32:
+Move R0,maybe
+Move maybe,R0
+Add 1,R0
+Mod 2,R0
+Compare 1,R0
+JumpFalse _label_34
+Move 4,R0
+Sub 5,R0
+Compare 0,R0
+JumpTrue _label_36
+Move 0,R0
+Jump _label_35
+_label_36:
+Move 1,R0
+_label_35:
+Move R0,maybe
+Move maybe,R0
+Add 1,R0
+Mod 2,R0
+Compare 1,R0
+JumpFalse _label_37
+Move 4,R0
+Sub 5,R0
+Compare 0,R0
+JumpLE _label_39
+Move 0,R0
+Jump _label_38
+_label_39:
+Move 1,R0
+_label_38:
+Move R0,maybe
+Move maybe,R0
+Compare 1,R0
+JumpFalse _label_40
+Move 4,R0
+Sub 5,R0
+Compare 0,R0
+JumpGE _label_42
+Move 0,R0
+Jump _label_41
+_label_42:
+Move 1,R0
+_label_41:
+Move R0,maybe
+Move maybe,R0
+Add 1,R0
+Mod 2,R0
+Compare 1,R0
+JumpFalse _label_43
+Library __print(str16),R0
+_label_44:
+Move 1,R0
+Compare 1,R0
+JumpFalse _label_45
+Move 4,a2
+Move a2,R0
+Sub 4,R0
+Compare 0,R0
+JumpTrue _label_49
+Move 0,R0
+Jump _label_48
+_label_49:
+Move 1,R0
+_label_48:
+Compare 1,R0
+JumpFalse _label_46
+Library __print(str17),R0
+Jump _label_45
+Jump _label_47
+_label_46:
+Library __print(str18),R0
+_label_47:
+Jump _label_44
+_label_45:
+Move 0,continueShould
+_label_50:
+Move 1,R0
+Compare 1,R0
+JumpFalse _label_51
+Move continueShould,R0
+Sub 1,R0
+Compare 0,R0
+JumpTrue _label_55
+Move 0,R0
+Jump _label_54
+_label_55:
+Move 1,R0
+_label_54:
+Compare 1,R0
+JumpFalse _label_52
+Jump _label_51
+Jump _label_53
+_label_52:
+Move 1,continueShould
+_label_53:
+Jump _label_50
+_label_51:
+_label_43:
+_label_40:
+_label_37:
+_label_34:
+Jump _label_31
+_label_30:
+Library __print(str19),R0
+_label_31:
+_label_26:
+Jump _label_24
+_label_23:
+Library __print(str20),R0
+_label_24:
+Library __print(str21),R0
+
+
+_exit:

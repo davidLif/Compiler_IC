@@ -1,0 +1,290 @@
+str0: "Runtime Error: Null pointer dereference!"
+str1: "Runtime Error: Array index out of bounds!"
+str2: "Runtime Error: Array allocation with negative array size!"
+str3: "Runtime Error: Division by zero!"
+str4: "func visited"
+str5: "goo visited"
+str6: "size: "
+str7: "-- my array: "
+str8: " called func in C "
+str9: "horray"
+str10: " static method in D "
+str11: " END static method in D "
+str12: "callMe obj"
+_DV_A: [_A_func,_A_goo]
+_DV_B: [_A_func,_A_goo,_B_getAArray,_B_allocArray]
+_DV_C: [_C_func,_A_goo,_B_getAArray,_B_allocArray]
+_DV_D: []
+__checkNullRef:
+Move a,R0
+Compare 0,R0
+JumpFalse _label_0
+Library __println(str0),R0
+Jump _exit
+_label_0:
+Return 1
+
+__checkArrayAccess:
+ArrayLength a,R0
+Compare i,R0
+JumpG _label_1
+Library __println(str1),R0
+Jump _exit
+_label_1:
+Return 1
+
+__checkSize:
+Move n,R0
+Compare 0,R0
+JumpG _label_2
+Library __println(str2),R0
+Jump _exit
+_label_2:
+Return 1
+
+__checkZero:
+Move b,R0
+Compare 0,R0
+JumpFalse _label_3
+Library __println(str3),R0
+Jump _exit
+_label_3:
+Return 1
+
+_A_func:
+Library __print(str4),R0
+Move k,R0
+Mod k,R0
+Move R0,temp
+Library __printi(temp),R0
+Move k,R0
+StaticCall __checkZero(b=k),Rdummy
+Div k,R0
+Move R0,temp
+Library __printi(temp),R0
+Move 1,R0
+Move 1,R1
+Mul 1,R1
+Add R1,R0
+Move 1,R1
+Mod 1,R1
+StaticCall __checkZero(b=1),Rdummy
+Div 1,R1
+Sub R1,R0
+Move R0,temp
+Library __printi(temp),R0
+Move this,R0
+StaticCall __checkNullRef(a=this),Rdummy
+VirtualCall R0.1(),R0
+Move this,R0
+VirtualCall R0.1(),R0
+Move this,R0
+MoveField R0.5,R0
+StaticCall __checkNullRef(a=R0),Rdummy
+StaticCall __checkArrayAccess(a=R0,i=16),Rdummy
+MoveArray R0[16],R0
+StaticCall __checkNullRef(a=R0),Rdummy
+MoveField R0.2,R0
+Library __printi(R0),R0
+Return 0
+
+_A_goo:
+Library __print(str5),R0
+Library __allocateObject(24),R0
+MoveField _DV_A,R0.0
+Library __allocateObject(24),R1
+MoveField _DV_A,R1.0
+Sub R1,R0
+Compare 0,R0
+JumpTrue _label_5
+Move 0,R0
+Jump _label_4
+_label_5:
+Move 1,R0
+_label_4:
+Return R0
+
+_B_getAArray:
+Library __print(str6),R0
+Library __printi(size),R0
+Move this,R0
+VirtualCall R0.3(size=size),R0
+Move R0,res
+Move 0,counter
+_label_6:
+Move counter,R0
+Sub size,R0
+Compare 0,R0
+JumpL _label_9
+Move 0,R0
+Jump _label_8
+_label_9:
+Move 1,R0
+_label_8:
+Compare 1,R0
+JumpFalse _label_7
+Library __allocateObject(24),R0
+MoveField _DV_A,R0.0
+Move res,R1
+StaticCall __checkNullRef(a=R1),Rdummy
+Move counter,R2
+StaticCall __checkArrayAccess(a=R1,i=R2),Rdummy
+MoveArray R0,R1[R2]
+Move counter,R0
+Move res,R1
+StaticCall __checkNullRef(a=R1),Rdummy
+Move counter,R2
+StaticCall __checkArrayAccess(a=R1,i=R2),Rdummy
+MoveArray R1[R2],R1
+StaticCall __checkNullRef(a=R1),Rdummy
+MoveField R0,R1.2
+Move counter,R0
+Add 1,R0
+Move R0,counter
+Jump _label_6
+_label_7:
+StaticCall _static_B_printArray(arr=res),R0
+Return res
+
+_B_allocArray:
+Move size,R0
+Mul 4,R0
+StaticCall __checkSize(n=R0),Rdummy
+Library __allocateArray(R0),R0
+Return R0
+
+_static_B_printArray:
+Library __print(str7),R0
+Move 0,counter
+_label_10:
+Move counter,R0
+StaticCall __checkNullRef(a=arr),Rdummy
+ArrayLength arr,R1
+Sub R1,R0
+Compare 0,R0
+JumpL _label_13
+Move 0,R0
+Jump _label_12
+_label_13:
+Move 1,R0
+_label_12:
+Compare 1,R0
+JumpFalse _label_11
+Move arr,R0
+StaticCall __checkNullRef(a=R0),Rdummy
+Move counter,R1
+StaticCall __checkArrayAccess(a=R0,i=R1),Rdummy
+MoveArray R0[R1],R0
+StaticCall __checkNullRef(a=R0),Rdummy
+MoveField R0.2,R0
+Library __printi(R0),R0
+Move counter,R0
+Add 1,R0
+Move R0,counter
+Jump _label_10
+_label_11:
+Return 9999
+
+_C_func:
+Library __print(str8),R0
+Library __allocateObject(24),R0
+MoveField _DV_A,R0.0
+Move R0,b
+Move this,R0
+VirtualCall R0.2(size=17),R0
+Move b,R1
+StaticCall __checkNullRef(a=R1),Rdummy
+MoveField R0,R1.5
+Move b,R0
+StaticCall __checkNullRef(a=b),Rdummy
+VirtualCall R0.0(k=200),R0
+Return a
+
+_static_D_method:
+Library __print(str10),R0
+Move me,R0
+StaticCall __checkNullRef(a=R0),Rdummy
+MoveField R0.1,R0
+Library __print(R0),R0
+Move me,R0
+StaticCall __checkNullRef(a=R0),Rdummy
+MoveField R0.2,R0
+Library __printi(R0),R0
+Library __print(str11),R0
+Return 0
+
+_static_D_callMe:
+Library __allocateObject(24),R0
+MoveField _DV_A,R0.0
+Move R0,temp
+Move str12,R0
+Move temp,R1
+StaticCall __checkNullRef(a=R1),Rdummy
+MoveField R0,R1.1
+Move temp,R0
+StaticCall __checkNullRef(a=R0),Rdummy
+MoveField R0.2,R0
+Mul 5,R0
+Move 2,R1
+Mod 2,R1
+Add R1,R0
+Sub 17,R0
+Move temp,R1
+StaticCall __checkNullRef(a=R1),Rdummy
+MoveField R0,R1.2
+Move 1,R0
+Move 0,R1
+Compare 0,R0
+JumpFalse _label_19
+_label_19:
+Or 0,R0
+Move 0,R1
+Compare 0,R0
+JumpFalse _label_18
+_label_18:
+Or 0,R0
+Move 0,R1
+Compare 0,R0
+JumpFalse _label_17
+_label_17:
+Or 1,R0
+Move temp,R1
+StaticCall __checkNullRef(a=R1),Rdummy
+MoveField R0,R1.3
+StaticCall _static_D_method(me=temp),R0
+StaticCall _static_D_method(me=temp),R0
+Library __printi(k),R0
+Move k,R0
+Mul k,R0
+Move R0,k
+Library __printi(k),R0
+Move k,R0
+Sub 10,R0
+Library __printi(R0),R0
+Return 9999
+
+_ic_main:
+StaticCall _static_D_callMe(k=2),R0
+Library __allocateObject(24),R0
+MoveField _DV_C,R0.0
+Move R0,c
+Move c,R0
+StaticCall __checkNullRef(a=c),Rdummy
+VirtualCall R0.0(a=17),R0
+Move R0,k
+Move k,R0
+Sub 17,R0
+Compare 0,R0
+JumpTrue _label_16
+Move 0,R0
+Jump _label_15
+_label_16:
+Move 1,R0
+_label_15:
+Compare 1,R0
+JumpFalse _label_14
+Library __print(str9),R0
+_label_14:
+
+
+_exit:

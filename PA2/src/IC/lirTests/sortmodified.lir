@@ -1,0 +1,274 @@
+str0: "Runtime Error: Null pointer dereference!"
+str1: "Runtime Error: Array index out of bounds!"
+str2: "Runtime Error: Array allocation with negative array size!"
+str3: "Runtime Error: Division by zero!"
+str4: "Array elements: "
+str5: " "
+str6: "\n"
+_DV_Quicksort: [_Quicksort_partition,_Quicksort_quicksort,_Quicksort_initArray,_Quicksort_printArray]
+__checkNullRef:
+Move a,R0
+Compare 0,R0
+JumpFalse _label_0
+Library __println(str0),R0
+Jump _exit
+_label_0:
+Return 1
+
+__checkArrayAccess:
+ArrayLength a,R0
+Compare i,R0
+JumpG _label_1
+Library __println(str1),R0
+Jump _exit
+_label_1:
+Return 1
+
+__checkSize:
+Move n,R0
+Compare 0,R0
+JumpG _label_2
+Library __println(str2),R0
+Jump _exit
+_label_2:
+Return 1
+
+__checkZero:
+Move b,R0
+Compare 0,R0
+JumpFalse _label_3
+Library __println(str3),R0
+Jump _exit
+_label_3:
+Return 1
+
+_Quicksort_partition:
+Move this,R0
+MoveField R0.1,R0
+StaticCall __checkNullRef(a=R0),Rdummy
+Move low,R1
+StaticCall __checkArrayAccess(a=R0,i=R1),Rdummy
+MoveArray R0[R1],R0
+Move R0,pivot
+Move low,R0
+Move R0,i
+Move high,R0
+Move R0,j
+_label_4:
+Move 1,R0
+Compare 1,R0
+JumpFalse _label_5
+_label_6:
+Move this,R0
+MoveField R0.1,R0
+StaticCall __checkNullRef(a=R0),Rdummy
+Move i,R1
+StaticCall __checkArrayAccess(a=R0,i=R1),Rdummy
+MoveArray R0[R1],R0
+Sub pivot,R0
+Compare 0,R0
+JumpL _label_9
+Move 0,R0
+Jump _label_8
+_label_9:
+Move 1,R0
+_label_8:
+Compare 1,R0
+JumpFalse _label_7
+Move i,R0
+Add 1,R0
+Move R0,i
+Jump _label_6
+_label_7:
+_label_10:
+Move this,R0
+MoveField R0.1,R0
+StaticCall __checkNullRef(a=R0),Rdummy
+Move j,R1
+StaticCall __checkArrayAccess(a=R0,i=R1),Rdummy
+MoveArray R0[R1],R0
+Sub pivot,R0
+Compare 0,R0
+JumpG _label_13
+Move 0,R0
+Jump _label_12
+_label_13:
+Move 1,R0
+_label_12:
+Compare 1,R0
+JumpFalse _label_11
+Move j,R0
+Sub 1,R0
+Move R0,j
+Jump _label_10
+_label_11:
+Move i,R0
+Sub j,R0
+Compare 0,R0
+JumpGE _label_16
+Move 0,R0
+Jump _label_15
+_label_16:
+Move 1,R0
+_label_15:
+Compare 1,R0
+JumpFalse _label_14
+Jump _label_5
+_label_14:
+Move this,R0
+MoveField R0.1,R0
+StaticCall __checkNullRef(a=R0),Rdummy
+Move i,R1
+StaticCall __checkArrayAccess(a=R0,i=R1),Rdummy
+MoveArray R0[R1],R0
+Move R0,tmp
+Move this,R0
+MoveField R0.1,R0
+StaticCall __checkNullRef(a=R0),Rdummy
+Move j,R1
+StaticCall __checkArrayAccess(a=R0,i=R1),Rdummy
+MoveArray R0[R1],R0
+Move this,R1
+MoveField R1.1,R1
+StaticCall __checkNullRef(a=R1),Rdummy
+Move i,R2
+StaticCall __checkArrayAccess(a=R1,i=R2),Rdummy
+MoveArray R0,R1[R2]
+Move tmp,R0
+Move this,R1
+MoveField R1.1,R1
+StaticCall __checkNullRef(a=R1),Rdummy
+Move j,R2
+StaticCall __checkArrayAccess(a=R1,i=R2),Rdummy
+MoveArray R0,R1[R2]
+Move i,R0
+Add 1,R0
+Move R0,i
+Move j,R0
+Sub 1,R0
+Move R0,j
+Jump _label_4
+_label_5:
+Return j
+
+_Quicksort_quicksort:
+Move low,R0
+Sub high,R0
+Compare 0,R0
+JumpL _label_19
+Move 0,R0
+Jump _label_18
+_label_19:
+Move 1,R0
+_label_18:
+Compare 1,R0
+JumpFalse _label_17
+Move this,R0
+VirtualCall R0.0(low=low,high=high),R0
+Move R0,mid
+Move this,R0
+VirtualCall R0.1(low=low,high=mid),R0
+Move this,R0
+Move mid,R1
+Add 1,R1
+VirtualCall R0.1(low=R1,high=high),R0
+_label_17:
+Return 9999
+
+_Quicksort_initArray:
+Move 0,i
+_label_20:
+Move i,R0
+Move this,R1
+MoveField R1.1,R1
+StaticCall __checkNullRef(a=R1),Rdummy
+ArrayLength R1,R1
+Sub R1,R0
+Compare 0,R0
+JumpL _label_23
+Move 0,R0
+Jump _label_22
+_label_23:
+Move 1,R0
+_label_22:
+Compare 1,R0
+JumpFalse _label_21
+Move 10,R0
+Sub i,R0
+Move this,R1
+MoveField R1.1,R1
+StaticCall __checkNullRef(a=R1),Rdummy
+Move i,R2
+StaticCall __checkArrayAccess(a=R1,i=R2),Rdummy
+MoveArray R0,R1[R2]
+Move i,R0
+Add 1,R0
+Move R0,i
+Jump _label_20
+_label_21:
+Return 9999
+
+_Quicksort_printArray:
+Move 0,i
+Library __print(str4),R0
+_label_24:
+Move i,R0
+Move this,R1
+MoveField R1.1,R1
+StaticCall __checkNullRef(a=R1),Rdummy
+ArrayLength R1,R1
+Sub R1,R0
+Compare 0,R0
+JumpL _label_27
+Move 0,R0
+Jump _label_26
+_label_27:
+Move 1,R0
+_label_26:
+Compare 1,R0
+JumpFalse _label_25
+Move this,R0
+MoveField R0.1,R0
+StaticCall __checkNullRef(a=R0),Rdummy
+Move i,R1
+StaticCall __checkArrayAccess(a=R0,i=R1),Rdummy
+MoveArray R0[R1],R0
+Library __printi(R0),R0
+Library __print(str5),R0
+Move i,R0
+Add 1,R0
+Move R0,i
+Jump _label_24
+_label_25:
+Library __print(str6),R0
+Return 9999
+
+_ic_main:
+Move 8,n
+Library __allocateObject(8),R0
+MoveField _DV_Quicksort,R0.0
+Move R0,s
+Move n,R0
+Mul 4,R0
+StaticCall __checkSize(n=R0),Rdummy
+Library __allocateArray(R0),R0
+Move s,R1
+StaticCall __checkNullRef(a=R1),Rdummy
+MoveField R0,R1.1
+Move s,R0
+StaticCall __checkNullRef(a=s),Rdummy
+VirtualCall R0.2(),R0
+Move s,R0
+StaticCall __checkNullRef(a=s),Rdummy
+VirtualCall R0.3(),R0
+Move s,R0
+StaticCall __checkNullRef(a=s),Rdummy
+Move n,R1
+Sub 1,R1
+VirtualCall R0.1(low=0,high=R1),R0
+Move s,R0
+StaticCall __checkNullRef(a=s),Rdummy
+VirtualCall R0.3(),R0
+
+
+_exit:

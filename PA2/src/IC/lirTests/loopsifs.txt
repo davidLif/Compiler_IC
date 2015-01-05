@@ -1,0 +1,168 @@
+
+/* output:
+
+	 test.. Yes sir  OK!!  while 1...  while 2 ...  while 3 ...  after break ; reached 10, trying to break out!! almoset out.. out!, going to if testsall correct, now testing uncessary while okDone!
+*/
+
+class A 
+{
+
+	/* intensive while + if + logical operands test */
+	
+	static void main(string[]args)
+	{
+
+		
+		int counter  = 0;
+		
+		boolean flag = false;
+		flag = !flag;
+		Library.print(" test.. ");
+		
+		if(flag == true)
+		{
+			Library.print("Yes sir ");
+		}
+		else
+		{
+			Library.print(" errorrrr");
+		}
+		
+		int a = 5;
+		
+		if(-a <= 0)
+		{
+			Library.print(" OK!! " );
+		}
+		
+		flag = false;
+		while(!flag)
+		{
+		
+			Library.print(" while 1... ");
+			while(!flag)
+			{
+			
+				Library.print(" while 2 ... ");
+			
+				while(!flag)
+				{
+				
+					Library.print(" while 3 ... ");
+				
+					if(flag)
+						break;
+				
+					Library.print(" after break ; ");
+					while(!flag)
+					{
+						counter = counter + 1;
+						
+						if(counter == 10)
+						{
+							Library.print("reached 10, trying to break out!!");
+							break;
+						}
+					
+					}
+					
+					flag = true;
+					continue;
+				
+				
+				}
+			
+			
+			}
+			
+			Library.print(" almoset out.. ");
+			break;
+		}
+		
+		Library.print("out!, going to if tests");
+		
+		
+		if(flag)
+		{
+		
+			if(true && false)
+			{
+				Library.print("nah");
+			}
+			else
+			{
+			
+				boolean maybe = 4 < 5;
+				if(maybe)
+				{
+					maybe = 4 > 5;
+					if(!maybe)
+					{
+						maybe = 4 == 5;
+						if( !maybe)
+						{
+							maybe = 4<=5;
+							if( maybe)
+							{
+								maybe = 4 >= 5;
+								if(!maybe)
+								{
+									Library.print("all correct, now testing uncessary while ");
+									
+									while(true)
+									{
+										int a = 4;
+										if(a == 4)
+										{
+											Library.print("ok");
+											break;
+										}
+										
+										else
+										{
+											Library.print("what ? ");
+										}
+									
+									}
+									
+									boolean continueShould = false;
+									while(true)
+									{	
+										if(continueShould == true)
+										{
+											break;
+										}
+										else
+										continueShould = true;
+											
+										
+										
+									}
+									
+									
+									
+								}
+							}
+						
+						}
+					}
+				}
+				else
+				{
+					Library.print("impossibru");
+				}
+			
+			}
+		}
+		else
+		{
+			Library.print("error");
+		}
+		
+		Library.print("Done!");
+
+
+	}
+
+	
+}

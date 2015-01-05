@@ -1,0 +1,141 @@
+
+
+
+/*
+
+	output: ~~~~oyoyoyExpected result! OK! .. in while .. ayayayayaololoyeyeyecorrecto!!  allocates 0 in array .. array access works finehaha.. */
+
+class A 
+{
+
+	static int[] getArr()
+	{
+		return new int[4];
+	}
+	
+	static void main(string[]args)
+	{
+
+		// dont use args
+		// check while and if
+		boolean b = true;
+		boolean c = false;
+
+		if( b && c || (b || c))
+		{
+			int counter = 0;
+			while(counter <	getArr().length/* 4*/)
+			{
+				
+				
+				
+				// should print ! four times
+				Library.print("~");
+				counter = counter + 1;
+			}		
+
+		}
+
+		A a = new A();
+		a.yourField = "oyoyoy";
+		
+		Library.print(a.yourField);
+		
+		a.myField = 3;
+		a.myField = a.myField+ a.myField+ a.myField;
+
+		if( a.myField == 9)
+		{
+			Library.print("Expected result! ");
+		}
+
+		int c2 = 0;
+		
+		a.myField = 2;
+			
+		while( c2 < 2)
+		{
+
+			while(c2 < 2)
+			{
+				if(true)
+				{
+					Library.print("OK! .. ");
+				}
+				else
+					continue;
+					
+				break;
+			}
+			
+			c2 = c2 + 1;
+			
+	
+				Library.print("in while .. ");
+			
+
+			if(c2 == 1)
+			{
+				
+				break;
+				}
+		}
+		string yourField = "ayayayaya";
+		A result = a.coolMethod(yourField);
+
+		Library.print(result.yourField);
+
+
+	}
+
+	int myField;
+	string yourField;
+
+	A coolMethod(string msg)
+	{
+
+		msg = msg + "ololo";
+		msg = msg + "yeyeye";
+		
+		Library.print(msg);
+		
+		int a = 5435;
+		int b = -4324;
+		if( a/b > 0)
+		{
+			Library.print(" wrong.. ");
+		}
+		else
+		{
+			Library.print("correcto!! ");
+		}
+		int []arrayOfInts = new int[4];
+		int result = arrayOfInts[0];
+		
+		if(result == 0)
+		{
+			Library.print(" allocates 0 in array .. ");
+		}
+		else
+		{
+			Library.print(" what the hell ");
+		}
+
+		arrayOfInts[1] = 2;
+		arrayOfInts[2] = 3;
+		
+		arrayOfInts[0] = arrayOfInts[1] + arrayOfInts[2];
+
+		if(arrayOfInts[0] == 5)
+		{
+			Library.print("array access works fine");
+		}
+
+
+		A gottaReturnThis = new A();
+		gottaReturnThis.yourField = "haha.. ";
+
+		return gottaReturnThis;
+	}
+
+}

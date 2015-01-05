@@ -1,0 +1,206 @@
+str0: "Runtime Error: Null pointer dereference!"
+str1: "Runtime Error: Array index out of bounds!"
+str2: "Runtime Error: Array allocation with negative array size!"
+str3: "Runtime Error: Division by zero!"
+str4: " first check passed .. "
+str5: "failed "
+str6: " second check passed "
+str7: " hell"
+str8: "oo"
+str9: "direct test"
+str10: "hel"
+str11: "0"
+_DV_A: []
+_DV_B: []
+_DV_C: [_C_method,_C_secmethod]
+__checkNullRef:
+Move a,R0
+Compare 0,R0
+JumpFalse _label_0
+Library __println(str0),R0
+Jump _exit
+_label_0:
+Return 1
+
+__checkArrayAccess:
+ArrayLength a,R0
+Compare i,R0
+JumpG _label_1
+Library __println(str1),R0
+Jump _exit
+_label_1:
+Return 1
+
+__checkSize:
+Move n,R0
+Compare 0,R0
+JumpG _label_2
+Library __println(str2),R0
+Jump _exit
+_label_2:
+Return 1
+
+__checkZero:
+Move b,R0
+Compare 0,R0
+JumpFalse _label_3
+Library __println(str3),R0
+Jump _exit
+_label_3:
+Return 1
+
+_static_B_coolMethod:
+Library __stringCat(one,two),R0
+Return R0
+
+_C_method:
+Library __printi(temp),R0
+Move this,R0
+StaticCall __checkNullRef(a=this),Rdummy
+VirtualCall R0.1(temp=temp),R0
+Return 9999
+
+_C_secmethod:
+Library __printi(temp),R0
+Return 2
+
+_ic_main:
+Move 1,a
+Move 0,b
+Move a,R0
+Move 0,R1
+Compare 0,R0
+JumpFalse _label_4
+_label_4:
+Or b,R0
+Move R0,c
+Move c,R0
+Move 0,R1
+Compare 0,R0
+JumpFalse _label_7
+_label_7:
+Or a,R0
+Move 0,R1
+Compare 0,R0
+JumpFalse _label_6
+_label_6:
+Or b,R0
+Compare 1,R0
+JumpFalse _label_5
+Library __print(str4),R0
+_label_5:
+Move c,R0
+Add 1,R0
+Mod 2,R0
+Move 0,R1
+Compare 0,R0
+JumpFalse _label_11
+_label_11:
+Or b,R0
+Move 0,R1
+Compare 0,R0
+JumpFalse _label_10
+Move a,R1
+Add 1,R1
+Mod 2,R1
+_label_10:
+Or R1,R0
+Compare 1,R0
+JumpFalse _label_8
+Library __print(str5),R0
+Jump _label_9
+_label_8:
+Library __print(str6),R0
+_label_9:
+Move 4,R0
+Neg R0
+Move R0,y
+Move y,R0
+Neg R0
+Move R0,y
+Move 3,R0
+Add 2,R0
+Add 4,R0
+Add 3,R0
+Add y,R0
+Move R0,k
+Library __printi(k),R0
+Library __stringCat(str7,str8),R0
+Move R0,test
+Library __print(test),R0
+Library __print(str9),R0
+Library __allocateObject(24),R0
+MoveField _DV_C,R0.0
+Move R0,obj
+Move 2,R0
+Mul 4,R0
+StaticCall __checkSize(n=R0),Rdummy
+Library __allocateArray(R0),R0
+Move R0,array
+StaticCall __checkNullRef(a=array),Rdummy
+ArrayLength array,R0
+Library __printi(R0),R0
+Move obj,R0
+StaticCall __checkNullRef(a=R0),Rdummy
+MoveField R0.1,R0
+Library __printi(R0),R0
+Move obj,R0
+StaticCall __checkNullRef(a=R0),Rdummy
+MoveField R0.2,R0
+Sub 0,R0
+Compare 0,R0
+JumpTrue _label_14
+Move 0,R0
+Jump _label_13
+_label_14:
+Move 1,R0
+_label_13:
+Compare 1,R0
+JumpFalse _label_12
+Move obj,R1
+StaticCall __checkNullRef(a=R1),Rdummy
+MoveField 55,R1.1
+Move obj,R0
+StaticCall __checkNullRef(a=obj),Rdummy
+Move obj,R1
+StaticCall __checkNullRef(a=R1),Rdummy
+MoveField R1.1,R1
+VirtualCall R0.0(temp=R1),R0
+StaticCall _static_B_coolMethod(one=str10,two=str11),R0
+Move R0,result
+Move result,R0
+Sub result,R0
+Compare 0,R0
+JumpTrue _label_17
+Move 0,R0
+Jump _label_16
+_label_17:
+Move 1,R0
+_label_16:
+Compare 1,R0
+JumpFalse _label_15
+Library __print(result),R0
+_label_15:
+_label_12:
+Library __allocateObject(24),R0
+MoveField _DV_C,R0.0
+Move obj,R1
+StaticCall __checkNullRef(a=R1),Rdummy
+MoveField R0,R1.5
+Library __allocateObject(24),R0
+MoveField _DV_C,R0.0
+Move obj,R1
+StaticCall __checkNullRef(a=R1),Rdummy
+MoveField R1.5,R1
+StaticCall __checkNullRef(a=R1),Rdummy
+MoveField R0,R1.5
+Move obj,R0
+StaticCall __checkNullRef(a=R0),Rdummy
+MoveField R0.5,R0
+StaticCall __checkNullRef(a=R0),Rdummy
+MoveField R0.5,R0
+StaticCall __checkNullRef(a=R0),Rdummy
+VirtualCall R0.0(temp=17),R0
+
+
+_exit:
