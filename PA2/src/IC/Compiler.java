@@ -215,8 +215,7 @@ public class Compiler {
 				if(makeLir)
 				{
 				
-					// remove this later
-					System.out.print(result.emit());
+					
 				
 					// output to file
 					String newFileName;

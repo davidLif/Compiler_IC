@@ -22,7 +22,6 @@ import IC.lir.lirAST.MethodNode;
 import IC.lir.lirAST.MoveNode;
 import IC.lir.lirAST.Reg;
 import IC.lir.lirAST.ReturnNode;
-import IC.lir.lirAST.SpaceNode;
 import IC.lir.lirAST.StaticCallNode;
 import IC.lir.lirAST.StringLiteralNode;
 import IC.lir.lirAST.Memory.MemoryKind;
