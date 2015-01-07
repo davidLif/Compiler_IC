@@ -1,0 +1,45 @@
+
+class A
+{
+	int x;
+	boolean a;
+
+	static void main( string[] args)
+	{
+		
+		A shachar = new A();
+		shachar.x  =0;
+		shachar.increase();
+		shachar.increase();
+		shachar.x = shachar.x + 1;
+		shachar.decrease();
+		shachar.negate();
+		Library.printi(shachar.x); /*should print 2 */
+		Library.printb(shachar.a); /* should print false */
+
+
+	}
+
+	void increase()
+	{
+
+		x = x+ 1;
+	}
+
+	void decrease()
+	{
+		x = x - 1;
+	}
+
+	void negate()
+	{
+		a = false;
+	}
+
+
+
+
+
+
+
+}

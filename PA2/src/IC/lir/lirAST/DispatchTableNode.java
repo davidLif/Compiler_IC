@@ -17,11 +17,18 @@ public class DispatchTableNode extends LirNode{
 	 */
 	private Label classLabel; 
 	
+	/**
+	 * class comment, may be null
+	 */
 	
-	public DispatchTableNode(Label classLabel, List<Label> entries)
+	private String classComment;
+	
+	
+	public DispatchTableNode(Label classLabel, List<Label> entries, String classComment)
 	{
 		this.entries = entries;
 		this.classLabel = classLabel;
+		this.classComment = classComment;
 	}
 	
 	@Override
@@ -51,6 +58,13 @@ public class DispatchTableNode extends LirNode{
 		{
 			sb.append(" []");
 		}
+		
+		
+		if(this.classComment != null )
+		{
+			sb.append(String.format("\n#Field offsets: %s", this.classComment));
+		}
+		
 		return sb.toString();
 
 		

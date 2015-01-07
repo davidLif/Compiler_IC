@@ -1,0 +1,11 @@
+class Shachar 
+{	
+	static void main(string[] args)
+	{
+	
+		int[] x = new int[-2];
+
+	}
+
+
+}

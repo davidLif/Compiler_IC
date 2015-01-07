@@ -1,0 +1,78 @@
+class Shachar 
+{	
+	int z;
+	string david;
+
+	static void main(string[] args)
+	{
+		int x = 3;
+		string david = "david is the king of the world!";
+		Library.print("shachar is the best,");
+		Shachar sha = new Shachar();
+		sha.z = 5;
+		Library.print(sha.denis());
+		david = "what's up man";
+		sha.if_check() ; // should print 2 
+		sha.loop_check();
+
+	}
+
+	string denis()
+	{
+		string[] array = new string[60];
+		array[2] = "50\n";
+		string y = "Shacar  is the best ";
+		return array[2];
+
+	}
+
+	static int function(int x)
+	{
+		
+		x = 7 /3 / 5 * 2 + 2;
+		return 1;
+
+	}
+
+	int loop_check()
+	{
+		int[] array = new int[29];
+		int i = 0;
+		while ( i< 29)
+		{
+			array[i] = i*i*i + 1;
+			i = i+ 1;
+		}
+		Library.printi(array[i/2]);
+		return 1;
+
+	}
+
+	/* should print  2 */
+	void if_check()
+	{
+		int x;
+		if (  1 < 0 )
+		{
+			
+			if( 2 < 1)
+			{
+					Library.printi(1);
+
+			}
+		}
+		else{
+
+			if( 2 >= 1)
+			{
+					Library.printi(2);
+
+			}
+		}
+
+
+
+	}
+
+
+}

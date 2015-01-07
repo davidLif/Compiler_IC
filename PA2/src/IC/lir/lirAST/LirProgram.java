@@ -63,10 +63,11 @@ public class LirProgram extends LirNode {
 			sb.append(stringLiteralDef.emit() + "\n");
 			
 		}
+		sb.append("\n");
 		
 		for(DispatchTableNode dispatchTable : dispatchTables)
 		{
-			sb.append(dispatchTable.emit() + "\n");
+			sb.append(dispatchTable.emit() + "\n\n");
 		}
 		
 		String mainMethod = null;

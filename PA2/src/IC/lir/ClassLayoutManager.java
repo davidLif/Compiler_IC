@@ -111,7 +111,9 @@ public class ClassLayoutManager {
 		}
 		Label classLabel = labelGen.getClassDVLabel(className);
 		
-		return new DispatchTableNode(classLabel, methodLabels);
+		String classComment = layout.getDescriptiveComment();
+		
+		return new DispatchTableNode(classLabel, methodLabels, classComment);
 	}
 	
 	/**

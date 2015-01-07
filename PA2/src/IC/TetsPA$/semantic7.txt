@@ -1,0 +1,17 @@
+class Shachar 
+{	
+	int x;
+
+	static void main(string[] args)
+	{
+		int x = 7/0;
+
+	}
+
+	void whatsupman()
+	{
+
+	}
+
+
+}

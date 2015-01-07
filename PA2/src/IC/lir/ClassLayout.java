@@ -222,4 +222,31 @@ public class ClassLayout {
 		//  +1 for DV pointer
 		return 1 + this.currentMaxFieldOffset ;
 	}
+	
+	/**
+	 * method returns a comment describing this class layout, field: offset pairs.
+	 * @return
+	 */
+	public String getDescriptiveComment()
+	{
+		StringBuilder sb = new StringBuilder();
+		Set<String> fields = fieldToOffset.keySet();
+		
+		if(fields.isEmpty())
+		{
+			return null;
+		}
+		
+		for(String field: fields)
+		{
+			sb.append(String.format("%s: %d  ", field, fieldToOffset.get(field) + 1));
+		}
+		
+	
+		
+		return sb.toString();
+		
+		
+		
+	}
 }
