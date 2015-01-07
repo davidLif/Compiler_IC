@@ -126,17 +126,10 @@ public class RuntimeChecks {
 		
 		
 		Label correct_array_access = labelGen.createLabel();
-		Label false_array_access = labelGen.createLabel();
-		//check non negative
-		instructions.add(new MoveNode(new Immediate(0),new Reg(0)));
-		instructions.add(new CompareNode(indexParam,new Reg(0)));
-		instructions.add(new JumpG(false_array_access));
-		
-		//check smaller then length
 		instructions.add(new ArrayLengthNode(arrayParam,new Reg(0)));
 		instructions.add(new CompareNode(indexParam,new Reg(0)));
 		instructions.add(new JumpG(correct_array_access));
-		instructions.add(new LabelNode(false_array_access));
+		
 		//if not null jump to return 1. else print and out
 		List<LirNode> param_check_array_access = new ArrayList<LirNode>();
 		//add String to param
